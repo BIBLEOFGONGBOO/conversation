@@ -9646,9 +9646,17 @@ function startConversationLesson(
   );
 }
 // ============================================================
-// BLOCK 1500: conversation-directory.js
-// GROUP → CATEGORY → SUBCATEGORY → TITLE
-// Folder / Directory Navigation
+// BLOCK 1500: CONVERSATION DIRECTORY
+//
+// LAZY LOADING
+//
+// GROUP
+// → CATEGORY
+// → SUBCATEGORY
+// → TITLE
+// → DIALOGUE
+//
+// 첫 화면에서 전체 Catalog를 받지 않음.
 // ============================================================
 
 
@@ -9659,19 +9667,23 @@ function startConversationLesson(
 
 const CONVERSATION_LIST_STATE = {
 
-  rows: [],
+  level:
+    'GROUP',
 
-  level: 'GROUP',
+  group:
+    '',
 
-  group: '',
+  category:
+    '',
 
-  category: '',
+  subcategory:
+    '',
 
-  subcategory: '',
+  items:
+    [],
 
-  search: '',
-
-  loading: false
+  loading:
+    false
 };
 
 window.CONVERSATION_LIST_STATE =
@@ -9681,6 +9693,7 @@ window.CONVERSATION_LIST_STATE =
 // SUBBLOCK 1510
 // ============================================================
 // HOME START
+// 첫 화면에서는 GROUP 컬럼만 로딩
 // ============================================================
 
 async function startConversationHome() {
@@ -9701,17 +9714,11 @@ async function startConversationHome() {
 
   try {
 
-    await loadConversationPeople();
-
-
-    // Catalog는 최초 1회만 로딩
-    if (
-      !CONVERSATION_LIST_STATE.rows.length
-    ) {
-
-      CONVERSATION_LIST_STATE.rows =
-        await loadConversationCatalog();
-    }
+    var rows =
+      await loadConversationDirectoryRows(
+        'GROUP',
+        ''
+      );
 
 
     CONVERSATION_LIST_STATE.level =
@@ -9726,17 +9733,15 @@ async function startConversationHome() {
     CONVERSATION_LIST_STATE.subcategory =
       '';
 
-    CONVERSATION_LIST_STATE.search =
-      '';
+
+    CONVERSATION_LIST_STATE.items =
+      makeConversationDirectoryValues(
+        rows,
+        'GROUP'
+      );
 
 
     renderConversationDirectory();
-
-
-    console.log(
-      '[CONVERSATION] DIRECTORY READY:',
-      CONVERSATION_LIST_STATE.rows.length
-    );
 
 
   } catch (error) {
@@ -9813,14 +9818,14 @@ function showConversationDirectoryLoading() {
     ">
 
       <div style="
-        font-size:30px;
-        margin-bottom:10px;
+        font-size:28px;
+        margin-bottom:8px;
       ">
         💬
       </div>
 
       <strong>
-        Loading Conversations...
+        Loading...
       </strong>
 
     </div>
@@ -9855,17 +9860,16 @@ function showConversationDirectoryError(
       text-align:center;
     ">
 
-      <div style="
+      <strong style="
         color:#b91c1c;
-        font-weight:900;
       ">
         Conversation Load Failed
-      </div>
+      </strong>
 
       <div style="
         margin-top:8px;
         color:#64748b;
-        font-size:13px;
+        font-size:12px;
       ">
         ${esc(message)}
       </div>
@@ -9877,166 +9881,55 @@ function showConversationDirectoryError(
 
 // SUBBLOCK 1525
 // ============================================================
-// UNIQUE VALUES
-// ============================================================
-
-function uniqueConversationValues(
-  rows,
-  field
-) {
-
-  return Array.from(
-    new Set(
-      rows
-        .map(
-          function(row) {
-
-            return String(
-              row[field] || ''
-            ).trim();
-          }
-        )
-        .filter(Boolean)
-    )
-  ).sort(
-    function(a, b) {
-
-      return a.localeCompare(
-        b,
-        undefined,
-        {
-          numeric: true,
-          sensitivity: 'base'
-        }
-      );
-    }
-  );
-}
-
-
-// SUBBLOCK 1530
-// ============================================================
-// CURRENT ROWS
-// 현재 Directory 위치 기준
-// ============================================================
-
-function getConversationDirectoryRows() {
-
-  var rows =
-    CONVERSATION_LIST_STATE.rows;
-
-
-  if (
-    CONVERSATION_LIST_STATE.group
-  ) {
-
-    rows =
-      rows.filter(
-        function(row) {
-
-          return (
-            String(
-              row.GROUP || ''
-            ) ===
-            CONVERSATION_LIST_STATE.group
-          );
-        }
-      );
-  }
-
-
-  if (
-    CONVERSATION_LIST_STATE.category
-  ) {
-
-    rows =
-      rows.filter(
-        function(row) {
-
-          return (
-            String(
-              row.CATEGORY || ''
-            ) ===
-            CONVERSATION_LIST_STATE.category
-          );
-        }
-      );
-  }
-
-
-  if (
-    CONVERSATION_LIST_STATE.subcategory
-  ) {
-
-    rows =
-      rows.filter(
-        function(row) {
-
-          return (
-            String(
-              row.SUBCATEGORY || ''
-            ) ===
-            CONVERSATION_LIST_STATE.subcategory
-          );
-        }
-      );
-  }
-
-
-  return rows;
-}
-
-
-// SUBBLOCK 1535
-// ============================================================
 // BREADCRUMB
 // ============================================================
 
 function renderConversationBreadcrumb() {
 
-  var parts = [];
+  var html = `
 
-
-  parts.push(
-    `<button
+    <button
       type="button"
-      data-directory-home="1"
+      data-dir-home="1"
       style="
         border:0;
         background:transparent;
         color:#075ea8;
         font-weight:900;
-        cursor:pointer;
         padding:0;
+        cursor:pointer;
       "
     >
       CONVERSATION
-    </button>`
-  );
+    </button>
+  `;
 
 
   if (
     CONVERSATION_LIST_STATE.group
   ) {
 
-    parts.push(
-      `<button
+    html += `
+
+      <span>›</span>
+
+      <button
         type="button"
-        data-directory-level="GROUP_SELECTED"
+        data-dir-group="1"
         style="
           border:0;
           background:transparent;
           color:#075ea8;
           font-weight:800;
-          cursor:pointer;
           padding:0;
+          cursor:pointer;
         "
       >
         ${esc(
           CONVERSATION_LIST_STATE.group
         )}
-      </button>`
-    );
+      </button>
+    `;
   }
 
 
@@ -10044,24 +9937,27 @@ function renderConversationBreadcrumb() {
     CONVERSATION_LIST_STATE.category
   ) {
 
-    parts.push(
-      `<button
+    html += `
+
+      <span>›</span>
+
+      <button
         type="button"
-        data-directory-level="CATEGORY_SELECTED"
+        data-dir-category="1"
         style="
           border:0;
           background:transparent;
           color:#075ea8;
           font-weight:800;
-          cursor:pointer;
           padding:0;
+          cursor:pointer;
         "
       >
         ${esc(
           CONVERSATION_LIST_STATE.category
         )}
-      </button>`
-    );
+      </button>
+    `;
   }
 
 
@@ -10069,47 +9965,41 @@ function renderConversationBreadcrumb() {
     CONVERSATION_LIST_STATE.subcategory
   ) {
 
-    parts.push(
-      `<span style="
+    html += `
+
+      <span>›</span>
+
+      <span style="
         color:#475569;
         font-weight:800;
       ">
         ${esc(
           CONVERSATION_LIST_STATE.subcategory
         )}
-      </span>`
-    );
+      </span>
+    `;
   }
 
 
   return `
-    <div
-      id="conversationBreadcrumb"
-      style="
-        display:flex;
-        flex-wrap:wrap;
-        align-items:center;
-        gap:6px;
 
-        margin-bottom:12px;
-
-        color:#64748b;
-        font-size:12px;
-      "
-    >
-
-      ${parts.join(
-        '<span>›</span>'
-      )}
-
+    <div style="
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+      margin-bottom:12px;
+      font-size:12px;
+    ">
+      ${html}
     </div>
   `;
 }
 
 
-// SUBBLOCK 1540
+// SUBBLOCK 1530
 // ============================================================
-// DIRECTORY MAIN RENDER
+// DIRECTORY RENDER
 // ============================================================
 
 function renderConversationDirectory() {
@@ -10123,12 +10013,6 @@ function renderConversationDirectory() {
   var quizMain =
     document.getElementById(
       'quizMain'
-    );
-
-
-  var quizContent =
-    document.getElementById(
-      'quizContent'
     );
 
 
@@ -10152,51 +10036,10 @@ function renderConversationDirectory() {
   }
 
 
-  if (quizContent) {
-
-    quizContent.style.display =
-      'none';
-  }
-
-
   if (progress) {
 
     progress.style.display =
       'none';
-  }
-
-
-  if (
-    typeof stopSpeech ===
-    'function'
-  ) {
-
-    stopSpeech();
-  }
-
-
-  if (
-    typeof ANNE_STATE !==
-      'undefined' &&
-    ANNE_STATE.micMode &&
-    typeof turnAnneMicOff ===
-      'function'
-  ) {
-
-    turnAnneMicOff();
-  }
-
-
-  var title =
-    document.querySelector(
-      '.sat-title'
-    );
-
-
-  if (title) {
-
-    title.textContent =
-      'CONVERSATION';
   }
 
 
@@ -10211,6 +10054,20 @@ function renderConversationDirectory() {
   }
 
 
+  var level =
+    CONVERSATION_LIST_STATE.level;
+
+
+  var heading =
+    level === 'GROUP'
+      ? 'Choose Level'
+      : level === 'CATEGORY'
+        ? 'Choose Category'
+        : level === 'SUBCATEGORY'
+          ? 'Choose Subcategory'
+          : CONVERSATION_LIST_STATE.subcategory;
+
+
   card.innerHTML = `
 
     <div style="
@@ -10220,16 +10077,13 @@ function renderConversationDirectory() {
 
       ${renderConversationBreadcrumb()}
 
-      <div
-        id="conversationDirectoryTitle"
-        style="
-          margin-bottom:10px;
-
-          font-size:20px;
-          font-weight:900;
-          color:#172033;
-        "
-      >
+      <div style="
+        margin-bottom:10px;
+        font-size:20px;
+        font-weight:900;
+        color:#172033;
+      ">
+        ${esc(heading)}
       </div>
 
 
@@ -10245,380 +10099,25 @@ function renderConversationDirectory() {
   installConversationBreadcrumb();
 
 
-  renderConversationDirectoryContent();
+  if (
+    level === 'TITLE'
+  ) {
+
+    renderConversationTitleItems();
+
+  } else {
+
+    renderConversationFolderItems();
+  }
 }
 
 
-// SUBBLOCK 1545
+// SUBBLOCK 1535
 // ============================================================
-// DIRECTORY CONTENT
-// ============================================================
-
-function renderConversationDirectoryContent() {
-
-  var title =
-    document.getElementById(
-      'conversationDirectoryTitle'
-    );
-
-
-  var host =
-    document.getElementById(
-      'conversationDirectoryContent'
-    );
-
-
-  if (
-    !title ||
-    !host
-  ) {
-    return;
-  }
-
-
-  var level =
-    CONVERSATION_LIST_STATE.level;
-
-
-  var rows =
-    getConversationDirectoryRows();
-
-
-  // ==========================================================
-  // GROUP
-  // ==========================================================
-
-  if (
-    level === 'GROUP'
-  ) {
-
-    title.textContent =
-      'Choose Level';
-
-
-    var groups =
-      uniqueConversationValues(
-        CONVERSATION_LIST_STATE.rows,
-        'GROUP'
-      );
-
-
-    host.innerHTML =
-      renderConversationFolderList(
-        groups,
-        'GROUP'
-      );
-
-
-    bindConversationFolderButtons();
-
-    return;
-  }
-
-
-  // ==========================================================
-  // CATEGORY
-  // ==========================================================
-
-  if (
-    level === 'CATEGORY'
-  ) {
-
-    title.textContent =
-      'Choose Category';
-
-
-    var categories =
-      uniqueConversationValues(
-        rows,
-        'CATEGORY'
-      );
-
-
-    host.innerHTML =
-      renderConversationFolderList(
-        categories,
-        'CATEGORY'
-      );
-
-
-    bindConversationFolderButtons();
-
-    return;
-  }
-
-
-  // ==========================================================
-  // SUBCATEGORY
-  // ==========================================================
-
-  if (
-    level === 'SUBCATEGORY'
-  ) {
-
-    title.textContent =
-      'Choose Subcategory';
-
-
-    var subcategories =
-      uniqueConversationValues(
-        rows,
-        'SUBCATEGORY'
-      );
-
-
-    host.innerHTML =
-      renderConversationFolderList(
-        subcategories,
-        'SUBCATEGORY'
-      );
-
-
-    bindConversationFolderButtons();
-
-    return;
-  }
-
-
-  // ==========================================================
-  // TITLES
-  // ==========================================================
-
-  title.textContent =
-    CONVERSATION_LIST_STATE.subcategory ||
-    'Conversations';
-
-
-  renderConversationTitles(
-    rows
-  );
-}
-
-
-// SUBBLOCK 1550
-// ============================================================
-// FOLDER LIST
+// FOLDER ITEMS
 // ============================================================
 
-function renderConversationFolderList(
-  values,
-  type
-) {
-
-  if (
-    !values.length
-  ) {
-
-    return `
-      <div style="
-        padding:25px 5px;
-        text-align:center;
-        color:#94a3b8;
-      ">
-        No items found.
-      </div>
-    `;
-  }
-
-
-  return values.map(
-    function(value) {
-
-      var count = 0;
-
-
-      if (
-        type === 'GROUP'
-      ) {
-
-        count =
-          CONVERSATION_LIST_STATE.rows.filter(
-            function(row) {
-
-              return (
-                String(
-                  row.GROUP || ''
-                ) === value
-              );
-            }
-          ).length;
-
-      } else {
-
-        count =
-          getConversationDirectoryRows().filter(
-            function(row) {
-
-              return (
-                String(
-                  row[type] || ''
-                ) === value
-              );
-            }
-          ).length;
-      }
-
-
-      return `
-
-        <button
-          type="button"
-          class="conversation-folder"
-          data-folder-type="${esc(type)}"
-          data-folder-value="${esc(value)}"
-          style="
-            display:flex;
-            width:100%;
-            min-height:50px;
-
-            align-items:center;
-            gap:10px;
-
-            padding:8px 5px;
-
-            border:0;
-            border-bottom:1px solid #e2e8f0;
-
-            background:#ffffff;
-
-            text-align:left;
-            cursor:pointer;
-          "
-        >
-
-          <span style="
-            font-size:21px;
-            flex:0 0 auto;
-          ">
-            📁
-          </span>
-
-
-          <span style="
-            flex:1;
-            min-width:0;
-
-            color:#172033;
-            font-size:15px;
-            font-weight:850;
-
-            overflow:hidden;
-            text-overflow:ellipsis;
-          ">
-            ${esc(value)}
-          </span>
-
-
-          <span style="
-            flex:0 0 auto;
-
-            color:#94a3b8;
-            font-size:11px;
-            font-weight:800;
-          ">
-            ${count}
-          </span>
-
-
-          <span style="
-            color:#64748b;
-            font-weight:900;
-          ">
-            ›
-          </span>
-
-        </button>
-      `;
-
-    }
-  ).join('');
-}
-
-
-// SUBBLOCK 1555
-// ============================================================
-// FOLDER CLICK
-// ============================================================
-
-function bindConversationFolderButtons() {
-
-  document
-    .querySelectorAll(
-      '.conversation-folder'
-    )
-    .forEach(
-      function(button) {
-
-        button.onclick =
-          function() {
-
-            var type =
-              button.dataset.folderType;
-
-
-            var value =
-              button.dataset.folderValue;
-
-
-            if (
-              type === 'GROUP'
-            ) {
-
-              CONVERSATION_LIST_STATE.group =
-                value;
-
-              CONVERSATION_LIST_STATE.category =
-                '';
-
-              CONVERSATION_LIST_STATE.subcategory =
-                '';
-
-              CONVERSATION_LIST_STATE.level =
-                'CATEGORY';
-
-
-            } else if (
-              type === 'CATEGORY'
-            ) {
-
-              CONVERSATION_LIST_STATE.category =
-                value;
-
-              CONVERSATION_LIST_STATE.subcategory =
-                '';
-
-              CONVERSATION_LIST_STATE.level =
-                'SUBCATEGORY';
-
-
-            } else if (
-              type === 'SUBCATEGORY'
-            ) {
-
-              CONVERSATION_LIST_STATE.subcategory =
-                value;
-
-              CONVERSATION_LIST_STATE.level =
-                'TITLE';
-            }
-
-
-            renderConversationDirectory();
-          };
-      }
-    );
-}
-
-
-// SUBBLOCK 1560
-// ============================================================
-// TITLE LIST
-// SUBCATEGORY 안에서 실제 Conversation 표시
-// ============================================================
-
-function renderConversationTitles(
-  rows
-) {
+function renderConversationFolderItems() {
 
   var host =
     document.getElementById(
@@ -10631,34 +10130,270 @@ function renderConversationTitles(
   }
 
 
-  var sortedRows =
-    rows.slice().sort(
-      function(a, b) {
+  host.innerHTML =
+    CONVERSATION_LIST_STATE.items
+      .map(
+        function(item) {
 
-        return Number(
-          a.ID || 0
-        ) -
-        Number(
-          b.ID || 0
-        );
+          return `
+
+            <button
+              type="button"
+              class="conversation-folder"
+              data-value="${esc(item.value)}"
+              style="
+                display:flex;
+                width:100%;
+                min-height:55px;
+
+                align-items:center;
+                gap:10px;
+
+                padding:8px 10px;
+
+                border:0;
+                border-bottom:1px solid #e2e8f0;
+
+                background:#ffffff;
+
+                text-align:left;
+                cursor:pointer;
+              "
+            >
+
+              <span style="
+                font-size:22px;
+              ">
+                📁
+              </span>
+
+
+              <strong style="
+                flex:1;
+                color:#172033;
+                font-size:15px;
+              ">
+                ${esc(item.value)}
+              </strong>
+
+
+              <span style="
+                color:#94a3b8;
+                font-size:11px;
+                font-weight:800;
+              ">
+                ${item.count}
+              </span>
+
+
+              <span>
+                ›
+              </span>
+
+            </button>
+          `;
+        }
+      )
+      .join('');
+
+
+  document
+    .querySelectorAll(
+      '.conversation-folder'
+    )
+    .forEach(
+      function(button) {
+
+        button.onclick =
+          function() {
+
+            openConversationDirectoryFolder(
+              button.dataset.value
+            );
+          };
       }
+    );
+}
+
+
+// SUBBLOCK 1540
+// ============================================================
+// FOLDER CLICK → 다음 단계만 API LOAD
+// ============================================================
+
+async function openConversationDirectoryFolder(
+  value
+) {
+
+  showConversationDirectoryLoading();
+
+
+  try {
+
+    // ========================================================
+    // GROUP → CATEGORY
+    // ========================================================
+
+    if (
+      CONVERSATION_LIST_STATE.level ===
+      'GROUP'
+    ) {
+
+      CONVERSATION_LIST_STATE.group =
+        value;
+
+
+      var rows =
+        await loadConversationDirectoryRows(
+          'CATEGORY',
+          'GROUP=eq.' +
+          encodeURIComponent(
+            value
+          )
+        );
+
+
+      CONVERSATION_LIST_STATE.items =
+        makeConversationDirectoryValues(
+          rows,
+          'CATEGORY'
+        );
+
+
+      CONVERSATION_LIST_STATE.level =
+        'CATEGORY';
+
+
+      renderConversationDirectory();
+
+      return;
+    }
+
+
+    // ========================================================
+    // CATEGORY → SUBCATEGORY
+    // ========================================================
+
+    if (
+      CONVERSATION_LIST_STATE.level ===
+      'CATEGORY'
+    ) {
+
+      CONVERSATION_LIST_STATE.category =
+        value;
+
+
+      var rows =
+        await loadConversationDirectoryRows(
+          'SUBCATEGORY',
+          'GROUP=eq.' +
+          encodeURIComponent(
+            CONVERSATION_LIST_STATE.group
+          ) +
+          '&CATEGORY=eq.' +
+          encodeURIComponent(
+            value
+          )
+        );
+
+
+      CONVERSATION_LIST_STATE.items =
+        makeConversationDirectoryValues(
+          rows,
+          'SUBCATEGORY'
+        );
+
+
+      CONVERSATION_LIST_STATE.level =
+        'SUBCATEGORY';
+
+
+      renderConversationDirectory();
+
+      return;
+    }
+
+
+    // ========================================================
+    // SUBCATEGORY → TITLES
+    // ========================================================
+
+    if (
+      CONVERSATION_LIST_STATE.level ===
+      'SUBCATEGORY'
+    ) {
+
+      CONVERSATION_LIST_STATE.subcategory =
+        value;
+
+
+      var rows =
+        await loadConversationDirectoryRows(
+          'ID,DIALOGUE_TITLE',
+          'GROUP=eq.' +
+          encodeURIComponent(
+            CONVERSATION_LIST_STATE.group
+          ) +
+          '&CATEGORY=eq.' +
+          encodeURIComponent(
+            CONVERSATION_LIST_STATE.category
+          ) +
+          '&SUBCATEGORY=eq.' +
+          encodeURIComponent(
+            value
+          ) +
+          '&order=ID.asc'
+        );
+
+
+      CONVERSATION_LIST_STATE.items =
+        rows;
+
+
+      CONVERSATION_LIST_STATE.level =
+        'TITLE';
+
+
+      renderConversationDirectory();
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      '[CONVERSATION] DIRECTORY OPEN FAILED:',
+      error
     );
 
 
-  host.innerHTML = `
-
-    <div style="
-      margin-bottom:8px;
-      color:#64748b;
-      font-size:12px;
-    ">
-      ${sortedRows.length}
-      Conversations
-    </div>
+    showConversationDirectoryError(
+      error.message
+    );
+  }
+}
 
 
-    ${
-      sortedRows.map(
+// SUBBLOCK 1545
+// ============================================================
+// TITLE ITEMS
+// ============================================================
+
+function renderConversationTitleItems() {
+
+  var host =
+    document.getElementById(
+      'conversationDirectoryContent'
+    );
+
+
+  if (!host) {
+    return;
+  }
+
+
+  host.innerHTML =
+    CONVERSATION_LIST_STATE.items
+      .map(
         function(row) {
 
           return `
@@ -10668,8 +10403,11 @@ function renderConversationTitles(
               class="conversation-title-item"
               data-conversation-id="${esc(row.ID)}"
               style="
-                display:block;
+                display:flex;
                 width:100%;
+
+                align-items:center;
+                gap:8px;
 
                 padding:12px 5px;
 
@@ -10683,46 +10421,31 @@ function renderConversationTitles(
               "
             >
 
-              <div style="
-                display:flex;
-                align-items:center;
-                gap:8px;
+              <strong style="
+                flex:1;
+                color:#172033;
+                font-size:15px;
               ">
-
-                <strong style="
-                  flex:1;
-                  min-width:0;
-
-                  color:#172033;
-                  font-size:15px;
-
-                  overflow:hidden;
-                  text-overflow:ellipsis;
-                ">
-                  ${esc(
-                    row.DIALOGUE_TITLE ||
-                    'Conversation'
-                  )}
-                </strong>
+                ${esc(
+                  row.DIALOGUE_TITLE ||
+                  'Conversation'
+                )}
+              </strong>
 
 
-                <span style="
-                  color:#94a3b8;
-                  font-size:11px;
-                  font-weight:800;
-                ">
-                  ${esc(row.ID)}
-                </span>
-
-              </div>
+              <span style="
+                color:#94a3b8;
+                font-size:11px;
+                font-weight:800;
+              ">
+                ${esc(row.ID)}
+              </span>
 
             </button>
           `;
-
         }
-      ).join('')
-    }
-  `;
+      )
+      .join('');
 
 
   document
@@ -10745,92 +10468,10 @@ function renderConversationTitles(
 }
 
 
-// SUBBLOCK 1565
+// SUBBLOCK 1550
 // ============================================================
-// BREADCRUMB CLICK
-// ============================================================
-
-function installConversationBreadcrumb() {
-
-  var home =
-    document.querySelector(
-      '[data-directory-home]'
-    );
-
-
-  if (home) {
-
-    home.onclick =
-      function() {
-
-        CONVERSATION_LIST_STATE.level =
-          'GROUP';
-
-        CONVERSATION_LIST_STATE.group =
-          '';
-
-        CONVERSATION_LIST_STATE.category =
-          '';
-
-        CONVERSATION_LIST_STATE.subcategory =
-          '';
-
-        renderConversationDirectory();
-      };
-  }
-
-
-  var group =
-    document.querySelector(
-      '[data-directory-level="GROUP_SELECTED"]'
-    );
-
-
-  if (group) {
-
-    group.onclick =
-      function() {
-
-        CONVERSATION_LIST_STATE.level =
-          'CATEGORY';
-
-        CONVERSATION_LIST_STATE.category =
-          '';
-
-        CONVERSATION_LIST_STATE.subcategory =
-          '';
-
-        renderConversationDirectory();
-      };
-  }
-
-
-  var category =
-    document.querySelector(
-      '[data-directory-level="CATEGORY_SELECTED"]'
-    );
-
-
-  if (category) {
-
-    category.onclick =
-      function() {
-
-        CONVERSATION_LIST_STATE.level =
-          'SUBCATEGORY';
-
-        CONVERSATION_LIST_STATE.subcategory =
-          '';
-
-        renderConversationDirectory();
-      };
-  }
-}
-
-
-// SUBBLOCK 1570
-// ============================================================
-// TITLE → LESSON
+// TITLE → DIALOGUE
+// People 240도 실제 Lesson 열 때 로드
 // ============================================================
 
 async function openConversationFromList(
@@ -10844,18 +10485,22 @@ async function openConversationFromList(
 
   try {
 
+    if (
+      !window.CONVERSATION_PEOPLE ||
+      !Object.keys(
+        window.CONVERSATION_PEOPLE
+      ).length
+    ) {
+
+      await loadConversationPeople();
+    }
+
+
     var row =
       await loadConversationById(
         id,
         'EN'
       );
-
-
-    console.log(
-      '[CONVERSATION] OPEN:',
-      row.ID,
-      row.DIALOGUE_TITLE
-    );
 
 
     startConversationLesson(
@@ -10878,42 +10523,129 @@ async function openConversationFromList(
 }
 
 
-// SUBBLOCK 1575
+// SUBBLOCK 1555
 // ============================================================
-// LESSON → 현재 SUBCATEGORY 목록으로 복귀
+// BREADCRUMB
+// ============================================================
+
+function installConversationBreadcrumb() {
+
+  var home =
+    document.querySelector(
+      '[data-dir-home]'
+    );
+
+
+  if (home) {
+
+    home.onclick =
+      function() {
+
+        startConversationHome();
+      };
+  }
+
+
+  var group =
+    document.querySelector(
+      '[data-dir-group]'
+    );
+
+
+  if (group) {
+
+    group.onclick =
+      async function() {
+
+        showConversationDirectoryLoading();
+
+
+        var rows =
+          await loadConversationDirectoryRows(
+            'CATEGORY',
+            'GROUP=eq.' +
+            encodeURIComponent(
+              CONVERSATION_LIST_STATE.group
+            )
+          );
+
+
+        CONVERSATION_LIST_STATE.category =
+          '';
+
+        CONVERSATION_LIST_STATE.subcategory =
+          '';
+
+        CONVERSATION_LIST_STATE.items =
+          makeConversationDirectoryValues(
+            rows,
+            'CATEGORY'
+          );
+
+        CONVERSATION_LIST_STATE.level =
+          'CATEGORY';
+
+
+        renderConversationDirectory();
+      };
+  }
+
+
+  var category =
+    document.querySelector(
+      '[data-dir-category]'
+    );
+
+
+  if (category) {
+
+    category.onclick =
+      async function() {
+
+        showConversationDirectoryLoading();
+
+
+        var rows =
+          await loadConversationDirectoryRows(
+            'SUBCATEGORY',
+            'GROUP=eq.' +
+            encodeURIComponent(
+              CONVERSATION_LIST_STATE.group
+            ) +
+            '&CATEGORY=eq.' +
+            encodeURIComponent(
+              CONVERSATION_LIST_STATE.category
+            )
+          );
+
+
+        CONVERSATION_LIST_STATE.subcategory =
+          '';
+
+        CONVERSATION_LIST_STATE.items =
+          makeConversationDirectoryValues(
+            rows,
+            'SUBCATEGORY'
+          );
+
+        CONVERSATION_LIST_STATE.level =
+          'SUBCATEGORY';
+
+
+        renderConversationDirectory();
+      };
+  }
+}
+
+
+// SUBBLOCK 1560
+// ============================================================
+// LESSON → 현재 DIRECTORY 복귀
 // ============================================================
 
 function returnConversationHome() {
 
-  if (
-    CONVERSATION_LIST_STATE.subcategory
-  ) {
-
-    CONVERSATION_LIST_STATE.level =
-      'TITLE';
-
-  } else if (
-    CONVERSATION_LIST_STATE.category
-  ) {
-
-    CONVERSATION_LIST_STATE.level =
-      'SUBCATEGORY';
-
-  } else if (
-    CONVERSATION_LIST_STATE.group
-  ) {
-
-    CONVERSATION_LIST_STATE.level =
-      'CATEGORY';
-
-  } else {
-
-    CONVERSATION_LIST_STATE.level =
-      'GROUP';
-  }
-
-
-  renderConversationDirectory();
+  startConversationHome();
 }
 
 window.returnConversationHome =
