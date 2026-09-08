@@ -4891,7 +4891,82 @@ function positionAnneMicPanel() {
       1
     ) + 'px';
 }
+// SUBBLOCK 1108
+// ============================================================
+// MIC 설정창 위치
+// 상단 고정 MIC 버튼 기준
+// PSG 스크롤을 따라 내려가지 않음
+// ============================================================
 
+function positionAnneMicPanel() {
+
+  var btn =
+    document.getElementById(
+      'anneMicButton'
+    );
+
+  var panel =
+    ensureAnneMicPanel();
+
+
+  if (
+    !btn ||
+    !panel
+  ) {
+    return;
+  }
+
+
+  var rect =
+    btn.getBoundingClientRect();
+
+
+  var panelWidth =
+    window.innerWidth <= 600
+      ? 185
+      : 190;
+
+
+  var left =
+    rect.right -
+    panelWidth -
+    8;
+
+
+  left =
+    Math.max(
+      6,
+      Math.min(
+        left,
+        window.innerWidth -
+        panelWidth -
+        6
+      )
+    );
+
+
+  // 핵심:
+  // document 기준 absolute가 아니라
+  // 화면 기준 fixed
+  panel.style.position =
+    'fixed';
+
+
+  panel.style.left =
+    Math.round(
+      left
+    ) + 'px';
+
+
+  panel.style.top =
+    Math.round(
+      rect.bottom + 1
+    ) + 'px';
+
+
+  panel.style.zIndex =
+    '9999';
+}
 
 // SUBBLOCK 1109
 // ============================================================
