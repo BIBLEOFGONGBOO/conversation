@@ -3071,189 +3071,39 @@ function getAnneMicLanguage() {
 
 // SUBBLOCK 1103
 // ============================================================
-// 현재 읽어야 할 화면 문장 찾기
-// PASSAGE 문장 CLICK / TOUCH = 수동 SYNC
-// 현재 인식 문장 = 노란 테두리
+// 현재 MIC 대상 문장
+// ANNE + CONVERSATION ADAPTER
 // ============================================================
 
 function getCurrentMicSentence() {
 
-  var langInfo =
-    getAnneMicLanguage();
+  // ==========================================================
+  // CONVERSATION
+  // ==========================================================
 
-
-  var diaryLines =
+  var conversationTurns =
     Array.from(
       document.querySelectorAll(
-        '.anne-full-diary ' +
-        '.language-line[data-language="' +
-        langInfo.code +
-        '"]'
+        '.conversation-turn'
       )
     ).filter(
       function(el) {
 
-        var rect =
-          el.getBoundingClientRect();
-
         return (
-          rect.width > 0 &&
-          rect.height > 0
+          el.offsetParent !== null
         );
       }
     );
 
 
-  // ==========================================================
-  // 현재 SYNC 위치 표시
-  // ==========================================================
-
-  function showCurrentSync(index) {
-
-    diaryLines.forEach(
-      function(el, i) {
-
-        if (i === index) {
-
-          el.style.outline =
-            '2px solid #facc15';
-
-          el.style.outlineOffset =
-            '2px';
-
-          el.style.borderRadius =
-            '4px';
-
-          el.style.cursor =
-            'pointer';
-
-        } else {
-
-          el.style.outline =
-            '';
-
-          el.style.outlineOffset =
-            '';
-
-          el.style.cursor =
-            'pointer';
-        }
-      }
-    );
-  }
-
-
-  // ==========================================================
-  // PASSAGE 문장 클릭 / 터치 → 즉시 SYNC
-  // ==========================================================
-
-  diaryLines.forEach(
-    function(el, index) {
-
-      if (
-        el.dataset.micSyncBound ===
-        '1'
-      ) {
-        return;
-      }
-
-      el.dataset.micSyncBound =
-        '1';
-
-
-      el.addEventListener(
-        'click',
-        function(event) {
-
-          if (
-            !ANNE_STATE.micMode
-          ) {
-            return;
-          }
-
-
-          event.preventDefault();
-          event.stopPropagation();
-
-
-          _anneMicPassageIndex =
-            index;
-
-
-          showCurrentSync(
-            index
-          );
-
-
-          // 이전 발화 버퍼 제거
-          _anneMicLastTranscript =
-            '';
-
-
-          if (
-            _anneMicRecognizeTimer
-          ) {
-
-            clearTimeout(
-              _anneMicRecognizeTimer
-            );
-
-            _anneMicRecognizeTimer =
-              null;
-          }
-
-
-          // 기존 recognition의 onend가
-          // 이전 문장을 채점하지 못하게 함
-          _anneMicMoving =
-            true;
-
-
-          if (
-            ANNE_STATE.recognition
-          ) {
-
-            try {
-
-              ANNE_STATE.recognition.stop();
-
-            } catch (_) {}
-          }
-
-
-          window.setTimeout(
-            function() {
-
-              _anneMicMoving =
-                false;
-
-
-              if (
-                ANNE_STATE.micMode
-              ) {
-
-                startAnneRecognition();
-              }
-
-            },
-            180
-          );
-        }
-      );
-    }
-  );
-
-
-  // ==========================================================
-  // PASSAGE MODE
-  // ==========================================================
-
-  if (diaryLines.length) {
+  if (
+    conversationTurns.length
+  ) {
 
     if (
       _anneMicPassageIndex < 0 ||
       _anneMicPassageIndex >=
-        diaryLines.length
+        conversationTurns.length
     ) {
 
       _anneMicPassageIndex =
@@ -3261,107 +3111,263 @@ function getCurrentMicSentence() {
     }
 
 
-    showCurrentSync(
-      _anneMicPassageIndex
-    );
-
-
-    var diaryEl =
-      diaryLines[
+    var turnEl =
+      conversationTurns[
         _anneMicPassageIndex
       ];
 
 
-    var diaryText =
+    var textEl =
+      turnEl.querySelector(
+        '.conversation-text'
+      );
+
+
+    if (!textEl) {
+      return null;
+    }
+
+
+    // TTS Highlight span이 들어가도 textContent 사용
+    var text =
       String(
-        diaryEl.textContent || ''
+        textEl.dataset.originalText ||
+        textEl.textContent ||
+        ''
       ).trim();
 
 
-    if (diaryText) {
+    var languageCode =
+      String(
+        textEl.dataset.language ||
+        'ENG'
+      ).toUpperCase();
 
-      return {
 
-        element:
-          diaryEl,
+    var recognition =
+      languageCode === 'KOR'
+        ? 'ko-KR'
+        : languageCode === 'JPN'
+          ? 'ja-JP'
+          : 'en-US';
 
-        text:
-          diaryText,
 
-        code:
-          langInfo.code,
+    // 현재 MIC Target 표시
+    conversationTurns.forEach(
+      function(el, index) {
 
-        recognition:
-          langInfo.recognition,
+        if (
+          index ===
+          _anneMicPassageIndex
+        ) {
 
-        passageMode:
-          true,
+          el.style.border =
+            '3px solid #facc15';
 
-        passageIndex:
-          _anneMicPassageIndex,
+          el.style.boxShadow =
+            '0 0 0 3px rgba(250,204,21,.18)';
 
-        passageCount:
-          diaryLines.length,
+          el.style.background =
+            '#fffdf2';
 
-        passageElements:
-          diaryLines
-      };
-    }
+        } else {
+
+          el.style.border =
+            '1px solid #dbe3ee';
+
+          el.style.boxShadow =
+            '';
+
+          el.style.background =
+            '#fff';
+        }
+      }
+    );
+
+
+    return {
+
+      text:
+        text,
+
+      element:
+        textEl,
+
+      code:
+        languageCode,
+
+      recognition:
+        recognition,
+
+      speaker:
+        String(
+          turnEl.dataset.speaker ||
+          ''
+        ).trim(),
+
+      passageMode:
+        true,
+
+      passageElements:
+        conversationTurns.map(
+          function(el) {
+
+            return (
+              el.querySelector(
+                '.conversation-text'
+              ) ||
+              el
+            );
+          }
+        ),
+
+      passageIndex:
+        _anneMicPassageIndex,
+
+      passageCount:
+        conversationTurns.length,
+
+      conversationMode:
+        true
+    };
   }
 
 
   // ==========================================================
-  // 단문 MODE
+  // 기존 ANNE
   // ==========================================================
 
-  var selector =
-    '.anne-passage ' +
-    '.language-line[data-language="' +
-    langInfo.code +
-    '"]';
+  var root =
+    document.getElementById(
+      'questionContainer'
+    );
+
+
+  if (!root) {
+    return null;
+  }
+
+
+  var passageElements =
+    Array.from(
+      root.querySelectorAll(
+        '.anne-full-diary .language-line, .anne-passage .language-line'
+      )
+    ).filter(
+      function(el) {
+
+        return (
+          el.offsetParent !== null &&
+          String(
+            el.textContent || ''
+          ).trim()
+        );
+      }
+    );
+
+
+  if (
+    passageElements.length
+  ) {
+
+    if (
+      _anneMicPassageIndex < 0 ||
+      _anneMicPassageIndex >=
+        passageElements.length
+    ) {
+
+      _anneMicPassageIndex =
+        0;
+    }
+
+
+    var passageEl =
+      passageElements[
+        _anneMicPassageIndex
+      ];
+
+
+    var passageCode =
+      String(
+        passageEl.dataset.language ||
+        'ENG'
+      ).toUpperCase();
+
+
+    return {
+
+      text:
+        String(
+          passageEl.textContent ||
+          ''
+        ).trim(),
+
+      element:
+        passageEl,
+
+      code:
+        passageCode,
+
+      recognition:
+        passageCode === 'KOR'
+          ? 'ko-KR'
+          : passageCode === 'JPN'
+            ? 'ja-JP'
+            : 'en-US',
+
+      passageMode:
+        true,
+
+      passageElements:
+        passageElements,
+
+      passageIndex:
+        _anneMicPassageIndex,
+
+      passageCount:
+        passageElements.length
+    };
+  }
 
 
   var sentenceEl =
-    document.querySelector(
-      selector
+    root.querySelector(
+      '.language-line[data-language]'
     );
 
 
   if (!sentenceEl) {
-
-    console.warn(
-      '[MIC] 현재 문장을 찾지 못함:',
-      langInfo.code
-    );
-
     return null;
   }
 
 
-  var text =
+  var code =
     String(
-      sentenceEl.textContent || ''
-    ).trim();
-
-
-  if (!text) {
-    return null;
-  }
+      sentenceEl.dataset.language ||
+      'ENG'
+    ).toUpperCase();
 
 
   return {
 
+    text:
+      String(
+        sentenceEl.textContent ||
+        ''
+      ).trim(),
+
     element:
       sentenceEl,
 
-    text:
-      text,
-
     code:
-      langInfo.code,
+      code,
 
     recognition:
-      langInfo.recognition,
+      code === 'KOR'
+        ? 'ko-KR'
+        : code === 'JPN'
+          ? 'ja-JP'
+          : 'en-US',
 
     passageMode:
       false
@@ -3449,103 +3455,130 @@ function normalizeAnneMicText(
 
 // SUBBLOCK 1105
 // ============================================================
-// Levenshtein 거리
+// MIC MANUAL SYNC
+// Conversation 문장 클릭/터치
 // ============================================================
 
-function anneLevenshtein(
-  a,
-  b
-) {
+function installAnneMicPassageSync() {
 
-  a =
-    String(a || '');
-
-  b =
-    String(b || '');
-
-  var m =
-    a.length;
-
-  var n =
-    b.length;
-
-
-  if (!m) {
-    return n;
-  }
-
-  if (!n) {
-    return m;
-  }
-
-
-  var prev =
-    new Array(
-      n + 1
-    );
-
-  var curr =
-    new Array(
-      n + 1
+  var root =
+    document.getElementById(
+      'questionContainer'
     );
 
 
-  for (
-    var j = 0;
-    j <= n;
-    j++
-  ) {
-    prev[j] = j;
+  if (!root) {
+    return;
   }
 
 
-  for (
-    var i = 1;
-    i <= m;
-    i++
+  if (
+    root.dataset.micSyncBound ===
+    '1'
   ) {
-
-    curr[0] = i;
-
-
-    for (
-      var j = 1;
-      j <= n;
-      j++
-    ) {
-
-      var cost =
-        a[i - 1] ===
-        b[j - 1]
-          ? 0
-          : 1;
+    return;
+  }
 
 
-      curr[j] =
-        Math.min(
+  root.dataset.micSyncBound =
+    '1';
 
-          prev[j] + 1,
 
-          curr[j - 1] + 1,
+  root.addEventListener(
+    'click',
+    function(event) {
 
-          prev[j - 1] +
-          cost
+      if (
+        !ANNE_STATE.micMode
+      ) {
+        return;
+      }
+
+
+      var turn =
+        event.target.closest(
+          '.conversation-turn'
         );
+
+
+      if (!turn) {
+        return;
+      }
+
+
+      var turns =
+        Array.from(
+          root.querySelectorAll(
+            '.conversation-turn'
+          )
+        ).filter(
+          function(el) {
+
+            return (
+              el.offsetParent !== null
+            );
+          }
+        );
+
+
+      var index =
+        turns.indexOf(
+          turn
+        );
+
+
+      if (
+        index < 0
+      ) {
+        return;
+      }
+
+
+      console.log(
+        '[MIC MANUAL SYNC]',
+        _anneMicPassageIndex,
+        '→',
+        index
+      );
+
+
+      _anneMicPassageIndex =
+        index;
+
+
+      _anneMicLastTranscript =
+        '';
+
+
+      _anneMicMoving =
+        true;
+
+
+      stopAnneRecognition();
+
+
+      getCurrentMicSentence();
+
+
+      setTimeout(
+        function() {
+
+          _anneMicMoving =
+            false;
+
+
+          if (
+            ANNE_STATE.micMode
+          ) {
+
+            startAnneRecognition();
+          }
+
+        },
+        180
+      );
     }
-
-
-    var temp =
-      prev;
-
-    prev =
-      curr;
-
-    curr =
-      temp;
-  }
-
-
-  return prev[n];
+  );
 }
 
 
