@@ -11,7 +11,9 @@
   ];
 
 
-  function closeCards(exceptCard){
+  function closeCards(
+    exceptCard
+  ){
 
     cardPairs.forEach(
       function(pair){
@@ -34,7 +36,8 @@
           return;
         }
 
-        card.hidden = true;
+        card.hidden =
+          true;
 
         button.setAttribute(
           'aria-expanded',
@@ -78,7 +81,9 @@
           var opening =
             card.hidden;
 
-          closeCards(card);
+          closeCards(
+            card
+          );
 
           card.hidden =
             !opening;
@@ -100,6 +105,7 @@
       card.addEventListener(
         'click',
         function(event){
+
           event.stopPropagation();
         }
       );
@@ -110,6 +116,7 @@
   document.addEventListener(
     'click',
     function(){
+
       closeCards();
     }
   );
@@ -128,10 +135,14 @@
   );
 
 
-  function bindToggle(id){
+  function bindToggle(
+    id
+  ){
 
     var button =
-      document.getElementById(id);
+      document.getElementById(
+        id
+      );
 
     if(!button){
       return;
@@ -141,14 +152,14 @@
       'click',
       function(){
 
-        var isOn =
+        var current =
           button.getAttribute(
             'aria-pressed'
           ) === 'true';
 
         button.setAttribute(
           'aria-pressed',
-          isOn
+          current
             ? 'false'
             : 'true'
         );
@@ -157,10 +168,21 @@
   }
 
 
-  bindToggle('repeatToggle');
-  bindToggle('playAutoToggle');
-  bindToggle('micAutoToggle');
-  bindToggle('chunkButton');
+  bindToggle(
+    'repeatToggle'
+  );
+
+  bindToggle(
+    'playAutoToggle'
+  );
+
+  bindToggle(
+    'micAutoToggle'
+  );
+
+  bindToggle(
+    'chunkToggle'
+  );
 
 
   var psgButton =
@@ -168,7 +190,7 @@
       'psgButton'
     );
 
-  var extraTurns =
+  var psgExtra =
     document.querySelectorAll(
       '.gb-psg-extra'
     );
@@ -184,7 +206,8 @@
             'aria-pressed'
           ) === 'true';
 
-        isOn = !isOn;
+        isOn =
+          !isOn;
 
         psgButton.setAttribute(
           'aria-pressed',
@@ -193,13 +216,48 @@
             : 'false'
         );
 
-        extraTurns.forEach(
+        psgExtra.forEach(
           function(turn){
-            turn.hidden = !isOn;
+
+            turn.hidden =
+              !isOn;
           }
         );
       }
     );
+  }
+
+
+  var speedRange =
+    document.getElementById(
+      'speedRange'
+    );
+
+  var speedValue =
+    document.getElementById(
+      'speedValue'
+    );
+
+  if(
+    speedRange &&
+    speedValue
+  ){
+
+    function renderSpeed(){
+
+      speedValue.textContent =
+        Number(
+          speedRange.value
+        ).toFixed(2) +
+        '×';
+    }
+
+    speedRange.addEventListener(
+      'input',
+      renderSpeed
+    );
+
+    renderSpeed();
   }
 
 
@@ -217,177 +275,116 @@
     passRange &&
     passValue
   ){
-    passRange.addEventListener(
-      'input',
-      function(){
 
-        passValue.textContent =
-          passRange.value +
-          '%';
-      }
-    );
-  }
+    function renderPass(){
 
-
-  var speed =
-    1.00;
-
-  var speedValue =
-    document.getElementById(
-      'speedValue'
-    );
-
-  function renderSpeed(){
-
-    if(!speedValue){
-      return;
+      passValue.textContent =
+        passRange.value +
+        '%';
     }
 
-    speedValue.textContent =
-      speed.toFixed(2) +
-      '×';
+    passRange.addEventListener(
+      'input',
+      renderPass
+    );
+
+    renderPass();
   }
 
 
-  var speedMinus =
-    document.querySelector(
-      '[data-speed-minus]'
+  var delayRange =
+    document.getElementById(
+      'delayRange'
     );
-
-  var speedPlus =
-    document.querySelector(
-      '[data-speed-plus]'
-    );
-
-  if(speedMinus){
-
-    speedMinus.addEventListener(
-      'click',
-      function(){
-
-        speed =
-          Math.max(
-            0.25,
-            speed - 0.25
-          );
-
-        renderSpeed();
-      }
-    );
-  }
-
-
-  if(speedPlus){
-
-    speedPlus.addEventListener(
-      'click',
-      function(){
-
-        speed =
-          Math.min(
-            2.00,
-            speed + 0.25
-          );
-
-        renderSpeed();
-      }
-    );
-  }
-
-
-  var delay =
-    2.0;
 
   var delayValue =
     document.getElementById(
       'delayValue'
     );
 
-  function renderDelay(){
+  if(
+    delayRange &&
+    delayValue
+  ){
 
-    if(!delayValue){
+    function renderDelay(){
+
+      delayValue.textContent =
+        Number(
+          delayRange.value
+        ).toFixed(1) +
+        's';
+    }
+
+    delayRange.addEventListener(
+      'input',
+      renderDelay
+    );
+
+    renderDelay();
+  }
+
+
+  function bindStartStop(
+    startId,
+    stopId
+  ){
+
+    var startButton =
+      document.getElementById(
+        startId
+      );
+
+    var stopButton =
+      document.getElementById(
+        stopId
+      );
+
+    if(
+      !startButton ||
+      !stopButton
+    ){
       return;
     }
 
-    delayValue.textContent =
-      delay.toFixed(1) +
-      's';
-  }
-
-
-  var delayMinus =
-    document.querySelector(
-      '[data-delay-minus]'
-    );
-
-  var delayPlus =
-    document.querySelector(
-      '[data-delay-plus]'
-    );
-
-  if(delayMinus){
-
-    delayMinus.addEventListener(
+    startButton.addEventListener(
       'click',
       function(){
 
-        delay =
-          Math.max(
-            0.5,
-            delay - 0.5
-          );
+        startButton.classList.add(
+          'is-active'
+        );
 
-        renderDelay();
+        stopButton.classList.remove(
+          'is-active'
+        );
+      }
+    );
+
+    stopButton.addEventListener(
+      'click',
+      function(){
+
+        stopButton.classList.add(
+          'is-active'
+        );
+
+        startButton.classList.remove(
+          'is-active'
+        );
       }
     );
   }
 
 
-  if(delayPlus){
+  bindStartStop(
+    'playStartButton',
+    'playStopButton'
+  );
 
-    delayPlus.addEventListener(
-      'click',
-      function(){
-
-        delay =
-          Math.min(
-            5.0,
-            delay + 0.5
-          );
-
-        renderDelay();
-      }
-    );
-  }
-
-
-  var turns =
-    document.querySelectorAll(
-      '.gb-conversation-turn'
-    );
-
-  turns.forEach(
-    function(turn){
-
-      turn.addEventListener(
-        'click',
-        function(){
-
-          turns.forEach(
-            function(item){
-
-              item.classList.remove(
-                'is-current'
-              );
-            }
-          );
-
-          turn.classList.add(
-            'is-current'
-          );
-        }
-      );
-    }
+  bindStartStop(
+    'micStartButton',
+    'micStopButton'
   );
 
 
@@ -421,7 +418,33 @@
   );
 
 
-  renderSpeed();
-  renderDelay();
+  var turns =
+    document.querySelectorAll(
+      '.gb-conversation-turn'
+    );
+
+  turns.forEach(
+    function(turn){
+
+      turn.addEventListener(
+        'click',
+        function(){
+
+          turns.forEach(
+            function(item){
+
+              item.classList.remove(
+                'is-current'
+              );
+            }
+          );
+
+          turn.classList.add(
+            'is-current'
+          );
+        }
+      );
+    }
+  );
 
 })();
