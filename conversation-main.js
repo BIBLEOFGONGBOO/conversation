@@ -9408,6 +9408,14 @@ function syncConversationButtons() {
 // SUBBLOCK 1445
 // ============================================================
 // CONVERSATION BUTTON EVENTS
+//
+// PSG ON
+//   PREV / NEXT = 이전 / 다음 시나리오
+//
+// PSG OFF
+//   PREV / NEXT = 2-Turn 이동
+//   마지막 2-Turn에서 NEXT = 다음 시나리오 첫 2-Turn
+//   첫 2-Turn에서 PREV = 이전 시나리오 마지막 2-Turn
 // ============================================================
 
 function installConversationLessonControls() {
@@ -9444,6 +9452,9 @@ function installConversationLessonControls() {
         CONVERSATION_STATE.fullPassage =
           !CONVERSATION_STATE.fullPassage;
 
+        CONVERSATION_STATE.helpVisible =
+          false;
+
         renderConversationLesson();
       };
   }
@@ -9468,7 +9479,29 @@ function installConversationLessonControls() {
   if (next) {
 
     next.onclick =
-      function() {
+      async function() {
+
+        // ====================================================
+        // PSG ON → 다음 시나리오
+        // ====================================================
+
+        if (
+          CONVERSATION_STATE.fullPassage
+        ) {
+
+          await moveConversationScenario(
+            1,
+            true
+          );
+
+          return;
+        }
+
+
+        // ====================================================
+        // PSG OFF → 다음 2 TURN
+        // 마지막이면 다음 시나리오
+        // ====================================================
 
         var totalPairs =
           Math.ceil(
@@ -9488,7 +9521,15 @@ function installConversationLessonControls() {
             false;
 
           renderConversationLesson();
+
+          return;
         }
+
+
+        await moveConversationScenario(
+          1,
+          false
+        );
       };
   }
 
@@ -9496,7 +9537,29 @@ function installConversationLessonControls() {
   if (prev) {
 
     prev.onclick =
-      function() {
+      async function() {
+
+        // ====================================================
+        // PSG ON → 이전 시나리오
+        // ====================================================
+
+        if (
+          CONVERSATION_STATE.fullPassage
+        ) {
+
+          await moveConversationScenario(
+            -1,
+            true
+          );
+
+          return;
+        }
+
+
+        // ====================================================
+        // PSG OFF → 이전 2 TURN
+        // 첫 Pair면 이전 시나리오 마지막 Pair
+        // ====================================================
 
         if (
           CONVERSATION_STATE.pairIndex >
@@ -9509,7 +9572,15 @@ function installConversationLessonControls() {
             false;
 
           renderConversationLesson();
+
+          return;
         }
+
+
+        await moveConversationScenario(
+          -1,
+          false
+        );
       };
   }
 }
