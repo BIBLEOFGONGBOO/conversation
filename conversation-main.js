@@ -129,14 +129,25 @@ function htmlLines(lines) {
 
 // ============================================================
 // BLOCK 0200: anne-data.js - SUPABASE
+// SUBBLOCK 0200
 // ============================================================
+// CONVERSATION - SUPABASE REST API CONFIG
 // ============================================================
 
-const SUPABASE_CONFIG = {
-  url: 'https://mlpyhuwrkwdtzpswaqgf.supabase.co',
-  anonKey: 'sb_publishable_xWmlL2l3-kvdto5b3SMAhw_2z9f6NfQ',
-  table: 'anne'
-};
+const SUPABASE_CONFIG = Object.freeze({
+
+  url:
+    'https://yxudhflyxuztvzaiunva.supabase.co',
+
+  restUrl:
+    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation',
+
+  publishableKey:
+    'sb_publishable_9Kg6bvsSqZzOGMavBG3_1w_WO6WGbGB',
+
+  table:
+    'conversation'
+});
 
 
 // SUBBLOCK 0201
