@@ -3455,130 +3455,103 @@ function normalizeAnneMicText(
 
 // SUBBLOCK 1105
 // ============================================================
-// MIC MANUAL SYNC
-// Conversation 문장 클릭/터치
+// Levenshtein 거리
 // ============================================================
 
-function installAnneMicPassageSync() {
+function anneLevenshtein(
+  a,
+  b
+) {
 
-  var root =
-    document.getElementById(
-      'questionContainer'
+  a =
+    String(a || '');
+
+  b =
+    String(b || '');
+
+  var m =
+    a.length;
+
+  var n =
+    b.length;
+
+
+  if (!m) {
+    return n;
+  }
+
+  if (!n) {
+    return m;
+  }
+
+
+  var prev =
+    new Array(
+      n + 1
+    );
+
+  var curr =
+    new Array(
+      n + 1
     );
 
 
-  if (!root) {
-    return;
-  }
-
-
-  if (
-    root.dataset.micSyncBound ===
-    '1'
+  for (
+    var j = 0;
+    j <= n;
+    j++
   ) {
-    return;
+    prev[j] = j;
   }
 
 
-  root.dataset.micSyncBound =
-    '1';
+  for (
+    var i = 1;
+    i <= m;
+    i++
+  ) {
+
+    curr[0] = i;
 
 
-  root.addEventListener(
-    'click',
-    function(event) {
+    for (
+      var j = 1;
+      j <= n;
+      j++
+    ) {
 
-      if (
-        !ANNE_STATE.micMode
-      ) {
-        return;
-      }
+      var cost =
+        a[i - 1] ===
+        b[j - 1]
+          ? 0
+          : 1;
 
 
-      var turn =
-        event.target.closest(
-          '.conversation-turn'
+      curr[j] =
+        Math.min(
+
+          prev[j] + 1,
+
+          curr[j - 1] + 1,
+
+          prev[j - 1] +
+          cost
         );
-
-
-      if (!turn) {
-        return;
-      }
-
-
-      var turns =
-        Array.from(
-          root.querySelectorAll(
-            '.conversation-turn'
-          )
-        ).filter(
-          function(el) {
-
-            return (
-              el.offsetParent !== null
-            );
-          }
-        );
-
-
-      var index =
-        turns.indexOf(
-          turn
-        );
-
-
-      if (
-        index < 0
-      ) {
-        return;
-      }
-
-
-      console.log(
-        '[MIC MANUAL SYNC]',
-        _anneMicPassageIndex,
-        '→',
-        index
-      );
-
-
-      _anneMicPassageIndex =
-        index;
-
-
-      _anneMicLastTranscript =
-        '';
-
-
-      _anneMicMoving =
-        true;
-
-
-      stopAnneRecognition();
-
-
-      getCurrentMicSentence();
-
-
-      setTimeout(
-        function() {
-
-          _anneMicMoving =
-            false;
-
-
-          if (
-            ANNE_STATE.micMode
-          ) {
-
-            startAnneRecognition();
-          }
-
-        },
-        180
-      );
     }
-  );
+
+
+    var temp =
+      prev;
+
+    prev =
+      curr;
+
+    curr =
+      temp;
+  }
+
+
+  return prev[n];
 }
 
 
