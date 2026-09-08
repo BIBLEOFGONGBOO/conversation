@@ -122,13 +122,6 @@ function htmlLines(lines) {
 }
 
 
-// ============================================================
-// BLOCK 0200: anne-data.js
-// ============================================================
-// ============================================================
-
-// ============================================================
-// BLOCK 0200: anne-data.js - SUPABASE
 // SUBBLOCK 0200
 // ============================================================
 // CONVERSATION - SUPABASE REST API CONFIG
@@ -142,11 +135,17 @@ const SUPABASE_CONFIG = Object.freeze({
   restUrl:
     'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation',
 
+  peopleRestUrl:
+    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation-240',
+
   publishableKey:
     'sb_publishable_9Kg6bvsSqZzOGMavBG3_1w_WO6WGbGB',
 
   table:
-    'conversation'
+    'conversation',
+
+  peopleTable:
+    'conversation-240'
 });
 
 
@@ -317,22 +316,29 @@ async function testConversationConnection() {
 
 // SUBBLOCK 0203
 // ============================================================
-// DB TEST SUCCESS → CONVERSATION LESSON START
+// DB SUCCESS
+// → PEOPLE 240 LOAD
+// → CONVERSATION LESSON START
 // ============================================================
 
 function startConversationDbTest() {
 
   testConversationConnection()
     .then(
-      function(row) {
+      async function(row) {
 
         if (!row) {
           return;
         }
 
+
+        await loadConversationPeople();
+
+
         console.log(
           '[CONVERSATION] TEST COMPLETE'
         );
+
 
         startConversationLesson(
           row
@@ -391,6 +397,163 @@ function htmlLinesData(a) {
     if (x.code === 'JPN') langClass = 'ja';
     return `<div class="language-line language-line-${langClass}" data-language="${x.code}">${esc(x.text)}</div>`;
   }).join('');
+}
+// SUBBLOCK 0210
+// ============================================================
+// CONVERSATION PEOPLE 240
+// NAME → GENDER MAP
+// ============================================================
+
+var CONVERSATION_PEOPLE = {};
+
+window.CONVERSATION_PEOPLE =
+  CONVERSATION_PEOPLE;
+
+
+async function loadConversationPeople() {
+
+  try {
+
+    var url =
+      SUPABASE_CONFIG.peopleRestUrl +
+      '?select=NAME,GENDER';
+
+
+    var response =
+      await fetch(
+        url,
+        {
+          method: 'GET',
+
+          headers: {
+
+            'apikey':
+              SUPABASE_CONFIG.publishableKey,
+
+            'Authorization':
+              'Bearer ' +
+              SUPABASE_CONFIG.publishableKey,
+
+            'Accept':
+              'application/json'
+          }
+        }
+      );
+
+
+    var text =
+      await response.text();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        'People API Error ' +
+        response.status +
+        ': ' +
+        text
+      );
+    }
+
+
+    var rows =
+      text
+        ? JSON.parse(text)
+        : [];
+
+
+    CONVERSATION_PEOPLE = {};
+
+
+    rows.forEach(
+      function(row) {
+
+        var name =
+          String(
+            row.NAME || ''
+          ).trim();
+
+
+        var gender =
+          String(
+            row.GENDER || ''
+          )
+          .trim()
+          .toUpperCase();
+
+
+        if (!name) {
+          return;
+        }
+
+
+        CONVERSATION_PEOPLE[
+          name.toLowerCase()
+        ] = {
+
+          name:
+            name,
+
+          gender:
+            gender
+        };
+      }
+    );
+
+
+    window.CONVERSATION_PEOPLE =
+      CONVERSATION_PEOPLE;
+
+
+    console.log(
+      '[CONVERSATION PEOPLE] loaded:',
+      Object.keys(
+        CONVERSATION_PEOPLE
+      ).length
+    );
+
+
+    return CONVERSATION_PEOPLE;
+
+
+  } catch (error) {
+
+    console.error(
+      '[CONVERSATION PEOPLE] load failed:',
+      error
+    );
+
+
+    return {};
+  }
+}
+
+
+// ============================================================
+// Speaker → Gender
+// ============================================================
+
+function getConversationSpeakerGender(
+  speaker
+) {
+
+  var key =
+    String(
+      speaker || ''
+    )
+    .trim()
+    .toLowerCase();
+
+
+  var person =
+    CONVERSATION_PEOPLE[
+      key
+    ];
+
+
+  return person
+    ? person.gender
+    : '';
 }
 
 
@@ -5343,37 +5506,285 @@ function ensureVoicesLoaded(callback) {
 }
 
 // SUBBLOCK 1306
-function findVoiceForLanguage(lang) {
+// ============================================================
+// 기존 ANNE VOICE 선택
+// +
+// CONVERSATION Speaker Gender Adapter
+//
+// Jessica → F → Female Voice
+// Alan    → M → Male Voice
+//
+// Gender 정보를 못 찾으면 기존 언어 Voice 방식으로 fallback
+// ============================================================
+
+function findVoiceForLanguage(
+  lang
+) {
+
   try {
-    var voices = window.speechSynthesis.getVoices();
-    if (!voices || !voices.length) {
+
+    var voices =
+      window.speechSynthesis
+        .getVoices();
+
+
+    if (
+      !voices ||
+      !voices.length
+    ) {
       return null;
     }
+
+
     var normalized =
-      String(lang || '')
-        .replace('_', '-')
-        .toLowerCase();
+      String(
+        lang || ''
+      )
+      .replace(
+        '_',
+        '-'
+      )
+      .toLowerCase();
+
+
     var prefix =
-      normalized.slice(0, 2);
-    var exact = voices.find(function(v) {
-      return String(v.lang || '')
-        .replace('_', '-')
-        .toLowerCase() === normalized;
-    });
+      normalized.slice(
+        0,
+        2
+      );
+
+
+    // ========================================================
+    // 현재 TTS가 읽으려는 Conversation Turn 찾기
+    //
+    // 기존 ANNE Highlight가 현재 읽을 문장에
+    // .hl-word-span을 생성하므로 그것을 이용한다.
+    // ========================================================
+
+    var activeHighlight =
+      document.querySelector(
+        '.hl-word-span'
+      );
+
+
+    var conversationTurn =
+      activeHighlight
+        ? activeHighlight.closest(
+            '.conversation-turn'
+          )
+        : null;
+
+
+    var speaker =
+      conversationTurn
+        ? String(
+            conversationTurn.dataset
+              .speaker || ''
+          ).trim()
+        : '';
+
+
+    var gender =
+      speaker
+        ? getConversationSpeakerGender(
+            speaker
+          )
+        : '';
+
+
+    console.log(
+      '[TTS ROLE]',
+      speaker || '-',
+      gender || '-'
+    );
+
+
+    // ========================================================
+    // 현재 언어 Voice 후보
+    // ========================================================
+
+    var languageVoices =
+      voices.filter(
+        function(v) {
+
+          var voiceLang =
+            String(
+              v.lang || ''
+            )
+            .replace(
+              '_',
+              '-'
+            )
+            .toLowerCase();
+
+
+          return (
+            voiceLang ===
+              normalized ||
+            voiceLang.startsWith(
+              prefix
+            )
+          );
+        }
+      );
+
+
+    if (
+      !languageVoices.length
+    ) {
+
+      languageVoices =
+        voices.slice();
+    }
+
+
+    // ========================================================
+    // Windows / Chrome / Edge 주요 Voice 이름
+    // ========================================================
+
+    var femaleNames = [
+      'zira',
+      'aria',
+      'jenny',
+      'samantha',
+      'victoria',
+      'susan',
+      'hazel',
+      'heera',
+      'fiona',
+      'karen',
+      'moira',
+      'tessa',
+      'female'
+    ];
+
+
+    var maleNames = [
+      'david',
+      'mark',
+      'guy',
+      'george',
+      'james',
+      'daniel',
+      'alex',
+      'fred',
+      'ralph',
+      'male'
+    ];
+
+
+    var wantedNames =
+      gender === 'F'
+        ? femaleNames
+        : gender === 'M'
+          ? maleNames
+          : [];
+
+
+    // ========================================================
+    // Gender에 맞는 Voice 검색
+    // ========================================================
+
+    if (
+      wantedNames.length
+    ) {
+
+      var genderVoice =
+        languageVoices.find(
+          function(v) {
+
+            var voiceName =
+              String(
+                v.name || ''
+              ).toLowerCase();
+
+
+            return wantedNames.some(
+              function(name) {
+
+                return voiceName.includes(
+                  name
+                );
+              }
+            );
+          }
+        );
+
+
+      if (genderVoice) {
+
+        console.log(
+          '[TTS VOICE]',
+          speaker,
+          gender,
+          '→',
+          genderVoice.name
+        );
+
+
+        return genderVoice;
+      }
+    }
+
+
+    // ========================================================
+    // 기존 ANNE 방식 FALLBACK
+    // ========================================================
+
+    var exact =
+      languageVoices.find(
+        function(v) {
+
+          return String(
+            v.lang || ''
+          )
+          .replace(
+            '_',
+            '-'
+          )
+          .toLowerCase() ===
+            normalized;
+        }
+      );
+
+
     if (exact) {
+
+      console.log(
+        '[TTS VOICE FALLBACK]',
+        exact.name
+      );
+
+
       return exact;
     }
-    var sameLanguage = voices.find(function(v) {
-      return String(v.lang || '')
-        .toLowerCase()
-        .startsWith(prefix);
-    });
-    if (sameLanguage) {
-      return sameLanguage;
+
+
+    if (
+      languageVoices.length
+    ) {
+
+      console.log(
+        '[TTS VOICE FALLBACK]',
+        languageVoices[0].name
+      );
+
+
+      return languageVoices[0];
     }
+
+
     return null;
+
+
   } catch (e) {
-    console.warn('[TTS] Voice 검색 실패:', e);
+
+    console.warn(
+      '[TTS] Voice 검색 실패:',
+      e
+    );
+
+
     return null;
   }
 }
