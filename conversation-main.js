@@ -9286,7 +9286,9 @@ function renderConversationLesson() {
 
 // SUBBLOCK 1440
 // ============================================================
-// PSG / ? / PREV / NEXT BUTTON SYNC
+// CONVERSATION BUTTON SYNC
+// 기존 ANNE PREV / NEXT 버튼 디자인 그대로 사용
+// PSG에서도 숨기지 않음
 // ============================================================
 
 function syncConversationButtons() {
@@ -9366,51 +9368,27 @@ function syncConversationButtons() {
   if (prev) {
 
     prev.style.display =
-      'inline-block';
+      'inline-flex';
 
     prev.disabled =
       CONVERSATION_STATE.pairIndex <= 0;
 
     prev.textContent =
-      '←';
-
-    prev.title =
-      'Previous';
-
-    prev.style.fontSize =
-      '30px';
-
-    prev.style.fontWeight =
-      '900';
-
-    prev.style.lineHeight =
-      '1';
+      '◀ PREV';
   }
 
 
   if (next) {
 
     next.style.display =
-      'inline-block';
+      'inline-flex';
 
     next.disabled =
       CONVERSATION_STATE.pairIndex >=
       totalPairs - 1;
 
     next.textContent =
-      '→';
-
-    next.title =
-      'Next';
-
-    next.style.fontSize =
-      '30px';
-
-    next.style.fontWeight =
-      '900';
-
-    next.style.lineHeight =
-      '1';
+      'NEXT ▶';
   }
 
 
