@@ -6938,7 +6938,12 @@ function getCurrentConversationPair() {
 // SUBBLOCK 1425
 // ============================================================
 // TURN HTML
-// Speaker 이름은 나중에 Bible People 연결 예정
+// ANNE TTS ENGINE ADAPTER
+//
+// 기존 ANNE TTS가 찾는:
+// .language-line[data-language]
+//
+// Conversation Turn에 그대로 제공
 // ============================================================
 
 function renderConversationTurn(
@@ -6968,10 +6973,27 @@ function renderConversationTurn(
     );
 
 
+  var languageCode =
+    String(
+      CONVERSATION_STATE.row?.LNG ||
+      'EN'
+    )
+    .toUpperCase();
+
+
+  var anneLanguageCode =
+    languageCode === 'KO'
+      ? 'KOR'
+      : languageCode === 'JP'
+        ? 'JPN'
+        : 'ENG';
+
+
   return `
     <div
       class="conversation-turn ${isCurrent ? 'conversation-current-pair' : ''}"
       data-turn="${turn.turn}"
+      data-speaker="${esc(turn.speaker)}"
       style="
         padding:14px 15px;
         margin:8px 0;
@@ -6994,6 +7016,7 @@ function renderConversationTurn(
         type="button"
         class="conversation-speaker"
         data-speaker="${esc(turn.speaker)}"
+        title="Choose ${esc(turn.speaker)} as My Role"
         style="
           display:inline;
           margin:0 5px 0 0;
@@ -7014,8 +7037,14 @@ function renderConversationTurn(
       </button>
 
       <span
-        class="conversation-text"
+        class="
+          conversation-text
+          language-line
+          language-line-${anneLanguageCode.toLowerCase()}
+        "
+        data-language="${anneLanguageCode}"
         data-turn-text="${turn.turn}"
+        data-original-text="${esc(turn.text)}"
         style="
           font-size:16px;
           line-height:1.65;
