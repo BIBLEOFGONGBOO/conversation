@@ -9287,6 +9287,9 @@ function renderConversationLesson() {
 // SUBBLOCK 1440
 // ============================================================
 // PSG / ? / NEXT / PREV BUTTON SYNC
+// PSG에서도 PREV / NEXT 유지
+// PREV = ←
+// NEXT = →
 // ============================================================
 
 function syncConversationButtons() {
@@ -9373,42 +9376,46 @@ function syncConversationButtons() {
   if (prev) {
 
     prev.style.display =
-      CONVERSATION_STATE.fullPassage
-        ? 'none'
-        : 'inline-block';
+      'inline-block';
 
     prev.disabled =
       CONVERSATION_STATE.pairIndex <=
       0;
 
     prev.textContent =
-      '◀ PREV';
+      '←';
+
+    prev.title =
+      'Previous';
   }
 
 
   if (next) {
 
     next.style.display =
-      CONVERSATION_STATE.fullPassage
-        ? 'none'
-        : 'inline-block';
+      'inline-block';
 
     next.disabled =
       CONVERSATION_STATE.pairIndex >=
       totalPairs - 1;
 
     next.textContent =
-      'NEXT ▶';
+      '→';
+
+    next.title =
+      'Next';
   }
 
 
   if (skip) {
+
     skip.style.display =
       'none';
   }
 
 
   if (submit) {
+
     submit.style.display =
       'none';
   }
