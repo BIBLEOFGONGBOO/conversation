@@ -1986,14 +1986,16 @@ html:not(.admin-user) .admin-preview-panel {
   .header-person-icon::after{content:'';position:absolute;bottom:0;left:1px;width:16px;height:9px;border-radius:9px 9px 3px 3px;background:currentColor;box-shadow:0 0 5px rgba(85,51,155,.2)}
   .learning-mode-panel{width:min(420px,100%);max-width:420px;margin:4px auto 0}
   /* CONVERSATION: 상단 조작 버튼 고정 */
-.learning-mode-panel{
+.quiz-header{
   position:sticky!important;
   top:0!important;
   z-index:3000!important;
-  background:#fff!important;
-  padding-top:4px!important;
-  padding-bottom:4px!important;
-  box-shadow:0 3px 8px rgba(0,0,0,.10)!important;
+  overflow:visible!important;
+}
+
+.learning-mode-panel{
+  position:relative!important;
+  z-index:3001!important;
 }
   
   .mode-buttons{width:min(420px,100%);margin:0 auto;gap:4px;padding:0;border:0;background:transparent;border-radius:9px;overflow:visible}
