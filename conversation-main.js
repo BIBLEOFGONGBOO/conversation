@@ -6242,155 +6242,254 @@ function readTextsWithHighlight(
   index,
   runId
 ) {
+
   if (
     runId !== _speechRunId
   ) {
     return;
   }
+
+
   if (
     index >= items.length
   ) {
+
     console.log(
       '[TTS] 전체 화면 읽기 완료'
     );
-    _isSpeaking = false;
-    _currentUtterance = null;
+
+
+    _isSpeaking =
+      false;
+
+
+    _currentUtterance =
+      null;
+
+
     if (
       window.__licenseSpeechState
     ) {
+
       window.__licenseSpeechState(
         'licenseStop'
       );
     }
+
+
     var finishedState =
       getAnneState();
+
+
     if (
       finishedState &&
       finishedState.auto &&
       !finishedState.micMode
     ) {
+
       setTimeout(
         function() {
+
           if (
             runId !== _speechRunId
           ) {
             return;
           }
+
+
           if (
-            typeof go === 'function'
+            typeof go ===
+            'function'
           ) {
+
             go(1);
           }
+
         },
         500
       );
     }
+
+
     return;
   }
+
+
   var item =
     items[index];
+
+
   var displayText =
     String(
       item.text || ''
     );
+
+
   if (
     !displayText.trim()
   ) {
+
     readTextsWithHighlight(
       items,
       index + 1,
       runId
     );
+
     return;
   }
+
+
   var textToSpeak =
     displayText;
+
+
   if (
     item.langCode === 'JPN'
   ) {
+
     textToSpeak =
       displayText.replace(
         /[\u3400-\u4DBF\u4E00-\u9FFF々〆ヵヶ]+[\(（]([ぁ-ゖァ-ヺー]+)[\)）]/g,
         '$1'
       );
   }
+
+
   console.log(
     '[TTS]',
     item.langCode,
     '화면:',
     displayText
   );
+
+
   console.log(
     '[TTS]',
     item.langCode,
     '읽기:',
     textToSpeak
   );
+
+
   var highlightData =
     null;
+
+
   if (
     item.langCode === 'JPN' &&
     item.container &&
     item.container.isConnected
   ) {
+
     var container =
       item.container;
+
+
     var fragment =
       document.createDocumentFragment();
+
+
     var tokens =
       [];
+
+
     var spokenCursor =
       0;
+
+
     var furiganaRegex =
       /([\u3400-\u4DBF\u4E00-\u9FFF々〆ヵヶ]+)[\(（]([ぁ-ゖァ-ヺー]+)[\)）]/g;
+
+
     var lastIndex =
       0;
+
+
     var match;
+
+
     function addJapaneseToken(
       visibleText,
       spokenText
     ) {
+
       if (!visibleText) {
         return;
       }
+
+
       var span =
         document.createElement(
           'span'
         );
+
+
       span.className =
         'hl-word-span';
+
+
       span.textContent =
         visibleText;
+
+
       span.style.display =
         'inline';
+
+
       span.style.padding =
         '1px 1px';
+
+
       span.style.borderRadius =
         '3px';
+
+
       span.style.transition =
         'background-color 0.08s ease';
+
+
       var start =
         spokenCursor;
+
+
       var end =
         start +
         String(
           spokenText || ''
         ).length;
+
+
       span.dataset.start =
         String(start);
+
+
       span.dataset.end =
         String(end);
+
+
       fragment.appendChild(
         span
       );
+
+
       tokens.push({
-        span: span,
-        start: start,
-        end: end
+
+        span:
+          span,
+
+        start:
+          start,
+
+        end:
+          end
       });
+
+
       spokenCursor =
         end;
     }
+
+
     while (
       (
         match =
@@ -6399,19 +6498,24 @@ function readTextsWithHighlight(
           )
       ) !== null
     ) {
+
       if (
         match.index >
         lastIndex
       ) {
+
         var before =
           displayText.slice(
             lastIndex,
             match.index
           );
+
+
         Array.from(
           before
         ).forEach(
           function(ch) {
+
             addJapaneseToken(
               ch,
               ch
@@ -6419,25 +6523,35 @@ function readTextsWithHighlight(
           }
         );
       }
+
+
       addJapaneseToken(
         match[0],
         match[2]
       );
+
+
       lastIndex =
         furiganaRegex.lastIndex;
     }
+
+
     if (
       lastIndex <
       displayText.length
     ) {
+
       var rest =
         displayText.slice(
           lastIndex
         );
+
+
       Array.from(
         rest
       ).forEach(
         function(ch) {
+
           addJapaneseToken(
             ch,
             ch
@@ -6445,18 +6559,31 @@ function readTextsWithHighlight(
         }
       );
     }
+
+
     container.replaceChildren(
       fragment
     );
+
+
     highlightData = {
-      container: container,
-      text: textToSpeak,
-      tokens: tokens
+
+      container:
+        container,
+
+      text:
+        textToSpeak,
+
+      tokens:
+        tokens
     };
+
+
   } else if (
     item.container &&
     item.container.isConnected
   ) {
+
     highlightData =
       createHighlightSpans(
         item.container,
@@ -6464,55 +6591,97 @@ function readTextsWithHighlight(
         item.langCode
       );
   }
+
+
   var utterance =
     new SpeechSynthesisUtterance(
       textToSpeak
     );
+
+
   _currentUtterance =
     utterance;
+
+
   _utteranceRefs.push(
     utterance
   );
+
+
   var state =
     getAnneState();
+
+
   if (state) {
+
     state._utterance =
       utterance;
   }
+
+
   utterance.lang =
     item.lang;
+
+
+  // ==========================================================
+  // CONVERSATION SPEAKER → GENDER VOICE
+  // 현재 읽는 item의 speaker를 직접 전달
+  // ==========================================================
+
   var voice =
     findVoiceForLanguage(
-      item.lang
+      item.lang,
+      item.speaker || ''
     );
+
+
   if (voice) {
+
     utterance.voice =
       voice;
   }
+
+
   var speedSelect =
     document.getElementById(
       'licenseSpeed'
     );
+
+
   var rate =
     speedSelect
       ? parseFloat(
           speedSelect.value
         )
       : 1;
+
+
   if (
     !Number.isFinite(rate) ||
     rate <= 0
   ) {
-    rate = 1;
+
+    rate =
+      1;
   }
+
+
   utterance.rate =
     rate;
+
+
   var japaneseHighlightTimer =
     null;
+
+
   var speechStartedAt =
     0;
+
+
   var lastBoundaryTime =
     0;
+
+
   var japaneseEstimatedMs =
     Math.max(
       1500,
@@ -6521,53 +6690,87 @@ function readTextsWithHighlight(
         160
       ) / rate
     );
+
+
   function stopJapaneseTimer() {
+
     if (
       japaneseHighlightTimer
     ) {
+
       clearInterval(
         japaneseHighlightTimer
       );
+
+
       japaneseHighlightTimer =
         null;
     }
   }
+
+
   function startJapaneseFallback() {
+
     if (
-      item.langCode !== 'JPN'
+      item.langCode !==
+      'JPN'
     ) {
       return;
     }
+
+
     stopJapaneseTimer();
+
+
     japaneseHighlightTimer =
       setInterval(
         function() {
+
           if (
-            runId !== _speechRunId
+            runId !==
+            _speechRunId
           ) {
+
             stopJapaneseTimer();
+
             return;
           }
+
+
           if (
             !_isSpeaking
           ) {
+
             stopJapaneseTimer();
+
             return;
           }
+
+
           var now =
             Date.now();
+
+
           if (
             lastBoundaryTime &&
-            now - lastBoundaryTime < 700
+            now -
+            lastBoundaryTime <
+            700
           ) {
             return;
           }
+
+
           var elapsed =
             now -
             speechStartedAt;
+
+
           var ratio =
             elapsed /
             japaneseEstimatedMs;
+
+
           ratio =
             Math.max(
               0,
@@ -6576,150 +6779,238 @@ function readTextsWithHighlight(
                 ratio
               )
             );
+
+
           var charIndex =
             Math.floor(
               textToSpeak.length *
               ratio
             );
+
+
           highlightSpeechAtChar(
             highlightData,
             charIndex
           );
+
         },
         120
       );
   }
+
+
   utterance.onstart =
     function() {
+
       if (
-        runId !== _speechRunId
+        runId !==
+        _speechRunId
       ) {
         return;
       }
+
+
       _isSpeaking =
         true;
+
+
       speechStartedAt =
         Date.now();
+
+
       highlightSpeechAtChar(
         highlightData,
         0
       );
+
+
       startJapaneseFallback();
-  };
+    };
+
+
   utterance.onboundary =
     function(event) {
+
       if (
-        runId !== _speechRunId
+        runId !==
+        _speechRunId
       ) {
         return;
       }
+
+
       if (
         typeof event.charIndex
         !== 'number'
       ) {
         return;
       }
+
+
       lastBoundaryTime =
         Date.now();
+
+
       highlightSpeechAtChar(
         highlightData,
         event.charIndex
       );
-  };
+    };
+
+
   utterance.onend =
     function() {
+
       if (
-        runId !== _speechRunId
+        runId !==
+        _speechRunId
       ) {
         return;
       }
+
+
       stopJapaneseTimer();
+
+
       clearSpeechHighlight(
         highlightData
       );
+
+
       if (
         _speechTimeout
       ) {
+
         clearTimeout(
           _speechTimeout
         );
+
+
         _speechTimeout =
           null;
       }
+
+
       _isSpeaking =
         false;
+
+
       _currentUtterance =
         null;
+
+
       _utteranceRefs =
         _utteranceRefs.filter(
           function(u) {
-            return u !== utterance;
+
+            return (
+              u !==
+              utterance
+            );
           }
         );
+
+
       if (state) {
+
         state._utterance =
           null;
       }
+
+
       readTextsWithHighlight(
         items,
         index + 1,
         runId
       );
-  };
+    };
+
+
   utterance.onerror =
     function(event) {
+
       if (
-        runId !== _speechRunId
+        runId !==
+        _speechRunId
       ) {
         return;
       }
+
+
       stopJapaneseTimer();
+
+
       var error =
         event &&
         event.error
           ? event.error
           : 'unknown';
+
+
       clearSpeechHighlight(
         highlightData
       );
+
+
       if (
         _speechTimeout
       ) {
+
         clearTimeout(
           _speechTimeout
         );
+
+
         _speechTimeout =
           null;
       }
+
+
       _isSpeaking =
         false;
+
+
       _currentUtterance =
         null;
+
+
       if (state) {
+
         state._utterance =
           null;
       }
+
+
       if (
         error === 'canceled' ||
         error === 'interrupted'
       ) {
         return;
       }
+
+
       console.warn(
         '[TTS] 오류:',
         error
       );
+
+
       readTextsWithHighlight(
         items,
         index + 1,
         runId
       );
-  };
+    };
+
+
   var estimatedSeconds;
+
+
   if (
     item.langCode === 'JPN' ||
     item.langCode === 'KOR'
   ) {
+
     estimatedSeconds =
       Math.max(
         20,
@@ -6727,12 +7018,16 @@ function readTextsWithHighlight(
           (4 * rate)
           + 15
       );
+
   } else {
+
     var wordCount =
       textToSpeak
         .trim()
         .split(/\s+/)
         .length;
+
+
     estimatedSeconds =
       Math.max(
         20,
@@ -6742,76 +7037,127 @@ function readTextsWithHighlight(
           + 15
       );
   }
+
+
   estimatedSeconds =
     Math.min(
       estimatedSeconds,
       600
     );
+
+
   _speechTimeout =
     setTimeout(
       function() {
+
         if (
-          runId !== _speechRunId
+          runId !==
+          _speechRunId
         ) {
           return;
         }
+
+
         if (
           _currentUtterance !==
           utterance
         ) {
           return;
         }
+
+
         stopJapaneseTimer();
+
+
         try {
-          window.speechSynthesis.cancel();
+
+          window.speechSynthesis
+            .cancel();
+
         } catch (e) {}
+
+
         clearSpeechHighlight(
           highlightData
         );
+
+
         _isSpeaking =
           false;
+
+
         _currentUtterance =
           null;
+
+
         if (state) {
+
           state._utterance =
             null;
         }
+
+
         readTextsWithHighlight(
           items,
           index + 1,
           runId
         );
+
       },
-      estimatedSeconds * 1000
+      estimatedSeconds *
+      1000
     );
+
+
   try {
+
     _isSpeaking =
       true;
+
+
     window.speechSynthesis.speak(
       utterance
     );
+
+
   } catch (e) {
+
     stopJapaneseTimer();
+
+
     console.error(
       '[TTS] speak 실패:',
       e
     );
+
+
     clearSpeechHighlight(
       highlightData
     );
+
+
     if (
       _speechTimeout
     ) {
+
       clearTimeout(
         _speechTimeout
       );
+
+
       _speechTimeout =
         null;
     }
+
+
     _isSpeaking =
       false;
+
+
     _currentUtterance =
       null;
+
+
     readTextsWithHighlight(
       items,
       index + 1,
