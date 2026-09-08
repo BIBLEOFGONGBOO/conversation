@@ -335,7 +335,184 @@ async function loadConversationCatalog() {
 
   return allRows;
 }
+// SUBBLOCK 0202
+// ============================================================
+// CONVERSATION DIRECTORY LAZY LOADER
+// 필요한 단계의 컬럼만 Supabase에서 가져옴
+// ============================================================
 
+async function loadConversationDirectoryRows(
+  select,
+  filters
+) {
+
+  var allRows = [];
+  var from = 0;
+  var PAGE_SIZE = 1000;
+
+
+  while (true) {
+
+    var to =
+      from +
+      PAGE_SIZE -
+      1;
+
+
+    var url =
+      SUPABASE_CONFIG.restUrl +
+      '?select=' +
+      encodeURIComponent(
+        select
+      ) +
+      '&LNG=eq.EN';
+
+
+    if (filters) {
+
+      url +=
+        '&' +
+        filters;
+    }
+
+
+    var response =
+      await fetch(
+        url,
+        {
+          method: 'GET',
+
+          headers: {
+
+            'apikey':
+              SUPABASE_CONFIG.publishableKey,
+
+            'Authorization':
+              'Bearer ' +
+              SUPABASE_CONFIG.publishableKey,
+
+            'Accept':
+              'application/json',
+
+            'Range':
+              from +
+              '-' +
+              to,
+
+            'Range-Unit':
+              'items'
+          }
+        }
+      );
+
+
+    var text =
+      await response.text();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        'Directory Load Error ' +
+        response.status +
+        ': ' +
+        text
+      );
+    }
+
+
+    var rows =
+      text
+        ? JSON.parse(text)
+        : [];
+
+
+    allRows =
+      allRows.concat(
+        rows
+      );
+
+
+    if (
+      rows.length <
+      PAGE_SIZE
+    ) {
+
+      break;
+    }
+
+
+    from +=
+      PAGE_SIZE;
+  }
+
+
+  return allRows;
+}
+
+
+// ============================================================
+// VALUE + COUNT
+// ============================================================
+
+function makeConversationDirectoryValues(
+  rows,
+  field
+) {
+
+  var map = {};
+
+
+  rows.forEach(
+    function(row) {
+
+      var value =
+        String(
+          row[field] || ''
+        ).trim();
+
+
+      if (!value) {
+        return;
+      }
+
+
+      map[value] =
+        (map[value] || 0) + 1;
+    }
+  );
+
+
+  return Object.keys(
+    map
+  )
+  .sort(
+    function(a, b) {
+
+      return a.localeCompare(
+        b,
+        undefined,
+        {
+          numeric: true,
+          sensitivity: 'base'
+        }
+      );
+    }
+  )
+  .map(
+    function(value) {
+
+      return {
+
+        value:
+          value,
+
+        count:
+          map[value]
+      };
+    }
+  );
+}
 
 // SUBBLOCK 0203
 // ============================================================
