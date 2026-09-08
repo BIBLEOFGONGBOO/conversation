@@ -152,13 +152,12 @@ const SUPABASE_CONFIG = Object.freeze({
 
 // SUBBLOCK 0201
 // ============================================================
-// Supabase 필요한 데이터만 조회
+// CONVERSATION - Supabase REST API
 // ============================================================
 
-async function fetchTranslations(options) {
+async function fetchConversationRows(options) {
 
-  options =
-    options || {};
+  options = options || {};
 
   var select =
     options.select || '*';
@@ -167,9 +166,7 @@ async function fetchTranslations(options) {
     options.filters || '';
 
   var url =
-    SUPABASE_CONFIG.url +
-    '/rest/v1/' +
-    SUPABASE_CONFIG.table +
+    SUPABASE_CONFIG.restUrl +
     '?select=' +
     encodeURIComponent(select);
 
@@ -177,788 +174,184 @@ async function fetchTranslations(options) {
     url += '&' + filters;
   }
 
-  var allRows = [];
+  var response =
+    await fetch(
+      url,
+      {
+        method: 'GET',
 
-  var from = 0;
+        headers: {
+          'apikey':
+            SUPABASE_CONFIG.publishableKey,
 
-  var PAGE_SIZE = 1000;
+          'Authorization':
+            'Bearer ' +
+            SUPABASE_CONFIG.publishableKey,
 
-
-  while (true) {
-
-    var to =
-      from +
-      PAGE_SIZE -
-      1;
-
-
-    var response =
-      await fetch(
-        url,
-        {
-          method: 'GET',
-
-          headers: {
-            'apikey':
-              SUPABASE_CONFIG.anonKey,
-
-            'Accept':
-              'application/json',
-
-            'Range':
-              from + '-' + to,
-
-            'Range-Unit':
-              'items'
-          }
+          'Accept':
+            'application/json'
         }
-      );
+      }
+    );
 
 
-    var text =
-      await response.text();
+  var text =
+    await response.text();
 
 
-    if (!response.ok) {
+  if (!response.ok) {
 
-      throw new Error(
-        'Supabase Error ' +
-        response.status +
-        ': ' +
-        text
-      );
-    }
-
-
-    var rows =
+    throw new Error(
+      'Supabase Error ' +
+      response.status +
+      ': ' +
       text
-        ? JSON.parse(text)
-        : [];
-
-
-    allRows =
-      allRows.concat(rows);
-
-
-    if (
-      rows.length <
-      PAGE_SIZE
-    ) {
-      break;
-    }
-
-
-    from +=
-      PAGE_SIZE;
+    );
   }
+
+
+  var rows =
+    text
+      ? JSON.parse(text)
+      : [];
 
 
   console.log(
-    '[SUPABASE] loaded:',
-    allRows.length
+    '[CONVERSATION] Supabase rows:',
+    rows
   );
 
 
-  return allRows;
+  return rows;
 }
+
 
 // SUBBLOCK 0202
 // ============================================================
-// Supabase rows → ANNE questions
+// TEST - ID 300001 / EN 한 행 조회
 // ============================================================
 
-function convertToQuestions(rows) {
-
-  var questions = [];
-
-  var groups = {};
-
-
-  for (
-    var i = 0;
-    i < rows.length;
-    i++
-  ) {
-
-    var row =
-      rows[i];
-
-
-    if (!row) {
-      continue;
-    }
-
-
-    var contentId =
-      String(
-        row.CONTENT_ID ??
-        row.content_id ??
-        ''
-      ).trim();
-
-
-    var lang =
-      String(
-        row.LANGUAGE ??
-        row.language ??
-        ''
-      )
-      .trim()
-      .toUpperCase();
-
-
-    if (
-      !contentId ||
-      !lang
-    ) {
-      continue;
-    }
-
-
-    if (
-      !groups[contentId]
-    ) {
-
-      groups[contentId] =
-        {};
-    }
-
-
-    var langMap = {
-      EN: 'en',
-      ENG: 'en',
-
-      KO: 'ko',
-      KOR: 'ko',
-
-      JP: 'ja',
-      JA: 'ja',
-      JPN: 'ja'
-    };
-
-
-    var mappedLang =
-      langMap[lang] ||
-      lang.toLowerCase();
-
-
-    groups[contentId][mappedLang] = {
-
-      passage:
-        row.PASSAGE ??
-        row.passage ??
-        '',
-
-      question_text:
-        row.QUESTION ??
-        row.question ??
-        row.QUESTION_TEXT ??
-        row.question_text ??
-        '',
-
-      option_1:
-        row.OPTION1 ??
-        row.option1 ??
-        row.OPTION_1 ??
-        row.option_1 ??
-        '',
-
-      option_2:
-        row.OPTION2 ??
-        row.option2 ??
-        row.OPTION_2 ??
-        row.option_2 ??
-        '',
-
-      option_3:
-        row.OPTION3 ??
-        row.option3 ??
-        row.OPTION_3 ??
-        row.option_3 ??
-        '',
-
-      option_4:
-        row.OPTION4 ??
-        row.option4 ??
-        row.OPTION_4 ??
-        row.option_4 ??
-        '',
-
-      answer:
-        row.ANSWER ??
-        row.answer ??
-        '',
-
-      explanation:
-        row.EXPLANATION ??
-        row.explanation ??
-        '',
-
-      chunks: [
-
-        row.CHUNK1 ??
-        row.chunk1 ??
-        row.CHUNK_1 ??
-        row.chunk_1 ??
-        '',
-
-        row.CHUNK2 ??
-        row.chunk2 ??
-        row.CHUNK_2 ??
-        row.chunk_2 ??
-        '',
-
-        row.CHUNK3 ??
-        row.chunk3 ??
-        row.CHUNK_3 ??
-        row.chunk_3 ??
-        '',
-
-        row.CHUNK4 ??
-        row.chunk4 ??
-        row.CHUNK_4 ??
-        row.chunk_4 ??
-        '',
-
-        row.CHUNK5 ??
-        row.chunk5 ??
-        row.CHUNK_5 ??
-        row.chunk_5 ??
-        ''
-      ]
-    };
-  }
-
-
-  var id = 1;
-
-
-  var validLangs = [
-    'en',
-    'ko',
-    'ja'
-  ];
-
-
-  Object.entries(
-    groups
-  ).forEach(
-    function(entry) {
-
-      var contentId =
-        entry[0];
-
-      var translations =
-        entry[1];
-
-
-      var parts =
-        contentId.split('_');
-
-
-      var answer = 0;
-
-
-      if (
-        translations.en
-      ) {
-
-        answer =
-          parseInt(
-            translations.en.answer
-          ) || 0;
-      }
-
-
-      if (
-        answer === 0 &&
-        translations.ko
-      ) {
-
-        answer =
-          parseInt(
-            translations.ko.answer
-          ) || 0;
-      }
-
-
-      if (
-        answer === 0 &&
-        translations.ja
-      ) {
-
-        answer =
-          parseInt(
-            translations.ja.answer
-          ) || 0;
-      }
-
-
-      var questionTranslations =
-        [];
-
-
-      validLangs.forEach(
-        function(lang) {
-
-          if (
-            !translations[lang]
-          ) {
-            return;
-          }
-
-
-          questionTranslations.push({
-
-            language_code:
-              lang,
-
-            passage:
-              translations[lang].passage,
-
-            question_text:
-              translations[lang].question_text,
-
-            option_1:
-              translations[lang].option_1,
-
-            option_2:
-              translations[lang].option_2,
-
-            option_3:
-              translations[lang].option_3,
-
-            option_4:
-              translations[lang].option_4,
-
-            explanation:
-              translations[lang].explanation,
-
-            chunk_1:
-              translations[lang].chunks[0] || '',
-
-            chunk_2:
-              translations[lang].chunks[1] || '',
-
-            chunk_3:
-              translations[lang].chunks[2] || '',
-
-            chunk_4:
-              translations[lang].chunks[3] || '',
-
-            chunk_5:
-              translations[lang].chunks[4] || ''
-          });
-
-        }
-      );
-
-
-      if (
-        questionTranslations.length
-      ) {
-
-        questions.push({
-
-          id:
-            id++,
-
-          category:
-            parts[0] ||
-            'ANNE',
-
-          date:
-            parts[1] ||
-            '',
-
-          contentId:
-            contentId,
-
-          answer:
-            answer,
-
-          license_question_translations:
-            questionTranslations
-        });
-      }
-
-    }
-  );
-
-
-  // CONTENT_ID의 마지막 번호 기준 정렬
-  questions.sort(
-    function(a, b) {
-
-      var aNum =
-        Number(
-          String(
-            a.contentId || ''
-          ).split('_').pop()
-        );
-
-      var bNum =
-        Number(
-          String(
-            b.contentId || ''
-          ).split('_').pop()
-        );
-
-
-      if (
-        a.date !== b.date
-      ) {
-
-        return String(
-          a.date
-        ).localeCompare(
-          String(
-            b.date
-          )
-        );
-      }
-
-
-      return aNum - bNum;
-    }
-  );
-
-
-  return questions;
-}
-
-// SUBBLOCK 0203
-// ============================================================
-// Catalog는 CONTENT_ID만
-// 실제 문제는 필요한 SET만 Supabase 조회
-// ============================================================
-
-async function apiData(p) {
+async function testConversationConnection() {
 
   try {
 
-    // ========================================================
-    // CATALOG
-    //
-    // 전체 18,705행을 받지 않는다.
-    // EN 행의 CONTENT_ID만 읽음.
-    // 약 6,235개의 아주 작은 데이터만 받음.
-    // ========================================================
-
-    if (
-      p &&
-      p.action ===
-      'catalog'
-    ) {
-
-      var catalogRows =
-        await fetchTranslations({
-
-          select:
-            'CONTENT_ID',
-
-          filters:
-            'LANGUAGE=eq.EN' +
-            '&order=CONTENT_ID.asc'
-        });
-
-
-      var dateMap =
-        {};
-
-
-      catalogRows.forEach(
-        function(row) {
-
-          var contentId =
-            String(
-              row.CONTENT_ID ||
-              ''
-            );
-
-
-          if (!contentId) {
-            return;
-          }
-
-
-          var parts =
-            contentId.split('_');
-
-
-          var date =
-            parts[1] ||
-            'No Date';
-
-
-          if (
-            !dateMap[date]
-          ) {
-
-            dateMap[date] =
-              0;
-          }
-
-
-          dateMap[date]++;
-        }
-      );
-
-
-      var dateSets =
-        Object.keys(
-          dateMap
-        )
-        .sort()
-        .map(
-          function(date) {
-
-            return {
-              date: date,
-              count:
-                dateMap[date]
-            };
-
-          }
-        );
-
-
-      return {
-
-        products: [{
-          product_code:
-            'anne',
-
-          total_question_count:
-            catalogRows.length,
-
-          dates:
-            dateSets
-        }],
-
-        total:
-          catalogRows.length,
-
-        access:
-          'full'
-      };
-    }
-
-
-    // ========================================================
-    // QUESTIONS
-    //
-    // offset / limit으로 현재 필요한 날짜 계산
-    // ========================================================
-
-    var dates =
-      window.__currentDates ||
-      [];
-
-
-    var offset =
-      Math.max(
-        0,
-        Number(
-          p && p.offset
-        ) || 0
-      );
-
-
-    var limit =
-      Math.max(
-        1,
-        Number(
-          p && p.limit
-        ) || 1
-      );
-
-
-    var startQuestion =
-      offset;
-
-
-    var endQuestion =
-      offset +
-      limit;
-
-
-    var running =
-      0;
-
-
-    var selectedDates =
-      [];
-
-
-    for (
-      var i = 0;
-      i < dates.length;
-      i++
-    ) {
-
-      var dateStart =
-        running;
-
-
-      var dateEnd =
-        running +
-        dates[i].count;
-
-
-      if (
-        dateEnd >
-        startQuestion &&
-        dateStart <
-        endQuestion
-      ) {
-
-        selectedDates.push(
-          dates[i].date
-        );
-      }
-
-
-      running =
-        dateEnd;
-
-
-      if (
-        running >=
-        endQuestion
-      ) {
-        break;
-      }
-    }
-
-
-    if (
-      !selectedDates.length
-    ) {
-
-      return {
-        data: [],
-        access: 'full',
-        total: 0
-      };
-    }
-
-
     console.log(
-      '[SUPABASE] loading SETS:',
-      selectedDates
+      '[CONVERSATION] DB connection test start'
     );
-
-
-    // ========================================================
-    // CONTENT_ID:
-    //
-    // ANNE_1942-06-12_1
-    // ANNE_1942-06-12_2
-    //
-    // 선택 날짜 prefix만 조회
-    // ========================================================
-
-    var orParts =
-  selectedDates.map(
-    function(date) {
-
-      return (
-        'CONTENT_ID.like.ANNE_' +
-        date +
-        '_*'
-      );
-
-    }
-  );
-
-
-    var filters =
-      'or=(' +
-      orParts.join(',') +
-      ')' +
-      '&order=CONTENT_ID.asc';
 
 
     var rows =
-      await fetchTranslations({
+      await fetchConversationRows({
 
         select:
-          'CONTENT_ID,LANGUAGE,PASSAGE,QUESTION,OPTION1,OPTION2,OPTION3,OPTION4,ANSWER,EXPLANATION,CHUNK1,CHUNK2,CHUNK3,CHUNK4,CHUNK5',
+          'ID,LNG,GROUP,CATEGORY,SUBCATEGORY,DIALOGUE_TITLE,DIALOGUE,HELP',
 
         filters:
-          filters
+          'ID=eq.300001' +
+          '&LNG=eq.EN' +
+          '&limit=1'
       });
 
 
-    var questions =
-      convertToQuestions(
-        rows
+    if (!rows.length) {
+
+      console.warn(
+        '[CONVERSATION] 300001 / EN not found'
       );
+
+      return null;
+    }
+
+
+    var row =
+      rows[0];
 
 
     console.log(
-      '[SUPABASE] questions loaded:',
-      questions.length
+      '[CONVERSATION] DB CONNECTED'
+    );
+
+    console.log(
+      '[CONVERSATION] ID:',
+      row.ID
+    );
+
+    console.log(
+      '[CONVERSATION] LNG:',
+      row.LNG
+    );
+
+    console.log(
+      '[CONVERSATION] TITLE:',
+      row.DIALOGUE_TITLE
+    );
+
+    console.log(
+      '[CONVERSATION] DIALOGUE:',
+      row.DIALOGUE
+    );
+
+    console.log(
+      '[CONVERSATION] HELP:',
+      row.HELP
     );
 
 
-    return {
+    window.__conversationTestRow =
+      row;
 
-      data:
-        questions,
 
-      access:
-        'full',
-
-      total:
-        questions.length
-    };
+    return row;
 
 
   } catch (error) {
 
     console.error(
-      'Supabase API Error:',
+      '[CONVERSATION] DB CONNECTION FAILED:',
       error
     );
 
-    throw error;
+    return null;
   }
 }
 
+
+// SUBBLOCK 0203
+// ============================================================
+// CONVERSATION DB TEST START
+// ============================================================
+
+function startConversationDbTest() {
+
+  testConversationConnection()
+    .then(
+      function(row) {
+
+        if (!row) {
+          return;
+        }
+
+        console.log(
+          '[CONVERSATION] TEST COMPLETE'
+        );
+      }
+    );
+}
+
+
 // SUBBLOCK 0204
 // ============================================================
-// 필요한 SET 범위만 Supabase에서 로딩
+// PAGE LOAD → DB CONNECTION TEST
 // ============================================================
 
-async function loadData(
-  code,
-  offset = 0,
-  limit = 150
-) {
+document.addEventListener(
+  'DOMContentLoaded',
+  function() {
 
-  return apiData({
+    startConversationDbTest();
 
-    action:
-      'questions',
-
-    product:
-      code,
-
-    languages: [
-      'en',
-      'ko',
-      'ja'
-    ],
-
-    limit:
-      limit,
-
-    offset:
-      offset
-  });
-}
+  }
+);
 
 // SUBBLOCK 0205
 function trData(q) {
