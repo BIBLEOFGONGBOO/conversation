@@ -6609,3 +6609,1106 @@ if (
     100
   );
 }
+
+// ============================================================
+// BLOCK 1400: conversation-lesson.js
+// DIALOGUE Parser
+// HELP Parser
+// 2-Turn 기본 화면
+// PSG 전체보기
+// ? HELP / CHUNK
+// NEXT / PREV
+// ============================================================
+
+
+// SUBBLOCK 1405
+// ============================================================
+// CONVERSATION STATE
+// ============================================================
+
+const CONVERSATION_STATE = {
+
+  row: null,
+
+  turns: [],
+
+  help: {},
+
+  pairIndex: 0,
+
+  fullPassage: false,
+
+  helpVisible: false
+};
+
+window.CONVERSATION_STATE =
+  CONVERSATION_STATE;
+
+
+// SUBBLOCK 1410
+// ============================================================
+// DIALOGUE Parser
+//
+// Jessica: Hello...<br>
+// Alan: Hi...
+//
+// ↓
+//
+// [
+//   {
+//     turn: 1,
+//     speaker: 'Jessica',
+//     text: 'Hello...'
+//   }
+// ]
+// ============================================================
+
+function parseConversationDialogue(
+  dialogue
+) {
+
+  var source =
+    String(
+      dialogue || ''
+    )
+    .trim();
+
+
+  if (!source) {
+    return [];
+  }
+
+
+  var lines =
+    source
+      .split(
+        /<br\s*\/?>|\r?\n/gi
+      )
+      .map(
+        function(line) {
+
+          return String(
+            line || ''
+          ).trim();
+
+        }
+      )
+      .filter(Boolean);
+
+
+  var turns = [];
+
+
+  lines.forEach(
+    function(line) {
+
+      var colonIndex =
+        line.indexOf(':');
+
+
+      if (
+        colonIndex <= 0
+      ) {
+        return;
+      }
+
+
+      var speaker =
+        line
+          .slice(
+            0,
+            colonIndex
+          )
+          .trim();
+
+
+      var text =
+        line
+          .slice(
+            colonIndex + 1
+          )
+          .trim();
+
+
+      if (
+        !speaker ||
+        !text
+      ) {
+        return;
+      }
+
+
+      turns.push({
+
+        turn:
+          turns.length + 1,
+
+        speaker:
+          speaker,
+
+        text:
+          text
+      });
+
+    }
+  );
+
+
+  console.log(
+    '[CONVERSATION] Turns:',
+    turns.length
+  );
+
+
+  return turns;
+}
+
+
+// SUBBLOCK 1415
+// ============================================================
+// HELP Parser
+//
+// T1=aaa : bbb | ccc : ddd ||
+// T2=...
+//
+// ↓
+//
+// {
+//   1: [
+//     { term:'aaa', meaning:'bbb' }
+//   ]
+// }
+// ============================================================
+
+function parseConversationHelp(
+  helpText
+) {
+
+  var source =
+    String(
+      helpText || ''
+    ).trim();
+
+
+  var result =
+    {};
+
+
+  if (!source) {
+    return result;
+  }
+
+
+  var sections =
+    source.split(
+      /\s*\|\|\s*/
+    );
+
+
+  sections.forEach(
+    function(section) {
+
+      section =
+        String(
+          section || ''
+        ).trim();
+
+
+      if (!section) {
+        return;
+      }
+
+
+      var match =
+        section.match(
+          /^T(\d+)\s*=\s*(.*)$/i
+        );
+
+
+      if (!match) {
+        return;
+      }
+
+
+      var turnNumber =
+        Number(
+          match[1]
+        );
+
+
+      var body =
+        String(
+          match[2] || ''
+        ).trim();
+
+
+      var items =
+        body
+          .split(
+            /\s*\|\s*/
+          )
+          .map(
+            function(item) {
+
+              var value =
+                String(
+                  item || ''
+                ).trim();
+
+
+              if (!value) {
+                return null;
+              }
+
+
+              var colonIndex =
+                value.indexOf(':');
+
+
+              if (
+                colonIndex < 0
+              ) {
+
+                return {
+
+                  term:
+                    value,
+
+                  meaning:
+                    ''
+                };
+              }
+
+
+              return {
+
+                term:
+                  value
+                    .slice(
+                      0,
+                      colonIndex
+                    )
+                    .trim(),
+
+                meaning:
+                  value
+                    .slice(
+                      colonIndex + 1
+                    )
+                    .trim()
+              };
+
+            }
+          )
+          .filter(Boolean);
+
+
+      result[
+        turnNumber
+      ] =
+        items;
+
+    }
+  );
+
+
+  return result;
+}
+
+
+// SUBBLOCK 1420
+// ============================================================
+// 현재 2 TURN
+// ============================================================
+
+function getCurrentConversationPair() {
+
+  var start =
+    CONVERSATION_STATE.pairIndex *
+    2;
+
+
+  return CONVERSATION_STATE.turns.slice(
+    start,
+    start + 2
+  );
+}
+
+
+// SUBBLOCK 1425
+// ============================================================
+// TURN HTML
+// Speaker 이름은 나중에 Bible People 연결 예정
+// ============================================================
+
+function renderConversationTurn(
+  turn,
+  fullMode
+) {
+
+  if (!turn) {
+    return '';
+  }
+
+
+  var currentPair =
+    getCurrentConversationPair();
+
+
+  var isCurrent =
+    currentPair.some(
+      function(item) {
+
+        return (
+          item.turn ===
+          turn.turn
+        );
+
+      }
+    );
+
+
+  return `
+    <div
+      class="conversation-turn ${isCurrent ? 'conversation-current-pair' : ''}"
+      data-turn="${turn.turn}"
+      style="
+        padding:14px 15px;
+        margin:8px 0;
+
+        border:
+          ${isCurrent && fullMode
+            ? '2px solid #facc15'
+            : '1px solid #dbe3ee'};
+
+        border-radius:10px;
+
+        background:
+          ${isCurrent && fullMode
+            ? '#fffdf2'
+            : '#ffffff'};
+      "
+    >
+
+      <button
+        type="button"
+        class="conversation-speaker"
+        data-speaker="${esc(turn.speaker)}"
+        style="
+          display:inline;
+          margin:0 5px 0 0;
+          padding:0;
+
+          border:0;
+          background:transparent;
+
+          color:#075ea8;
+
+          font-size:15px;
+          font-weight:900;
+
+          cursor:pointer;
+        "
+      >
+        ${esc(turn.speaker)}:
+      </button>
+
+      <span
+        class="conversation-text"
+        data-turn-text="${turn.turn}"
+        style="
+          font-size:16px;
+          line-height:1.65;
+          color:#172033;
+        "
+      >
+        ${esc(turn.text)}
+      </span>
+
+    </div>
+  `;
+}
+
+
+// SUBBLOCK 1430
+// ============================================================
+// 현재 2 TURN HELP / CHUNK
+// ============================================================
+
+function renderConversationHelp() {
+
+  if (
+    !CONVERSATION_STATE.helpVisible
+  ) {
+    return '';
+  }
+
+
+  var pair =
+    getCurrentConversationPair();
+
+
+  var html =
+    '';
+
+
+  pair.forEach(
+    function(turn) {
+
+      var items =
+        CONVERSATION_STATE.help[
+          turn.turn
+        ] || [];
+
+
+      if (!items.length) {
+        return;
+      }
+
+
+      html += `
+        <div style="
+          margin-bottom:12px;
+        ">
+
+          <div style="
+            margin-bottom:6px;
+            font-size:13px;
+            font-weight:900;
+            color:#075ea8;
+          ">
+            T${turn.turn} · ${esc(turn.speaker)}
+          </div>
+      `;
+
+
+      items.forEach(
+        function(item) {
+
+          html += `
+            <div style="
+              padding:5px 0;
+              border-bottom:1px solid #edf0f3;
+              font-size:14px;
+              line-height:1.5;
+            ">
+              <strong>
+                ${esc(item.term)}
+              </strong>
+
+              ${
+                item.meaning
+                  ? ' : ' +
+                    esc(
+                      item.meaning
+                    )
+                  : ''
+              }
+            </div>
+          `;
+
+        }
+      );
+
+
+      html +=
+        '</div>';
+
+    }
+  );
+
+
+  if (!html) {
+
+    html = `
+      <div style="
+        color:#64748b;
+        font-size:14px;
+      ">
+        No help for these turns.
+      </div>
+    `;
+  }
+
+
+  return `
+    <div
+      id="conversationHelpCard"
+      style="
+        margin:12px 0;
+
+        padding:14px;
+
+        border-left:4px solid #d4a373;
+        border-radius:10px;
+
+        background:#fcf9f5;
+      "
+    >
+
+      <div style="
+        margin-bottom:10px;
+        font-size:15px;
+        font-weight:900;
+        color:#5a4a3a;
+      ">
+        HELP
+      </div>
+
+      ${html}
+
+    </div>
+  `;
+}
+
+
+// SUBBLOCK 1435
+// ============================================================
+// CONVERSATION 화면 RENDER
+// ============================================================
+
+function renderConversationLesson() {
+
+  var row =
+    CONVERSATION_STATE.row;
+
+
+  if (!row) {
+    return;
+  }
+
+
+  var container =
+    document.getElementById(
+      'questionContainer'
+    );
+
+
+  if (!container) {
+    return;
+  }
+
+
+  var pair =
+    getCurrentConversationPair();
+
+
+  var visibleTurns =
+    CONVERSATION_STATE.fullPassage
+      ? CONVERSATION_STATE.turns
+      : pair;
+
+
+  var totalPairs =
+    Math.ceil(
+      CONVERSATION_STATE.turns.length /
+      2
+    );
+
+
+  var currentPairNumber =
+    CONVERSATION_STATE.pairIndex +
+    1;
+
+
+  container.innerHTML = `
+
+    <div
+      class="question-card conversation-card"
+    >
+
+      <div
+        style="
+          margin-bottom:5px;
+          color:#64748b;
+          font-size:12px;
+          font-weight:800;
+        "
+      >
+        ${esc(row.GROUP || '')}
+
+        ${
+          row.CATEGORY
+            ? ' · ' +
+              esc(
+                row.CATEGORY
+              )
+            : ''
+        }
+      </div>
+
+
+      <div
+        style="
+          margin-bottom:4px;
+
+          font-size:20px;
+          font-weight:900;
+
+          color:#172033;
+        "
+      >
+        ${esc(
+          row.DIALOGUE_TITLE ||
+          'Conversation'
+        )}
+      </div>
+
+
+      <div
+        style="
+          margin-bottom:14px;
+
+          color:#64748b;
+          font-size:12px;
+        "
+      >
+
+        ${
+          CONVERSATION_STATE.fullPassage
+            ? 'FULL CONVERSATION'
+            : (
+                'Turns ' +
+                (
+                  CONVERSATION_STATE.pairIndex *
+                  2 +
+                  1
+                ) +
+                '–' +
+                Math.min(
+                  CONVERSATION_STATE.pairIndex *
+                  2 +
+                  2,
+                  CONVERSATION_STATE.turns.length
+                )
+              )
+        }
+
+      </div>
+
+
+      <div
+        id="conversationTurns"
+      >
+
+        ${
+          visibleTurns
+            .map(
+              function(turn) {
+
+                return renderConversationTurn(
+                  turn,
+                  CONVERSATION_STATE.fullPassage
+                );
+
+              }
+            )
+            .join('')
+        }
+
+      </div>
+
+
+      ${
+        renderConversationHelp()
+      }
+
+
+      <div style="
+        margin-top:12px;
+        text-align:right;
+
+        color:#64748b;
+        font-size:12px;
+        font-weight:700;
+      ">
+        ${currentPairNumber} / ${totalPairs}
+      </div>
+
+    </div>
+  `;
+
+
+  var progress =
+    document.getElementById(
+      'quizProgressBar'
+    );
+
+
+  if (progress) {
+
+    progress.style.width =
+      (
+        currentPairNumber /
+        totalPairs *
+        100
+      ) + '%';
+  }
+
+
+  syncConversationButtons();
+}
+
+
+// SUBBLOCK 1440
+// ============================================================
+// PSG / ? / NEXT / PREV BUTTON SYNC
+// ============================================================
+
+function syncConversationButtons() {
+
+  var psg =
+    document.getElementById(
+      'biblePassageToggle'
+    );
+
+  var help =
+    document.getElementById(
+      'bibleGuideToggle'
+    );
+
+  var next =
+    document.getElementById(
+      'nextBtn'
+    );
+
+  var prev =
+    document.getElementById(
+      'prevBtn'
+    );
+
+  var skip =
+    document.getElementById(
+      'skipBtn'
+    );
+
+  var submit =
+    document.getElementById(
+      'submitBtn'
+    );
+
+
+  if (psg) {
+
+    psg.textContent =
+      'PSG';
+
+    psg.classList.toggle(
+      'active',
+      CONVERSATION_STATE.fullPassage
+    );
+
+    psg.setAttribute(
+      'aria-pressed',
+      String(
+        CONVERSATION_STATE.fullPassage
+      )
+    );
+  }
+
+
+  if (help) {
+
+    help.textContent =
+      '?';
+
+    help.title =
+      'Help';
+
+    help.classList.toggle(
+      'active',
+      CONVERSATION_STATE.helpVisible
+    );
+
+    help.setAttribute(
+      'aria-pressed',
+      String(
+        CONVERSATION_STATE.helpVisible
+      )
+    );
+  }
+
+
+  var totalPairs =
+    Math.ceil(
+      CONVERSATION_STATE.turns.length /
+      2
+    );
+
+
+  if (prev) {
+
+    prev.style.display =
+      CONVERSATION_STATE.fullPassage
+        ? 'none'
+        : 'inline-block';
+
+    prev.disabled =
+      CONVERSATION_STATE.pairIndex <=
+      0;
+
+    prev.textContent =
+      '◀ PREV';
+  }
+
+
+  if (next) {
+
+    next.style.display =
+      CONVERSATION_STATE.fullPassage
+        ? 'none'
+        : 'inline-block';
+
+    next.disabled =
+      CONVERSATION_STATE.pairIndex >=
+      totalPairs - 1;
+
+    next.textContent =
+      'NEXT ▶';
+  }
+
+
+  if (skip) {
+    skip.style.display =
+      'none';
+  }
+
+
+  if (submit) {
+    submit.style.display =
+      'none';
+  }
+}
+
+
+// SUBBLOCK 1445
+// ============================================================
+// CONVERSATION BUTTON EVENTS
+// ============================================================
+
+function installConversationLessonControls() {
+
+  var psg =
+    document.getElementById(
+      'biblePassageToggle'
+    );
+
+  var help =
+    document.getElementById(
+      'bibleGuideToggle'
+    );
+
+  var next =
+    document.getElementById(
+      'nextBtn'
+    );
+
+  var prev =
+    document.getElementById(
+      'prevBtn'
+    );
+
+
+  if (psg) {
+
+    psg.disabled =
+      false;
+
+    psg.onclick =
+      function() {
+
+        CONVERSATION_STATE.fullPassage =
+          !CONVERSATION_STATE.fullPassage;
+
+        renderConversationLesson();
+      };
+  }
+
+
+  if (help) {
+
+    help.disabled =
+      false;
+
+    help.onclick =
+      function() {
+
+        CONVERSATION_STATE.helpVisible =
+          !CONVERSATION_STATE.helpVisible;
+
+        renderConversationLesson();
+      };
+  }
+
+
+  if (next) {
+
+    next.onclick =
+      function() {
+
+        var totalPairs =
+          Math.ceil(
+            CONVERSATION_STATE.turns.length /
+            2
+          );
+
+
+        if (
+          CONVERSATION_STATE.pairIndex <
+          totalPairs - 1
+        ) {
+
+          CONVERSATION_STATE.pairIndex++;
+
+          CONVERSATION_STATE.helpVisible =
+            false;
+
+          renderConversationLesson();
+        }
+      };
+  }
+
+
+  if (prev) {
+
+    prev.onclick =
+      function() {
+
+        if (
+          CONVERSATION_STATE.pairIndex >
+          0
+        ) {
+
+          CONVERSATION_STATE.pairIndex--;
+
+          CONVERSATION_STATE.helpVisible =
+            false;
+
+          renderConversationLesson();
+        }
+      };
+  }
+}
+
+
+// SUBBLOCK 1450
+// ============================================================
+// LESSON START
+// ============================================================
+
+function startConversationLesson(
+  row
+) {
+
+  if (!row) {
+    return;
+  }
+
+
+  var turns =
+    parseConversationDialogue(
+      row.DIALOGUE
+    );
+
+
+  if (!turns.length) {
+
+    console.error(
+      '[CONVERSATION] Dialogue parsing failed'
+    );
+
+    return;
+  }
+
+
+  CONVERSATION_STATE.row =
+    row;
+
+  CONVERSATION_STATE.turns =
+    turns;
+
+  CONVERSATION_STATE.help =
+    parseConversationHelp(
+      row.HELP
+    );
+
+  CONVERSATION_STATE.pairIndex =
+    0;
+
+  CONVERSATION_STATE.fullPassage =
+    false;
+
+  CONVERSATION_STATE.helpVisible =
+    false;
+
+
+  var setup =
+    document.getElementById(
+      'setupSection'
+    );
+
+  var quizMain =
+    document.getElementById(
+      'quizMain'
+    );
+
+  var quizContent =
+    document.getElementById(
+      'quizContent'
+    );
+
+  var progress =
+    document.querySelector(
+      '.progress-area'
+    );
+
+
+  if (setup) {
+    setup.style.display =
+      'none';
+  }
+
+
+  if (quizMain) {
+    quizMain.style.display =
+      'block';
+  }
+
+
+  if (quizContent) {
+    quizContent.style.display =
+      'block';
+  }
+
+
+  if (progress) {
+    progress.style.display =
+      'block';
+  }
+
+
+  var title =
+    document.querySelector(
+      '.sat-title'
+    );
+
+
+  if (title) {
+    title.textContent =
+      'CONVERSATION';
+  }
+
+
+  installConversationLessonControls();
+
+  renderConversationLesson();
+
+
+  console.log(
+    '[CONVERSATION] Lesson started:',
+    row.ID,
+    row.LNG,
+    turns.length + ' turns'
+  );
+}
+
