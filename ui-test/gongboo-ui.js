@@ -11,111 +11,93 @@
   ];
 
 
-  function closeCards(
-    exceptCard
-  ){
+  function closeCards(exceptCard){
 
-    cardPairs.forEach(
-      function(pair){
-
-        var button =
-          document.getElementById(
-            pair[0]
-          );
-
-        var card =
-          document.getElementById(
-            pair[1]
-          );
-
-        if(
-          !button ||
-          !card ||
-          card === exceptCard
-        ){
-          return;
-        }
-
-        card.hidden = true;
-
-        button.setAttribute(
-          'aria-expanded',
-          'false'
-        );
-
-        button.classList.remove(
-          'is-active'
-        );
-      }
-    );
-  }
-
-
-  cardPairs.forEach(
-    function(pair){
+    cardPairs.forEach(function(pair){
 
       var button =
-        document.getElementById(
-          pair[0]
-        );
+        document.getElementById(pair[0]);
 
       var card =
-        document.getElementById(
-          pair[1]
-        );
+        document.getElementById(pair[1]);
 
       if(
         !button ||
-        !card
+        !card ||
+        card === exceptCard
       ){
         return;
       }
 
-      button.addEventListener(
-        'click',
-        function(event){
+      card.hidden = true;
 
-          event.stopPropagation();
-
-          var opening =
-            card.hidden;
-
-          closeCards(
-            card
-          );
-
-          card.hidden =
-            !opening;
-
-          button.setAttribute(
-            'aria-expanded',
-            opening
-              ? 'true'
-              : 'false'
-          );
-
-          button.classList.toggle(
-            'is-active',
-            opening
-          );
-        }
+      button.setAttribute(
+        'aria-expanded',
+        'false'
       );
 
-      card.addEventListener(
-        'click',
-        function(event){
-
-          event.stopPropagation();
-        }
+      button.classList.remove(
+        'is-active'
       );
+    });
+  }
+
+
+  cardPairs.forEach(function(pair){
+
+    var button =
+      document.getElementById(pair[0]);
+
+    var card =
+      document.getElementById(pair[1]);
+
+    if(
+      !button ||
+      !card
+    ){
+      return;
     }
-  );
+
+    button.addEventListener(
+      'click',
+      function(event){
+
+        event.stopPropagation();
+
+        var opening =
+          card.hidden;
+
+        closeCards(card);
+
+        card.hidden =
+          !opening;
+
+        button.setAttribute(
+          'aria-expanded',
+          opening
+            ? 'true'
+            : 'false'
+        );
+
+        button.classList.toggle(
+          'is-active',
+          opening
+        );
+      }
+    );
+
+    card.addEventListener(
+      'click',
+      function(event){
+        event.stopPropagation();
+      }
+    );
+  });
 
 
   document.addEventListener(
     'click',
     function(){
-
       closeCards();
     }
   );
@@ -134,14 +116,10 @@
   );
 
 
-  function bindToggle(
-    id
-  ){
+  function bindToggle(id){
 
     var button =
-      document.getElementById(
-        id
-      );
+      document.getElementById(id);
 
     if(!button){
       return;
@@ -167,71 +145,70 @@
   }
 
 
-  bindToggle(
-    'repeatToggle'
-  );
-
-  bindToggle(
-    'playAutoToggle'
-  );
-
-  bindToggle(
-    'micAutoToggle'
-  );
-
-  bindToggle(
-    'chunkToggle'
-  );
+  bindToggle('repeatToggle');
+  bindToggle('playAutoToggle');
+  bindToggle('micAutoToggle');
+  bindToggle('chunkToggle');
 
 
-  function bindExclusiveToggle(
-    firstId,
-    secondId
+  function bindStartStop(
+    startId,
+    stopId
   ){
 
-    var first =
-      document.getElementById(
-        firstId
-      );
+    var startButton =
+      document.getElementById(startId);
 
-    var second =
-      document.getElementById(
-        secondId
-      );
+    var stopButton =
+      document.getElementById(stopId);
 
     if(
-      !first ||
-      !second
+      !startButton ||
+      !stopButton
     ){
       return;
     }
 
-    first.addEventListener(
+    startButton.addEventListener(
       'click',
       function(){
 
-        first.setAttribute(
+        var alreadyOn =
+          startButton.getAttribute(
+            'aria-pressed'
+          ) === 'true';
+
+        startButton.setAttribute(
           'aria-pressed',
-          'true'
+          alreadyOn
+            ? 'false'
+            : 'true'
         );
 
-        second.setAttribute(
+        stopButton.setAttribute(
           'aria-pressed',
           'false'
         );
       }
     );
 
-    second.addEventListener(
+    stopButton.addEventListener(
       'click',
       function(){
 
-        second.setAttribute(
+        var alreadyOn =
+          stopButton.getAttribute(
+            'aria-pressed'
+          ) === 'true';
+
+        stopButton.setAttribute(
           'aria-pressed',
-          'true'
+          alreadyOn
+            ? 'false'
+            : 'true'
         );
 
-        first.setAttribute(
+        startButton.setAttribute(
           'aria-pressed',
           'false'
         );
@@ -240,12 +217,12 @@
   }
 
 
-  bindExclusiveToggle(
+  bindStartStop(
     'playStartButton',
     'playStopButton'
   );
 
-  bindExclusiveToggle(
+  bindStartStop(
     'micStartButton',
     'micStopButton'
   );
