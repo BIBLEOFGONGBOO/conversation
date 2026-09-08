@@ -1,1 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <title>GONGBOO Common Mobile UI Template v1</title>
+
+  <link rel="stylesheet" href="./gongboo-ui.css" />
+</head>
+
+<body>
+  <div class="gb-app">
+
+    <header class="gb-topbar">
+
+      <div class="gb-topbar-row gb-topbar-row-main">
+
+        <div class="gb-system-wrap">
+          <button
+            id="systemButton"
+            class="gb-system-button"
+            type="button"
+            aria-expanded="false"
+          >
+            CONVERSATION
+            <span class="gb-chevron">▼</span>
+          </button>
+
+          <div
+            id="systemCard"
+            class="gb-card gb-system-card"
+            hidden
+          >
+            <button class="gb-card-option is-active" type="button">
+              CONVERSATION
+            </button>
+
+            <button class="gb-card-option" type="button">
+              BIBLE
+            </button>
+
+            <button class="gb-card-option" type="button">
+              ANNE
+            </button>
+
+            <button class="gb-card-option" type="button">
+              LICENSE
+            </button>
+
+            <button class="gb-card-option" type="button">
+              MUSIC
+            </button>
+          </div>
+        </div>
+
+        <div class="gb-toolbar">
+
+          <button
+            id="psgButton"
+            class="gb-tool-button"
+            type="button"
+            aria-pressed="false"
+          >
+            PSG
+          </button>
+
+          <button
+            id="helpButton"
+            class="gb-tool-button gb-tool-button-square"
+            type="button"
+            aria-pressed="false"
+            title="Help"
+          >
+            ?
+          </button>
+
+          <div class="gb-card-wrap">
+            <button
+              id="langButton"
+              class="gb-tool-button"
+              type="button"
+              aria-expanded="false"
+            >
+              LANG
+            </button>
+
+            <div
+              id="langCard"
+              class="gb-card"
+              hidden
+            >
+              <div class="gb-card-title">
+                LANGUAGE
+              </div>
+
+              <div class="gb-card-row">
+                <span class="gb-card-label">
+                  Primary
+                </span>
+
+                <select class="gb-select">
+                  <option>English</option>
+                  <option>Korean</option>
+                  <option>Japanese</option>
+                </select>
+              </div>
+
+              <div class="gb-card-row">
+                <span class="gb-card-label">
+                  Secondary
+                </span>
+
+                <select class="gb-select">
+                  <option>Korean</option>
+                  <option>English</option>
+                  <option>Japanese</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="gb-card-wrap">
+            <button
+              id="playButton"
+              class="gb-tool-button"
+              type="button"
+              aria-expanded="false"
+            >
+              PLAY
+            </button>
+
+            <div
+              id="playCard"
+              class="gb-card"
+              hidden
+            >
+              <div class="gb-card-title">
+                PLAY
+              </div>
+
+              <div class="gb-card-row">
+                <span class="gb-card-label">
+                  Speed
+                </span>
+
+                <div class="gb-stepper">
+                  <button
+                    class="gb-mini-button"
+                    type="button"
+                    data-speed-minus
+                  >
+                    −
+                  </button>
+
+                  <span
+                    id="speedValue"
+                    class="gb-value"
+                  >
+                    1.0×
+                  </span>
+
+                  <button
+                    class="gb-mini-button"
+                    type="button"
+                    data-speed-plus
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div class="gb-card-row">
+                <span class="gb-card-label">
+                  Repeat
+                </span>
+
+                <button
+                  id="repeatToggle"
+                  class="gb-switch-button"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  OFF
+                </button>
+              </div>
+
+              <div class="gb-card-row">
+                <span class="gb-card-label">
+                  Auto
+                </span>
+
+                <button
+                  id="playAutoToggle"
+                  class="gb-switch-button"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  OFF
+                </button>
+              </div>
+
+              <div class="gb-card-actions">
+                <button
+                  class="gb-action-button"
+                  type="button"
+                >
+                  ▶ START
+                </button>
+
+                <button
+                  class="gb-action-button"
+                  type="button"
+                >
+                  ■ STOP
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="gb-card-wrap">
+            <button
+              id="micButton"
+              class="gb-tool-button"
+              type="button"
+              aria-expanded="false"
+            >
+              MIC
+            </button>
+
+            <div
+              id="micCard"
+              class="gb-card"
+              hidden
+            >
+              <div class="gb-card-title">
+                MIC
+              </div>
+
+              <div class="gb-card-row gb-card-row-slider">
+                <span class="gb-card-label">
+                  PASS
+                </span>
+
+                <input
+                  id="passRange"
+                  class="gb-range"
+                  type="range"
+                  min="50"
+                  max="100"
+                  step="1"
+                  value="70"
+                />
+
+                <span
+                  id="passValue"
+                  class="gb-value"
+                >
+                  70%
+                </span>
+              </div>
+
+              <div class="gb-card-row">
+                <span class="gb-card-label">
+                  DELAY
+                </span>
+
+                <div class="gb-stepper">
+                  <button
+                    class="gb-mini-button"
+                    type="button"
+                    data-delay-minus
+                  >
+                    −
+                  </button>
+
+                  <span
+                    id="delayValue"
+                    class="gb-value"
+                  >
+                    2.0s
+                  </span>
+
+                  <button
+                    class="gb-mini-button"
+                    type="button"
+                    data-delay-plus
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div class="gb-card-row">
+                <span class="gb-card-label">
+                  AUTO
+                </span>
+
+                <button
+                  id="micAutoToggle"
+                  class="gb-switch-button"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  OFF
+                </button>
+              </div>
+
+              <div class="gb-card-actions">
+                <button
+                  class="gb-action-button"
+                  type="button"
+                >
+                  ▶ START
+                </button>
+
+                <button
+                  class="gb-action-button"
+                  type="button"
+                >
+                  ■ STOP
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="gb-card-wrap">
+            <button
+              id="moreButton"
+              class="gb-tool-button gb-tool-button-square"
+              type="button"
+              aria-expanded="false"
+              title="More"
+            >
+              ⋯
+            </button>
+
+            <div
+              id="moreCard"
+              class="gb-card gb-more-card"
+              hidden
+            >
+              <div class="gb-card-title">
+                MODE
+              </div>
+
+              <div class="gb-mode-row">
+                <button
+                  class="gb-mode-button is-active"
+                  type="button"
+                >
+                  LRN
+                </button>
+
+                <button
+                  class="gb-mode-button"
+                  type="button"
+                >
+                  STD
+                </button>
+
+                <button
+                  class="gb-mode-button"
+                  type="button"
+                  disabled
+                >
+                  QZ
+                </button>
+              </div>
+
+              <div class="gb-card-separator"></div>
+
+              <button
+                class="gb-quit-button"
+                type="button"
+              >
+                ✕ QUIT
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div
+        id="helpStrip"
+        class="gb-help-strip"
+        hidden
+      >
+        Select a tool or tap a sentence to begin.
+      </div>
+
+    </header>
+
+    <main class="gb-content">
+
+      <section class="gb-demo-card">
+
+        <div class="gb-demo-label">
+          SAMPLE CONTENT
+        </div>
+
+        <article
+          class="gb-conversation-turn is-current"
+          tabindex="0"
+        >
+          <div class="gb-speaker">
+            Peter
+          </div>
+
+          <div class="gb-text">
+            Good morning, Anna. Did you sleep well?
+          </div>
+        </article>
+
+        <article
+          class="gb-conversation-turn"
+          tabindex="0"
+        >
+          <div class="gb-speaker">
+            Anna
+          </div>
+
+          <div class="gb-text">
+            Yes, I did. I feel ready for the day.
+          </div>
+        </article>
+
+        <article
+          class="gb-conversation-turn gb-psg-extra"
+          tabindex="0"
+          hidden
+        >
+          <div class="gb-speaker">
+            Peter
+          </div>
+
+          <div class="gb-text">
+            Great. Let's grab some coffee before work.
+          </div>
+        </article>
+
+        <article
+          class="gb-conversation-turn gb-psg-extra"
+          tabindex="0"
+          hidden
+        >
+          <div class="gb-speaker">
+            Anna
+          </div>
+
+          <div class="gb-text">
+            Sounds good. The cafe around the corner is open.
+          </div>
+        </article>
+
+      </section>
+
+    </main>
+
+    <footer class="gb-bottom-nav">
+
+      <button
+        id="prevButton"
+        class="gb-nav-button"
+        type="button"
+      >
+        ◀ PREV
+      </button>
+
+      <button
+        id="nextButton"
+        class="gb-nav-button"
+        type="button"
+      >
+        NEXT ▶
+      </button>
+
+    </footer>
+
+  </div>
+
+  <script src="./gongboo-ui.js"></script>
+</body>
+</html>
