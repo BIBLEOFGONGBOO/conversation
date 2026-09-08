@@ -2997,7 +2997,15 @@ var Speech =
 // SUBBLOCK 1101
 // ============================================================
 // MIC 전역 상태
+// Chrome / Edge SpeechRecognition 호환
 // ============================================================
+
+var SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+var Speech =
+  SpeechRecognition;
 
 var _anneMicInstalled = false;
 var _anneMicMoving = false;
