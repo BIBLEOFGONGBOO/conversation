@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>GONGBOO Common Mobile UI Template v1.1</title>
+  <title>GONGBOO Common Mobile UI Template v1.2</title>
 
   <link rel="stylesheet" href="./gongboo-ui.css" />
 </head>
@@ -14,13 +14,12 @@
   <div class="gb-app">
 
     <header class="gb-topbar">
-
-      <div class="gb-topbar-row gb-topbar-row-main">
+      <div class="gb-topbar-row">
 
         <div class="gb-toolbar">
 
           <!-- SYSTEM -->
-          <div class="gb-card-wrap gb-system-wrap">
+          <div class="gb-card-wrap">
             <button
               id="systemButton"
               class="gb-tool-button gb-system-button"
@@ -36,47 +35,45 @@
               class="gb-card gb-system-card"
               hidden
             >
-              <div class="gb-card-title">
-                SYSTEM
-              </div>
+              <div class="gb-card-title">SYSTEM</div>
 
               <button
-                class="gb-card-option is-active"
+                class="gb-system-option is-active"
                 type="button"
               >
                 <span class="gb-system-code">CON</span>
-                <span>CONVERSATION</span>
+                <span class="gb-system-name">CONVERSATION</span>
               </button>
 
               <button
-                class="gb-card-option"
+                class="gb-system-option"
                 type="button"
               >
                 <span class="gb-system-code">BIB</span>
-                <span>BIBLE</span>
+                <span class="gb-system-name">BIBLE</span>
               </button>
 
               <button
-                class="gb-card-option"
+                class="gb-system-option"
                 type="button"
               >
                 <span class="gb-system-code">EAS</span>
-                <span>EASY LEARNING</span>
+                <span class="gb-system-name">EASY LEARNING</span>
                 <span class="gb-submenu-arrow">›</span>
               </button>
 
               <button
-                class="gb-card-option"
+                class="gb-system-option"
                 type="button"
               >
                 <span class="gb-system-code">LIC</span>
-                <span>LICENSE</span>
+                <span class="gb-system-name">LICENSE</span>
               </button>
             </div>
           </div>
 
 
-          <!-- PSG DIRECT TOGGLE -->
+          <!-- PSG -->
           <button
             id="psgButton"
             class="gb-tool-button"
@@ -87,7 +84,7 @@
           </button>
 
 
-          <!-- LANG CARD -->
+          <!-- LANG -->
           <div class="gb-card-wrap">
             <button
               id="langButton"
@@ -103,14 +100,10 @@
               class="gb-card"
               hidden
             >
-              <div class="gb-card-title">
-                LANGUAGE
-              </div>
+              <div class="gb-card-title">LANGUAGE</div>
 
               <div class="gb-card-row">
-                <span class="gb-card-label">
-                  Primary
-                </span>
+                <span class="gb-card-label">PRIMARY</span>
 
                 <select class="gb-select">
                   <option>English</option>
@@ -120,9 +113,7 @@
               </div>
 
               <div class="gb-card-row">
-                <span class="gb-card-label">
-                  Secondary
-                </span>
+                <span class="gb-card-label">SECONDARY</span>
 
                 <select class="gb-select">
                   <option>Korean</option>
@@ -134,7 +125,7 @@
           </div>
 
 
-          <!-- PLAY CARD -->
+          <!-- PLAY -->
           <div class="gb-card-wrap">
             <button
               id="playButton"
@@ -150,14 +141,10 @@
               class="gb-card"
               hidden
             >
-              <div class="gb-card-title">
-                PLAY
-              </div>
+              <div class="gb-card-title">PLAY</div>
 
               <div class="gb-card-row">
-                <span class="gb-card-label">
-                  SPEED
-                </span>
+                <span class="gb-card-label">SPEED</span>
 
                 <div class="gb-stepper">
                   <button
@@ -172,7 +159,7 @@
                     id="speedValue"
                     class="gb-value"
                   >
-                    1.0×
+                    1.00×
                   </span>
 
                   <button
@@ -185,35 +172,29 @@
                 </div>
               </div>
 
-              <div class="gb-card-row">
-                <span class="gb-card-label">
-                  REPEAT
+              <button
+                id="repeatToggle"
+                class="gb-toggle-row"
+                type="button"
+                aria-pressed="false"
+              >
+                <span>REPEAT</span>
+                <span class="gb-toggle-switch">
+                  <span class="gb-toggle-knob"></span>
                 </span>
+              </button>
 
-                <button
-                  id="repeatToggle"
-                  class="gb-switch-button"
-                  type="button"
-                  aria-pressed="false"
-                >
-                  OFF
-                </button>
-              </div>
-
-              <div class="gb-card-row">
-                <span class="gb-card-label">
-                  AUTO
+              <button
+                id="playAutoToggle"
+                class="gb-toggle-row"
+                type="button"
+                aria-pressed="false"
+              >
+                <span>AUTO</span>
+                <span class="gb-toggle-switch">
+                  <span class="gb-toggle-knob"></span>
                 </span>
-
-                <button
-                  id="playAutoToggle"
-                  class="gb-switch-button"
-                  type="button"
-                  aria-pressed="false"
-                >
-                  OFF
-                </button>
-              </div>
+              </button>
 
               <div class="gb-card-actions">
                 <button
@@ -234,7 +215,7 @@
           </div>
 
 
-          <!-- MIC CARD -->
+          <!-- MIC -->
           <div class="gb-card-wrap">
             <button
               id="micButton"
@@ -250,14 +231,10 @@
               class="gb-card"
               hidden
             >
-              <div class="gb-card-title">
-                MIC
-              </div>
+              <div class="gb-card-title">MIC</div>
 
               <div class="gb-card-row gb-card-row-slider">
-                <span class="gb-card-label">
-                  PASS
-                </span>
+                <span class="gb-card-label">PASS</span>
 
                 <input
                   id="passRange"
@@ -278,9 +255,7 @@
               </div>
 
               <div class="gb-card-row">
-                <span class="gb-card-label">
-                  DELAY
-                </span>
+                <span class="gb-card-label">DELAY</span>
 
                 <div class="gb-stepper">
                   <button
@@ -308,20 +283,17 @@
                 </div>
               </div>
 
-              <div class="gb-card-row">
-                <span class="gb-card-label">
-                  AUTO
+              <button
+                id="micAutoToggle"
+                class="gb-toggle-row"
+                type="button"
+                aria-pressed="false"
+              >
+                <span>AUTO</span>
+                <span class="gb-toggle-switch">
+                  <span class="gb-toggle-knob"></span>
                 </span>
-
-                <button
-                  id="micAutoToggle"
-                  class="gb-switch-button"
-                  type="button"
-                  aria-pressed="false"
-                >
-                  OFF
-                </button>
-              </div>
+              </button>
 
               <div class="gb-card-actions">
                 <button
@@ -342,26 +314,23 @@
           </div>
 
 
-          <!-- MORE CARD -->
+          <!-- MORE -->
           <div class="gb-card-wrap">
             <button
               id="moreButton"
               class="gb-tool-button gb-tool-button-square"
               type="button"
               aria-expanded="false"
-              title="More"
             >
               ⋯
             </button>
 
             <div
               id="moreCard"
-              class="gb-card gb-more-card"
+              class="gb-card"
               hidden
             >
-              <div class="gb-card-title">
-                MODE
-              </div>
+              <div class="gb-card-title">MODE</div>
 
               <div class="gb-mode-row">
                 <button
@@ -391,16 +360,13 @@
 
               <button
                 id="chunkButton"
-                class="gb-more-option"
+                class="gb-toggle-row"
                 type="button"
                 aria-pressed="false"
               >
                 <span>CHUNK</span>
-                <span
-                  id="chunkState"
-                  class="gb-more-state"
-                >
-                  OFF
+                <span class="gb-toggle-switch">
+                  <span class="gb-toggle-knob"></span>
                 </span>
               </button>
 
@@ -417,7 +383,6 @@
 
         </div>
       </div>
-
     </header>
 
 
@@ -433,9 +398,7 @@
           class="gb-conversation-turn is-current"
           tabindex="0"
         >
-          <div class="gb-speaker">
-            Peter
-          </div>
+          <div class="gb-speaker">Peter</div>
 
           <div class="gb-text">
             Good morning, Anna. Did you sleep well?
@@ -446,9 +409,7 @@
           class="gb-conversation-turn"
           tabindex="0"
         >
-          <div class="gb-speaker">
-            Anna
-          </div>
+          <div class="gb-speaker">Anna</div>
 
           <div class="gb-text">
             Yes, I did. I feel ready for the day.
@@ -460,9 +421,7 @@
           tabindex="0"
           hidden
         >
-          <div class="gb-speaker">
-            Peter
-          </div>
+          <div class="gb-speaker">Peter</div>
 
           <div class="gb-text">
             Great. Let's grab some coffee before work.
@@ -474,9 +433,7 @@
           tabindex="0"
           hidden
         >
-          <div class="gb-speaker">
-            Anna
-          </div>
+          <div class="gb-speaker">Anna</div>
 
           <div class="gb-text">
             Sounds good. The cafe around the corner is open.
