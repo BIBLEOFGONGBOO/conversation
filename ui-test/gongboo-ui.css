@@ -12,9 +12,6 @@
   --gb-accent:#2f6fa3;
   --gb-accent-soft:#eaf3fb;
 
-  --gb-danger:#b54848;
-  --gb-danger-soft:#fff1f1;
-
   --gb-current:#f0c84b;
 
   --gb-radius:10px;
@@ -76,7 +73,8 @@ button{
   border-bottom:
     1px solid var(--gb-border);
 
-  backdrop-filter:blur(10px);
+  backdrop-filter:
+    blur(10px);
 }
 
 .gb-topbar-row{
@@ -103,7 +101,7 @@ button{
 }
 
 
-/* TOOL BUTTON */
+/* MAIN BUTTONS */
 
 .gb-tool-button{
   min-width:68px;
@@ -141,7 +139,9 @@ button{
 
 .gb-chevron{
   font-size:8px;
-  color:var(--gb-muted);
+
+  color:
+    var(--gb-muted);
 }
 
 .gb-tool-button-square{
@@ -152,14 +152,17 @@ button{
 }
 
 .gb-tool-button:hover{
-  background:var(--gb-soft);
+  background:
+    var(--gb-soft);
 }
 
 .gb-tool-button.is-active,
 .gb-tool-button[aria-pressed="true"]{
-  color:var(--gb-accent);
+  color:
+    var(--gb-accent);
 
-  border-color:var(--gb-accent);
+  border-color:
+    var(--gb-accent);
 
   background:
     var(--gb-accent-soft);
@@ -198,9 +201,11 @@ button{
 }
 
 .gb-card-title{
-  padding:2px 6px 7px;
+  padding:
+    2px 6px 7px;
 
-  color:var(--gb-muted);
+  color:
+    var(--gb-muted);
 
   font-size:11px;
   font-weight:900;
@@ -209,7 +214,7 @@ button{
 }
 
 
-/* SYSTEM CARD */
+/* SYSTEM */
 
 .gb-system-card{
   left:0;
@@ -231,16 +236,19 @@ button{
 
   align-items:center;
 
-  gap:12px;
+  column-gap:16px;
 
-  padding:0 9px;
+  padding:
+    0 9px;
 
   border:0;
   border-radius:8px;
 
-  background:transparent;
+  background:
+    transparent;
 
-  color:var(--gb-text);
+  color:
+    var(--gb-text);
 
   text-align:left;
 
@@ -254,7 +262,8 @@ button{
 }
 
 .gb-system-code{
-  color:var(--gb-accent);
+  color:
+    var(--gb-accent);
 
   font-size:12px;
   font-weight:900;
@@ -268,7 +277,8 @@ button{
 }
 
 .gb-submenu-arrow{
-  color:var(--gb-muted);
+  color:
+    var(--gb-muted);
 
   font-size:18px;
 
@@ -276,7 +286,7 @@ button{
 }
 
 
-/* CARD ROW */
+/* STANDARD CARD ROW */
 
 .gb-card-row{
   min-height:42px;
@@ -291,24 +301,9 @@ button{
     1px solid #edf0f3;
 }
 
-.gb-card-row-slider{
-  display:grid;
-
-  grid-template-columns:
-    52px 1fr 42px;
-}
-
 .gb-card-label{
-  color:var(--gb-muted);
-
-  font-size:12px;
-  font-weight:800;
-}
-
-.gb-value{
-  min-width:46px;
-
-  text-align:center;
+  color:
+    var(--gb-muted);
 
   font-size:12px;
   font-weight:800;
@@ -317,7 +312,8 @@ button{
 .gb-select{
   height:31px;
 
-  padding:0 8px;
+  padding:
+    0 8px;
 
   border:
     1px solid var(--gb-border);
@@ -328,25 +324,90 @@ button{
     var(--gb-surface);
 }
 
-.gb-range{
-  width:100%;
-}
 
+/* SLIDER */
 
-/* SPEED */
+.gb-slider-row{
+  min-height:48px;
 
-.gb-stepper{
-  display:flex;
+  display:grid;
+
+  grid-template-columns:
+    58px 1fr 52px;
+
   align-items:center;
 
-  gap:8px;
+  gap:10px;
+
+  border-top:
+    1px solid #edf0f3;
 }
 
-.gb-mini-button{
-  width:32px;
-  height:32px;
+.gb-slider-label{
+  color:
+    var(--gb-muted);
 
-  padding:0;
+  font-size:12px;
+  font-weight:900;
+}
+
+.gb-slider-value{
+  text-align:right;
+
+  color:
+    var(--gb-text);
+
+  font-size:12px;
+  font-weight:900;
+}
+
+.gb-range{
+  width:100%;
+
+  accent-color:
+    var(--gb-accent);
+
+  cursor:pointer;
+}
+
+
+/* PLAY FOUR BUTTON ROW */
+
+.gb-four-actions{
+  display:grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:5px;
+
+  margin-top:7px;
+}
+
+
+/* MIC THREE BUTTON ROW */
+
+.gb-three-actions{
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:6px;
+
+  margin-top:7px;
+}
+
+
+/* COMPACT TOGGLE + ACTION */
+
+.gb-compact-toggle,
+.gb-compact-action{
+  min-width:0;
+  height:34px;
+
+  padding:
+    0 5px;
 
   border:
     1px solid var(--gb-border);
@@ -359,34 +420,118 @@ button{
   color:
     var(--gb-text);
 
-  font-size:17px;
+  font-size:10.5px;
+  font-weight:900;
+
+  white-space:nowrap;
 
   cursor:pointer;
 }
 
+.gb-compact-toggle[aria-pressed="true"]{
+  color:
+    var(--gb-accent);
 
-/* TOGGLE ROW */
+  border-color:
+    var(--gb-accent);
 
-.gb-toggle-row{
+  background:
+    var(--gb-accent-soft);
+}
+
+.gb-compact-action:hover,
+.gb-compact-toggle:hover{
+  background:
+    var(--gb-soft);
+}
+
+
+/* MODE */
+
+.gb-mode-row{
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:6px;
+}
+
+.gb-mode-button{
+  height:33px;
+
+  border:
+    1px solid var(--gb-border);
+
+  border-radius:8px;
+
+  background:
+    var(--gb-surface);
+
+  color:
+    var(--gb-text);
+
+  font-size:11px;
+  font-weight:800;
+
+  cursor:pointer;
+}
+
+.gb-mode-button.is-active{
+  color:
+    var(--gb-accent);
+
+  border-color:
+    var(--gb-accent);
+
+  background:
+    var(--gb-accent-soft);
+}
+
+.gb-mode-button:disabled{
+  color:#a8adb5;
+
+  background:#f0f1f3;
+
+  opacity:.65;
+
+  cursor:not-allowed;
+}
+
+.gb-card-separator{
+  height:1px;
+
+  margin:
+    8px 0;
+
+  background:
+    #edf0f3;
+}
+
+
+/* CHUNK TOGGLE */
+
+.gb-toggle-line{
   width:100%;
-  min-height:39px;
+  height:36px;
 
   display:flex;
   align-items:center;
   justify-content:space-between;
 
-  padding:0 3px;
+  padding:
+    0 5px;
 
   border:0;
-  border-top:
-    1px solid #edf0f3;
 
-  background:transparent;
+  background:
+    transparent;
 
-  color:var(--gb-muted);
+  color:
+    var(--gb-muted);
 
   font-size:12px;
-  font-weight:800;
+  font-weight:900;
 
   cursor:pointer;
 }
@@ -426,142 +571,48 @@ button{
   transition:.18s ease;
 }
 
-.gb-toggle-row[aria-pressed="true"]{
-  color:var(--gb-accent);
+.gb-toggle-line[aria-pressed="true"]{
+  color:
+    var(--gb-accent);
 }
 
-.gb-toggle-row[aria-pressed="true"]
+.gb-toggle-line[aria-pressed="true"]
 .gb-toggle-switch{
-  border-color:var(--gb-accent);
+  background:
+    var(--gb-accent);
 
-  background:var(--gb-accent);
+  border-color:
+    var(--gb-accent);
 }
 
-.gb-toggle-row[aria-pressed="true"]
+.gb-toggle-line[aria-pressed="true"]
 .gb-toggle-knob{
   transform:
     translateX(14px);
 }
 
 
-/* START / STOP */
+/* LOGIN */
 
-.gb-card-actions{
-  margin-top:8px;
-
-  display:grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:7px;
-}
-
-.gb-action-button{
-  height:34px;
-
-  border:
-    1px solid var(--gb-border);
-
-  border-radius:8px;
-
-  background:
-    var(--gb-surface);
-
-  color:var(--gb-text);
-
-  font-size:12px;
-  font-weight:800;
-
-  cursor:pointer;
-}
-
-.gb-action-button:hover{
-  background:
-    var(--gb-soft);
-}
-
-
-/* MODE */
-
-.gb-mode-row{
-  display:grid;
-
-  grid-template-columns:
-    repeat(3,1fr);
-
-  gap:6px;
-}
-
-.gb-mode-button{
-  height:33px;
-
-  border:
-    1px solid var(--gb-border);
-
-  border-radius:8px;
-
-  background:
-    var(--gb-surface);
-
-  color:
-    var(--gb-text);
-
-  font-size:11px;
-  font-weight:800;
-
-  cursor:pointer;
-}
-
-.gb-mode-button.is-active{
-  color:var(--gb-accent);
-
-  border-color:var(--gb-accent);
-
-  background:
-    var(--gb-accent-soft);
-}
-
-.gb-mode-button:disabled{
-  color:#a8adb5;
-
-  background:#f0f1f3;
-
-  opacity:.65;
-
-  cursor:not-allowed;
-}
-
-.gb-card-separator{
-  height:1px;
-
-  margin:8px 0;
-
-  background:#edf0f3;
-}
-
-
-/* QUIT */
-
-.gb-quit-button{
+.gb-login-button{
   width:100%;
   height:34px;
 
   border:
-    1px solid #ebcaca;
+    1px solid #dde1e6;
 
   border-radius:8px;
 
-  background:
-    var(--gb-danger-soft);
+  background:#f0f1f3;
 
-  color:
-    var(--gb-danger);
+  color:#a4aab2;
 
   font-size:12px;
-  font-weight:800;
+  font-weight:900;
 
-  cursor:pointer;
+  cursor:not-allowed;
+
+  opacity:.75;
 }
 
 
@@ -573,7 +624,8 @@ button{
     var(--gb-content-width)
   );
 
-  margin:16px auto 90px;
+  margin:
+    16px auto 90px;
 }
 
 .gb-demo-card{
@@ -600,7 +652,8 @@ button{
 }
 
 .gb-conversation-turn{
-  padding:12px 14px;
+  padding:
+    12px 14px;
 
   border:
     1px solid transparent;
@@ -660,7 +713,8 @@ button{
 
   gap:8px;
 
-  padding:8px 0 10px;
+  padding:
+    8px 0 10px;
 
   background:
     linear-gradient(
@@ -718,7 +772,8 @@ button{
 
     height:40px;
 
-    padding:0 4px;
+    padding:
+      0 4px;
 
     font-size:11px;
   }
@@ -742,7 +797,8 @@ button{
 
     max-width:355px;
 
-    margin:0 auto;
+    margin:
+      0 auto;
   }
 
   .gb-system-card{
@@ -774,6 +830,7 @@ button{
     width:
       calc(100% - 14px);
   }
+
 }
 
 
@@ -787,15 +844,29 @@ button{
   }
 
   .gb-tool-button{
-    padding:0 2px;
+    padding:
+      0 2px;
 
     font-size:10px;
   }
 
-  .gb-system-option{
-    grid-template-columns:
-      38px 1fr 14px;
-
-    gap:8px;
+  .gb-four-actions{
+    gap:3px;
   }
+
+  .gb-compact-toggle,
+  .gb-compact-action{
+    padding:
+      0 2px;
+
+    font-size:9.5px;
+  }
+
+  .gb-slider-row{
+    grid-template-columns:
+      50px 1fr 46px;
+
+    gap:6px;
+  }
+
 }
