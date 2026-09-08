@@ -8535,12 +8535,8 @@ function getCurrentConversationPair() {
 // SUBBLOCK 1425
 // ============================================================
 // TURN HTML
-// ANNE TTS ENGINE ADAPTER
-//
-// 기존 ANNE TTS가 찾는:
-// .language-line[data-language]
-//
-// Conversation Turn에 그대로 제공
+// PSG 전체보기에서도 MIC 노란 테두리는 미리 표시하지 않음
+// 노란 테두리는 오직 MIC 현재 Target 1문장만 표시
 // ============================================================
 
 function renderConversationTurn(
@@ -8551,23 +8547,6 @@ function renderConversationTurn(
   if (!turn) {
     return '';
   }
-
-
-  var currentPair =
-    getCurrentConversationPair();
-
-
-  var isCurrent =
-    currentPair.some(
-      function(item) {
-
-        return (
-          item.turn ===
-          turn.turn
-        );
-
-      }
-    );
 
 
   var languageCode =
@@ -8588,24 +8567,15 @@ function renderConversationTurn(
 
   return `
     <div
-      class="conversation-turn ${isCurrent ? 'conversation-current-pair' : ''}"
+      class="conversation-turn"
       data-turn="${turn.turn}"
       data-speaker="${esc(turn.speaker)}"
       style="
         padding:14px 15px;
         margin:8px 0;
-
-        border:
-          ${isCurrent && fullMode
-            ? '2px solid #facc15'
-            : '1px solid #dbe3ee'};
-
+        border:1px solid #dbe3ee;
         border-radius:10px;
-
-        background:
-          ${isCurrent && fullMode
-            ? '#fffdf2'
-            : '#ffffff'};
+        background:#ffffff;
       "
     >
 
@@ -8613,20 +8583,15 @@ function renderConversationTurn(
         type="button"
         class="conversation-speaker"
         data-speaker="${esc(turn.speaker)}"
-        title="Choose ${esc(turn.speaker)} as My Role"
         style="
           display:inline;
           margin:0 5px 0 0;
           padding:0;
-
           border:0;
           background:transparent;
-
           color:#075ea8;
-
           font-size:15px;
           font-weight:900;
-
           cursor:pointer;
         "
       >
@@ -8646,6 +8611,7 @@ function renderConversationTurn(
           font-size:16px;
           line-height:1.65;
           color:#172033;
+          cursor:pointer;
         "
       >
         ${esc(turn.text)}
