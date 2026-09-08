@@ -3344,7 +3344,172 @@ function getCurrentMicSentence() {
       false
   };
 }
+// SUBBLOCK 1103-2
+// ============================================================
+// CONVERSATION MANUAL MIC SYNC
+// 문장 클릭 → 노란 테두리 즉시 이동
+// MIC ON이면 해당 문장부터 Recognition 재시작
+// ============================================================
 
+document.addEventListener(
+  'click',
+  function(event) {
+
+    var textEl =
+      event.target.closest(
+        '.conversation-text'
+      );
+
+
+    if (!textEl) {
+      return;
+    }
+
+
+    var lines =
+      Array.from(
+        document.querySelectorAll(
+          '.conversation-turn .conversation-text'
+        )
+      ).filter(
+        function(el) {
+
+          var rect =
+            el.getBoundingClientRect();
+
+          return (
+            rect.width > 0 &&
+            rect.height > 0
+          );
+        }
+      );
+
+
+    var index =
+      lines.indexOf(
+        textEl
+      );
+
+
+    if (index < 0) {
+      return;
+    }
+
+
+    _anneMicPassageIndex =
+      index;
+
+
+    // 모든 테두리 제거 후 현재 문장만 표시
+    lines.forEach(
+      function(el, i) {
+
+        var turn =
+          el.closest(
+            '.conversation-turn'
+          );
+
+
+        if (!turn) {
+          return;
+        }
+
+
+        if (i === index) {
+
+          turn.style.setProperty(
+            'outline',
+            '3px solid #facc15',
+            'important'
+          );
+
+          turn.style.setProperty(
+            'outline-offset',
+            '2px',
+            'important'
+          );
+
+          turn.style.setProperty(
+            'background',
+            '#fffdf2',
+            'important'
+          );
+
+        } else {
+
+          turn.style.removeProperty(
+            'outline'
+          );
+
+          turn.style.removeProperty(
+            'outline-offset'
+          );
+
+          turn.style.removeProperty(
+            'background'
+          );
+        }
+      }
+    );
+
+
+    console.log(
+      '[MIC MANUAL SYNC] →',
+      index
+    );
+
+
+    // MIC OFF 상태에서도 위치 선택/테두리는 유지
+    if (
+      !ANNE_STATE.micMode
+    ) {
+      return;
+    }
+
+
+    _anneMicLastTranscript =
+      '';
+
+
+    if (
+      _anneMicRecognizeTimer
+    ) {
+
+      clearTimeout(
+        _anneMicRecognizeTimer
+      );
+
+      _anneMicRecognizeTimer =
+        null;
+    }
+
+
+    _anneMicMoving =
+      true;
+
+
+    stopAnneRecognition();
+
+
+    setTimeout(
+      function() {
+
+        _anneMicMoving =
+          false;
+
+
+        if (
+          ANNE_STATE.micMode
+        ) {
+
+          startAnneRecognition();
+        }
+
+      },
+      180
+    );
+  }
+);
 
 // SUBBLOCK 1104
 // ============================================================
