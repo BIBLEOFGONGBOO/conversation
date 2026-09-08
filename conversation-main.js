@@ -5395,78 +5395,65 @@ function installAnneMicButton() {
 // ============================================================
 
 
-// SUBBLOCK 1150
 // ============================================================
-// ROLE STATE
+// BLOCK 1150: CONVERSATION ROLE PLAY ADAPTER
+//
+// 목적:
+// - 기존 ANNE MIC / TTS Core는 그대로 사용
+// - 사용자가 현재 Dialogue의 Speaker 이름 클릭 → MY ROLE
+// - MY ROLE Turn = MIC
+// - PASS → 상대 Speaker Turn = TTS 자동 응답
+// - TTS 종료 → 다음 MY ROLE Turn = MIC 자동 시작
+//
+// Speaker 이름은 절대 하드코딩하지 않는다.
+// 현재 CONVERSATION_STATE.turns의 speaker 값을 사용한다.
 // ============================================================
 
-// SUBBLOCK 1150
-// ============================================================
-// CONVERSATION ROLE STATE INITIALIZER
-//
-// BLOCK 1150은 BLOCK 1400의 CONVERSATION_STATE보다
-// 먼저 로드되므로 여기서 STATE를 직접 사용하지 않는다.
-//
-// 실제 Role Play가 시작되는 시점에만
-// CONVERSATION_STATE를 초기화한다.
-// ============================================================
 
+// SUBBLOCK 1150
 function ensureConversationRoleState() {
 
   if (
     typeof CONVERSATION_STATE ===
     'undefined'
   ) {
-
-    console.warn(
-      '[ROLE] CONVERSATION_STATE not ready'
-    );
-
     return false;
   }
-
 
   if (
     typeof CONVERSATION_STATE.userSpeaker !==
     'string'
   ) {
-
-    CONVERSATION_STATE.userSpeaker =
-      '';
+    CONVERSATION_STATE.userSpeaker = '';
   }
-
 
   if (
     typeof CONVERSATION_STATE.rolePlay !==
     'boolean'
   ) {
-
-    CONVERSATION_STATE.rolePlay =
-      false;
+    CONVERSATION_STATE.rolePlay = false;
   }
-
 
   if (
     !Number.isInteger(
       CONVERSATION_STATE.roleTurnIndex
     )
   ) {
-
-    CONVERSATION_STATE.roleTurnIndex =
-      0;
+    CONVERSATION_STATE.roleTurnIndex = 0;
   }
-
 
   return true;
 }
 
 
 // SUBBLOCK 1155
-// ============================================================
-// 현재 Turn
-// ============================================================
-
 function getConversationRoleTurn() {
+
+  if (
+    !ensureConversationRoleState()
+  ) {
+    return null;
+  }
 
   return (
     CONVERSATION_STATE.turns[
@@ -5477,10 +5464,6 @@ function getConversationRoleTurn() {
 
 
 // SUBBLOCK 1160
-// ============================================================
-// USER TURN 여부
-// ============================================================
-
 function isConversationUserTurn(
   turn
 ) {
@@ -5492,7 +5475,6 @@ function isConversationUserTurn(
     return false;
   }
 
-
   return (
     String(turn.speaker) ===
     String(
@@ -5503,11 +5485,6 @@ function isConversationUserTurn(
 
 
 // SUBBLOCK 1165
-// ============================================================
-// SPEAKER 이름 클릭 → MY ROLE 선택
-// 현재 Dialogue의 Speaker 이름을 동적으로 사용
-// ============================================================
-
 function installConversationRoleSelection() {
 
   var root =
@@ -5515,11 +5492,9 @@ function installConversationRoleSelection() {
       'questionContainer'
     );
 
-
   if (!root) {
     return;
   }
-
 
   if (
     root.dataset.roleBound ===
@@ -5528,25 +5503,21 @@ function installConversationRoleSelection() {
     return;
   }
 
-
   root.dataset.roleBound =
     '1';
-
 
   root.addEventListener(
     'click',
     function(event) {
 
-      var speakerButton =
+      var button =
         event.target.closest(
           '.conversation-speaker'
         );
 
-
-      if (!speakerButton) {
+      if (!button) {
         return;
       }
-
 
       if (
         !ensureConversationRoleState()
@@ -5554,45 +5525,34 @@ function installConversationRoleSelection() {
         return;
       }
 
-
       var speaker =
         String(
-          speakerButton.dataset.speaker ||
-          speakerButton.textContent ||
+          button.dataset.speaker ||
+          button.textContent ||
           ''
         )
-        .replace(
-          /:$/,
-          ''
-        )
+        .replace(/:$/, '')
         .trim();
-
 
       if (!speaker) {
         return;
       }
 
-
       CONVERSATION_STATE.userSpeaker =
         speaker;
-
 
       CONVERSATION_STATE.rolePlay =
         true;
 
-
       CONVERSATION_STATE.roleTurnIndex =
         0;
-
 
       console.log(
         '[ROLE] MY ROLE:',
         speaker
       );
 
-
       refreshConversationRoleUI();
-
 
       startConversationRolePlay();
     }
@@ -5601,10 +5561,6 @@ function installConversationRoleSelection() {
 
 
 // SUBBLOCK 1170
-// ============================================================
-// ROLE 표시
-// ============================================================
-
 function refreshConversationRoleUI() {
 
   document
@@ -5620,23 +5576,14 @@ function refreshConversationRoleUI() {
             ''
           ).trim();
 
-
         var active =
           speaker ===
           CONVERSATION_STATE.userSpeaker;
-
 
         button.classList.toggle(
           'conversation-my-role',
           active
         );
-
-
-        button.setAttribute(
-          'aria-pressed',
-          String(active)
-        );
-
 
         if (active) {
 
@@ -5669,33 +5616,27 @@ function refreshConversationRoleUI() {
 
 
 // SUBBLOCK 1175
-// ============================================================
-// ROLE PLAY START
-// ============================================================
-
 function startConversationRolePlay() {
 
   if (
+    !ensureConversationRoleState() ||
     !CONVERSATION_STATE.rolePlay ||
     !CONVERSATION_STATE.userSpeaker
   ) {
     return;
   }
 
-
   var turn =
     getConversationRoleTurn();
-
 
   if (!turn) {
 
     console.log(
-      '[ROLE] Conversation complete'
+      '[ROLE] COMPLETE'
     );
 
     return;
   }
-
 
   if (
     isConversationUserTurn(
@@ -5713,20 +5654,14 @@ function startConversationRolePlay() {
 
 
 // SUBBLOCK 1180
-// ============================================================
-// USER TURN → 기존 MIC Core 사용
-// ============================================================
-
 function startConversationUserTurn() {
 
   var turn =
     getConversationRoleTurn();
 
-
   if (!turn) {
     return;
   }
-
 
   var visibleTurns =
     Array.from(
@@ -5734,7 +5669,6 @@ function startConversationUserTurn() {
         '.conversation-turn'
       )
     );
-
 
   var visibleIndex =
     visibleTurns.findIndex(
@@ -5751,7 +5685,6 @@ function startConversationUserTurn() {
       }
     );
 
-
   if (
     visibleIndex >= 0
   ) {
@@ -5760,13 +5693,10 @@ function startConversationUserTurn() {
       visibleIndex;
   }
 
-
   console.log(
-    '[ROLE] USER:',
-    turn.speaker,
-    turn.text
+    '[ROLE] USER TURN:',
+    turn.speaker
   );
-
 
   if (
     !ANNE_STATE.micMode
@@ -5783,8 +5713,7 @@ function startConversationUserTurn() {
 
 // SUBBLOCK 1185
 // ============================================================
-// MIC PASS HANDLER
-// ANNE MIC Core에서 PASS 시 호출
+// 기존 MIC가 PASS했을 때 호출
 // ============================================================
 
 window.__gongbooMicPassHandler =
@@ -5794,15 +5723,14 @@ window.__gongbooMicPassHandler =
   ) {
 
     if (
+      !ensureConversationRoleState() ||
       !CONVERSATION_STATE.rolePlay
     ) {
       return false;
     }
 
-
     var turn =
       getConversationRoleTurn();
-
 
     if (
       !turn ||
@@ -5813,28 +5741,22 @@ window.__gongbooMicPassHandler =
       return false;
     }
 
-
     console.log(
-      '[ROLE] USER PASS:',
+      '[ROLE] PASS:',
       turn.speaker,
       score + '%'
     );
-
 
     if (
       typeof playPassSound ===
       'function'
     ) {
-
       playPassSound();
     }
 
-
     stopAnneRecognition();
 
-
     CONVERSATION_STATE.roleTurnIndex++;
-
 
     window.setTimeout(
       function() {
@@ -5842,39 +5764,29 @@ window.__gongbooMicPassHandler =
         startConversationRolePlay();
 
       },
-      350
+      250
     );
-
 
     return true;
   };
 
 
 // SUBBLOCK 1190
-// ============================================================
-// COMPUTER TURN → 기존 TTS 사용
-// ============================================================
-
 function startConversationComputerTurn() {
 
   var turn =
     getConversationRoleTurn();
 
-
   if (!turn) {
     return;
   }
 
-
   console.log(
-    '[ROLE] COMPUTER:',
-    turn.speaker,
-    turn.text
+    '[ROLE] COMPUTER TURN:',
+    turn.speaker
   );
 
-
   stopAnneRecognition();
-
 
   var turnEl =
     document.querySelector(
@@ -5883,7 +5795,6 @@ function startConversationComputerTurn() {
       '"]'
     );
 
-
   var textEl =
     turnEl
       ? turnEl.querySelector(
@@ -5891,10 +5802,7 @@ function startConversationComputerTurn() {
         )
       : null;
 
-
-  if (
-    !textEl
-  ) {
+  if (!textEl) {
 
     CONVERSATION_STATE.roleTurnIndex++;
 
@@ -5903,13 +5811,11 @@ function startConversationComputerTurn() {
     return;
   }
 
-
   var langCode =
     String(
       textEl.dataset.language ||
       'ENG'
     ).toUpperCase();
-
 
   var item = {
 
@@ -5936,22 +5842,17 @@ function startConversationComputerTurn() {
       turn.speaker
   };
 
-
   var runId =
     ++_speechRunId;
-
 
   _isSpeaking =
     true;
 
-
-  // 기존 ANNE TTS Core 사용
   readTextsWithHighlight(
     [item],
     0,
     runId
   );
-
 
   waitConversationComputerSpeechEnd(
     runId
@@ -5960,18 +5861,12 @@ function startConversationComputerTurn() {
 
 
 // SUBBLOCK 1195
-// ============================================================
-// COMPUTER TTS 종료 감시
-// 종료 후 다음 Turn으로 이동
-// ============================================================
-
 function waitConversationComputerSpeechEnd(
   runId
 ) {
 
   var startedAt =
     Date.now();
-
 
   var timer =
     window.setInterval(
@@ -5989,24 +5884,18 @@ function waitConversationComputerSpeechEnd(
           return;
         }
 
-
-        var elapsed =
-          Date.now() -
-          startedAt;
-
-
         if (
           !_isSpeaking &&
-          elapsed > 300
+          Date.now() -
+          startedAt >
+          250
         ) {
 
           clearInterval(
             timer
           );
 
-
           CONVERSATION_STATE.roleTurnIndex++;
-
 
           window.setTimeout(
             function() {
@@ -6014,21 +5903,17 @@ function waitConversationComputerSpeechEnd(
               startConversationRolePlay();
 
             },
-            250
+            200
           );
         }
 
       },
-      120
+      100
     );
 }
 
 
-// SUBBLOCK 1200
-// ============================================================
-// LESSON 시작 후 ROLE CLICK 설치
-// ============================================================
-
+// SUBBLOCK 1196
 function installConversationRolePlay() {
 
   installConversationRoleSelection();
