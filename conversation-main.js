@@ -317,7 +317,7 @@ async function testConversationConnection() {
 
 // SUBBLOCK 0203
 // ============================================================
-// CONVERSATION DB TEST START
+// DB TEST SUCCESS → CONVERSATION LESSON START
 // ============================================================
 
 function startConversationDbTest() {
@@ -332,6 +332,10 @@ function startConversationDbTest() {
 
         console.log(
           '[CONVERSATION] TEST COMPLETE'
+        );
+
+        startConversationLesson(
+          row
         );
       }
     );
