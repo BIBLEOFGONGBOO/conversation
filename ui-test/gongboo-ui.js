@@ -11,115 +11,132 @@
   ];
 
 
-  function closeCards(exceptCard){
+  /* =========================================================
+     CARD OPEN / CLOSE
+  ========================================================= */
 
-    cardPairs.forEach(function(pair){
+  function closeCards(
+    exceptCard
+  ){
+
+    cardPairs.forEach(
+      function(pair){
+
+        var button =
+          document.getElementById(
+            pair[0]
+          );
+
+        var card =
+          document.getElementById(
+            pair[1]
+          );
+
+        if(
+          !button ||
+          !card ||
+          card === exceptCard
+        ){
+          return;
+        }
+
+        card.hidden = true;
+
+        button.setAttribute(
+          'aria-expanded',
+          'false'
+        );
+
+        button.classList.remove(
+          'is-active'
+        );
+      }
+    );
+  }
+
+
+  cardPairs.forEach(
+    function(pair){
 
       var button =
-        document.getElementById(pair[0]);
+        document.getElementById(
+          pair[0]
+        );
 
       var card =
-        document.getElementById(pair[1]);
+        document.getElementById(
+          pair[1]
+        );
 
       if(
         !button ||
-        !card ||
-        card === exceptCard
+        !card
       ){
         return;
       }
 
-      card.hidden = true;
+      button.addEventListener(
+        'click',
+        function(event){
 
-      button.setAttribute(
-        'aria-expanded',
-        'false'
+          event.stopPropagation();
+
+          var opening =
+            card.hidden;
+
+          closeCards(
+            card
+          );
+
+          card.hidden =
+            !opening;
+
+          button.setAttribute(
+            'aria-expanded',
+            opening
+              ? 'true'
+              : 'false'
+          );
+
+          button.classList.toggle(
+            'is-active',
+            opening
+          );
+        }
       );
 
-      button.classList.remove(
-        'is-active'
+      card.addEventListener(
+        'click',
+        function(event){
+
+          event.stopPropagation();
+        }
       );
-    });
-  }
-
-
-  cardPairs.forEach(function(pair){
-
-    var button =
-      document.getElementById(pair[0]);
-
-    var card =
-      document.getElementById(pair[1]);
-
-    if(
-      !button ||
-      !card
-    ){
-      return;
     }
-
-    button.addEventListener(
-      'click',
-      function(event){
-
-        event.stopPropagation();
-
-        var opening =
-          card.hidden;
-
-        closeCards(card);
-
-        card.hidden =
-          !opening;
-
-        button.setAttribute(
-          'aria-expanded',
-          opening
-            ? 'true'
-            : 'false'
-        );
-
-        button.classList.toggle(
-          'is-active',
-          opening
-        );
-      }
-    );
-
-    card.addEventListener(
-      'click',
-      function(event){
-        event.stopPropagation();
-      }
-    );
-  });
+  );
 
 
   document.addEventListener(
     'click',
     function(){
+
       closeCards();
     }
   );
 
 
-  document.addEventListener(
-    'keydown',
-    function(event){
+  /* =========================================================
+     SIMPLE TOGGLE
+  ========================================================= */
 
-      if(
-        event.key === 'Escape'
-      ){
-        closeCards();
-      }
-    }
-  );
-
-
-  function bindToggle(id){
+  function bindToggle(
+    id
+  ){
 
     var button =
-      document.getElementById(id);
+      document.getElementById(
+        id
+      );
 
     if(!button){
       return;
@@ -145,130 +162,183 @@
   }
 
 
-  bindToggle('repeatToggle');
-  bindToggle('playAutoToggle');
-  bindToggle('micAutoToggle');
-  bindToggle('chunkToggle');
+  bindToggle(
+    'repeatToggle'
+  );
+
+  bindToggle(
+    'playAutoToggle'
+  );
+
+  bindToggle(
+    'micAutoToggle'
+  );
+
+  bindToggle(
+    'chunkToggle'
+  );
 
 
-  function bindStartStop(
-    startId,
-    stopId
+  /* =========================================================
+     PLAY START / STOP
+  ========================================================= */
+
+  var playStartButton =
+    document.getElementById(
+      'playStartButton'
+    );
+
+  var playStopButton =
+    document.getElementById(
+      'playStopButton'
+    );
+
+  var playButton =
+    document.getElementById(
+      'playButton'
+    );
+
+  var isPlaying =
+    false;
+
+
+  function setPlayState(
+    playing
   ){
 
-    var startButton =
-      document.getElementById(startId);
+    isPlaying =
+      !!playing;
 
-    var stopButton =
-      document.getElementById(stopId);
+    if(playStartButton){
 
-    if(
-      !startButton ||
-      !stopButton
-    ){
-      return;
+      playStartButton.setAttribute(
+        'aria-pressed',
+        isPlaying
+          ? 'true'
+          : 'false'
+      );
     }
 
-    startButton.addEventListener(
+    if(playStopButton){
+
+      playStopButton.setAttribute(
+        'aria-pressed',
+        isPlaying
+          ? 'false'
+          : 'true'
+      );
+    }
+
+    if(playButton){
+
+      playButton.classList.toggle(
+        'is-playing',
+        isPlaying
+      );
+    }
+  }
+
+
+  if(playStartButton){
+
+    playStartButton.addEventListener(
       'click',
       function(){
 
-        var alreadyOn =
-          startButton.getAttribute(
-            'aria-pressed'
-          ) === 'true';
-
-        startButton.setAttribute(
-          'aria-pressed',
-          alreadyOn
-            ? 'false'
-            : 'true'
-        );
-
-        stopButton.setAttribute(
-          'aria-pressed',
-          'false'
-        );
-      }
-    );
-
-    stopButton.addEventListener(
-      'click',
-      function(){
-
-        var alreadyOn =
-          stopButton.getAttribute(
-            'aria-pressed'
-          ) === 'true';
-
-        stopButton.setAttribute(
-          'aria-pressed',
-          alreadyOn
-            ? 'false'
-            : 'true'
-        );
-
-        startButton.setAttribute(
-          'aria-pressed',
-          'false'
+        setPlayState(
+          true
         );
       }
     );
   }
 
 
-  bindStartStop(
-    'playStartButton',
-    'playStopButton'
-  );
+  if(playStopButton){
 
-  bindStartStop(
-    'micStartButton',
-    'micStopButton'
-  );
+    playStopButton.addEventListener(
+      'click',
+      function(){
+
+        setPlayState(
+          false
+        );
+      }
+    );
+  }
 
 
-  var psgButton =
+  /* =========================================================
+     MIC START / STOP
+  ========================================================= */
+
+  var micStartButton =
     document.getElementById(
-      'psgButton'
+      'micStartButton'
     );
 
-  var psgExtra =
-    document.querySelectorAll(
-      '.gb-psg-extra'
+  var micStopButton =
+    document.getElementById(
+      'micStopButton'
     );
 
-  if(psgButton){
 
-    psgButton.addEventListener(
+  function setMicState(
+    running
+  ){
+
+    if(micStartButton){
+
+      micStartButton.setAttribute(
+        'aria-pressed',
+        running
+          ? 'true'
+          : 'false'
+      );
+    }
+
+    if(micStopButton){
+
+      micStopButton.setAttribute(
+        'aria-pressed',
+        running
+          ? 'false'
+          : 'true'
+      );
+    }
+  }
+
+
+  if(micStartButton){
+
+    micStartButton.addEventListener(
       'click',
       function(){
 
-        var isOn =
-          psgButton.getAttribute(
-            'aria-pressed'
-          ) === 'true';
-
-        isOn = !isOn;
-
-        psgButton.setAttribute(
-          'aria-pressed',
-          isOn
-            ? 'true'
-            : 'false'
-        );
-
-        psgExtra.forEach(
-          function(turn){
-
-            turn.hidden =
-              !isOn;
-          }
+        setMicState(
+          true
         );
       }
     );
   }
 
+
+  if(micStopButton){
+
+    micStopButton.addEventListener(
+      'click',
+      function(){
+
+        setMicState(
+          false
+        );
+      }
+    );
+  }
+
+
+  /* =========================================================
+     SPEED 0.25x ~ 2.00x
+  ========================================================= */
 
   var speedRange =
     document.getElementById(
@@ -279,6 +349,7 @@
     document.getElementById(
       'speedValue'
     );
+
 
   if(
     speedRange &&
@@ -303,6 +374,10 @@
   }
 
 
+  /* =========================================================
+     MIC PASS
+  ========================================================= */
+
   var passRange =
     document.getElementById(
       'passRange'
@@ -312,6 +387,7 @@
     document.getElementById(
       'passValue'
     );
+
 
   if(
     passRange &&
@@ -334,6 +410,10 @@
   }
 
 
+  /* =========================================================
+     MIC DELAY 0 ~ 5.0s
+  ========================================================= */
+
   var delayRange =
     document.getElementById(
       'delayRange'
@@ -343,6 +423,7 @@
     document.getElementById(
       'delayValue'
     );
+
 
   if(
     delayRange &&
@@ -367,10 +448,15 @@
   }
 
 
+  /* =========================================================
+     MODE
+  ========================================================= */
+
   var modeButtons =
     document.querySelectorAll(
       '.gb-mode-button:not(:disabled)'
     );
+
 
   modeButtons.forEach(
     function(button){
@@ -397,33 +483,355 @@
   );
 
 
+  /* =========================================================
+     CONVERSATION TURN
+  ========================================================= */
+
   var turns =
-    document.querySelectorAll(
-      '.gb-conversation-turn'
+    Array.from(
+      document.querySelectorAll(
+        '.gb-conversation-turn'
+      )
     );
 
+  var currentTurnIndex =
+    0;
+
+
+  function setCurrentTurn(
+    index
+  ){
+
+    if(
+      index < 0 ||
+      index >= turns.length
+    ){
+      return;
+    }
+
+    currentTurnIndex =
+      index;
+
+    turns.forEach(
+      function(turn,indexNumber){
+
+        turn.classList.toggle(
+          'is-current',
+          indexNumber === currentTurnIndex
+        );
+      }
+    );
+
+    updateNavigationLabels();
+  }
+
+
   turns.forEach(
-    function(turn){
+    function(turn,index){
 
       turn.addEventListener(
         'click',
         function(){
 
-          turns.forEach(
-            function(item){
-
-              item.classList.remove(
-                'is-current'
-              );
-            }
-          );
-
-          turn.classList.add(
-            'is-current'
+          setCurrentTurn(
+            index
           );
         }
       );
     }
+  );
+
+
+  /* =========================================================
+     PSG
+  ========================================================= */
+
+  var psgButton =
+    document.getElementById(
+      'psgButton'
+    );
+
+  var psgExtra =
+    document.querySelectorAll(
+      '.gb-psg-extra'
+    );
+
+
+  function isPsgOn(){
+
+    return !!(
+      psgButton &&
+      psgButton.getAttribute(
+        'aria-pressed'
+      ) === 'true'
+    );
+  }
+
+
+  if(psgButton){
+
+    psgButton.addEventListener(
+      'click',
+      function(){
+
+        var newState =
+          !isPsgOn();
+
+        psgButton.setAttribute(
+          'aria-pressed',
+          newState
+            ? 'true'
+            : 'false'
+        );
+
+        psgExtra.forEach(
+          function(turn){
+
+            turn.hidden =
+              !newState;
+          }
+        );
+
+        updateNavigationLabels();
+      }
+    );
+  }
+
+
+  /* =========================================================
+     PREV / NEXT
+  ========================================================= */
+
+  var prevButton =
+    document.getElementById(
+      'prevButton'
+    );
+
+  var nextButton =
+    document.getElementById(
+      'nextButton'
+    );
+
+
+  function updateNavigationLabels(){
+
+    if(!nextButton){
+      return;
+    }
+
+    /*
+      PSG ON
+      = Passage / Full Scenario Mode
+      = NEXT SCENARIO
+    */
+
+    if(
+      isPsgOn()
+    ){
+
+      nextButton.textContent =
+        'NEXT SCENARIO ▶';
+
+      return;
+    }
+
+
+    /*
+      PSG OFF
+      마지막 Turn
+      = NEXT SCENARIO
+    */
+
+    if(
+      currentTurnIndex >=
+      turns.length - 1
+    ){
+
+      nextButton.textContent =
+        'NEXT SCENARIO ▶';
+    }
+    else{
+
+      nextButton.textContent =
+        'NEXT ▶';
+    }
+  }
+
+
+  function goPrev(){
+
+    if(
+      currentTurnIndex > 0
+    ){
+
+      setCurrentTurn(
+        currentTurnIndex - 1
+      );
+    }
+  }
+
+
+  function goNext(){
+
+    /*
+      PSG ON에서는
+      실제 시스템 연결 후
+      다음 Scenario로 이동
+    */
+
+    if(
+      isPsgOn()
+    ){
+
+      return;
+    }
+
+
+    /*
+      마지막 Turn이면
+      실제 시스템 연결 후
+      다음 Scenario로 이동
+    */
+
+    if(
+      currentTurnIndex >=
+      turns.length - 1
+    ){
+
+      return;
+    }
+
+
+    setCurrentTurn(
+      currentTurnIndex + 1
+    );
+  }
+
+
+  if(prevButton){
+
+    prevButton.addEventListener(
+      'click',
+      goPrev
+    );
+  }
+
+
+  if(nextButton){
+
+    nextButton.addEventListener(
+      'click',
+      goNext
+    );
+  }
+
+
+  /* =========================================================
+     KEYBOARD
+     LEFT  = PREV
+     RIGHT = NEXT
+     SPACE = PLAY / STOP
+  ========================================================= */
+
+  function isTypingTarget(
+    target
+  ){
+
+    if(!target){
+      return false;
+    }
+
+    var tag =
+      String(
+        target.tagName || ''
+      ).toUpperCase();
+
+    return (
+      tag === 'INPUT' ||
+      tag === 'SELECT' ||
+      tag === 'TEXTAREA' ||
+      target.isContentEditable
+    );
+  }
+
+
+  document.addEventListener(
+    'keydown',
+    function(event){
+
+      if(
+        event.key === 'Escape'
+      ){
+
+        closeCards();
+
+        return;
+      }
+
+
+      if(
+        isTypingTarget(
+          event.target
+        )
+      ){
+        return;
+      }
+
+
+      if(
+        event.key ===
+        'ArrowLeft'
+      ){
+
+        event.preventDefault();
+
+        goPrev();
+
+        return;
+      }
+
+
+      if(
+        event.key ===
+        'ArrowRight'
+      ){
+
+        event.preventDefault();
+
+        goNext();
+
+        return;
+      }
+
+
+      if(
+        event.code === 'Space'
+      ){
+
+        event.preventDefault();
+
+        setPlayState(
+          !isPlaying
+        );
+      }
+    }
+  );
+
+
+  /* =========================================================
+     INITIAL
+  ========================================================= */
+
+  setPlayState(
+    false
+  );
+
+  setMicState(
+    false
+  );
+
+  setCurrentTurn(
+    0
   );
 
 })();
