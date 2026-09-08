@@ -3070,18 +3070,14 @@ function getAnneMicLanguage() {
 
 // SUBBLOCK 1103
 // ============================================================
-// 현재 읽어야 할 화면 문장 찾기
+// 현재 MIC 대상 문장 찾기
 //
-// ANNE
-//   .anne-full-diary
-//   .anne-passage
+// ANNE:
+//   .anne-full-diary .language-line
+//   .anne-passage .language-line
 //
-// CONVERSATION
-//   .conversation-turn
-//   .conversation-text
-//
-// CLICK / TOUCH = 수동 SYNC
-// 현재 인식 문장 = 노란 테두리
+// CONVERSATION:
+//   .conversation-turn .conversation-text
 // ============================================================
 
 function getCurrentMicSentence() {
@@ -3091,15 +3087,14 @@ function getCurrentMicSentence() {
 
 
   // ==========================================================
-  // CONVERSATION MODE
+  // 1. CONVERSATION
   // ==========================================================
 
   var conversationLines =
     Array.from(
       document.querySelectorAll(
         '.conversation-turn ' +
-        '.conversation-text' +
-        '[data-language="' +
+        '.conversation-text[data-language="' +
         langInfo.code +
         '"]'
       )
@@ -3121,180 +3116,6 @@ function getCurrentMicSentence() {
     conversationLines.length
   ) {
 
-    // ========================================================
-    // 현재 SYNC 위치 표시
-    // ========================================================
-
-    function showConversationSync(
-      index
-    ) {
-
-      conversationLines.forEach(
-        function(el, i) {
-
-          var turn =
-            el.closest(
-              '.conversation-turn'
-            );
-
-
-          if (!turn) {
-            return;
-          }
-
-
-          if (
-            i === index
-          ) {
-
-            turn.style.outline =
-              '2px solid #facc15';
-
-            turn.style.outlineOffset =
-              '2px';
-
-            turn.style.borderRadius =
-              '8px';
-
-          } else {
-
-            turn.style.outline =
-              '';
-
-            turn.style.outlineOffset =
-              '';
-          }
-
-
-          turn.style.cursor =
-            'pointer';
-        }
-      );
-    }
-
-
-    // ========================================================
-    // Conversation CLICK / TOUCH → 수동 SYNC
-    // ========================================================
-
-    conversationLines.forEach(
-      function(el, index) {
-
-        var turn =
-          el.closest(
-            '.conversation-turn'
-          );
-
-
-        if (!turn) {
-          return;
-        }
-
-
-        if (
-          turn.dataset.micSyncBound ===
-          '1'
-        ) {
-          return;
-        }
-
-
-        turn.dataset.micSyncBound =
-          '1';
-
-
-        turn.addEventListener(
-          'click',
-          function(event) {
-
-            if (
-              !ANNE_STATE.micMode
-            ) {
-              return;
-            }
-
-
-            // Speaker 이름 클릭은
-            // 나중에 ROLE 선택에 사용하므로 제외
-            if (
-              event.target.closest(
-                '.conversation-speaker'
-              )
-            ) {
-              return;
-            }
-
-
-            event.preventDefault();
-            event.stopPropagation();
-
-
-            _anneMicPassageIndex =
-              index;
-
-
-            showConversationSync(
-              index
-            );
-
-
-            _anneMicLastTranscript =
-              '';
-
-
-            if (
-              _anneMicRecognizeTimer
-            ) {
-
-              clearTimeout(
-                _anneMicRecognizeTimer
-              );
-
-              _anneMicRecognizeTimer =
-                null;
-            }
-
-
-            _anneMicMoving =
-              true;
-
-
-            if (
-              ANNE_STATE.recognition
-            ) {
-
-              try {
-
-                ANNE_STATE.recognition
-                  .stop();
-
-              } catch (_) {}
-            }
-
-
-            window.setTimeout(
-              function() {
-
-                _anneMicMoving =
-                  false;
-
-
-                if (
-                  ANNE_STATE.micMode
-                ) {
-
-                  startAnneRecognition();
-                }
-
-              },
-              180
-            );
-          }
-        );
-      }
-    );
-
-
     if (
       _anneMicPassageIndex < 0 ||
       _anneMicPassageIndex >=
@@ -3304,11 +3125,6 @@ function getCurrentMicSentence() {
       _anneMicPassageIndex =
         0;
     }
-
-
-    showConversationSync(
-      _anneMicPassageIndex
-    );
 
 
     var conversationEl =
@@ -3333,6 +3149,13 @@ function getCurrentMicSentence() {
     if (
       conversationText
     ) {
+
+      console.log(
+        '[MIC] CONVERSATION TARGET:',
+        _anneMicPassageIndex,
+        conversationText
+      );
+
 
       return {
 
@@ -3369,8 +3192,7 @@ function getCurrentMicSentence() {
               .closest(
                 '.conversation-turn'
               )
-              ?.dataset
-              .speaker ||
+              ?.dataset.speaker ||
             ''
           ).trim()
       };
@@ -3379,8 +3201,7 @@ function getCurrentMicSentence() {
 
 
   // ==========================================================
-  // ORIGINAL ANNE MODE
-  // 아래는 기존 ANNE 1103 유지
+  // 2. ORIGINAL ANNE FULL DIARY
   // ==========================================================
 
   var diaryLines =
@@ -3405,141 +3226,6 @@ function getCurrentMicSentence() {
     );
 
 
-  function showCurrentSync(
-    index
-  ) {
-
-    diaryLines.forEach(
-      function(el, i) {
-
-        if (
-          i === index
-        ) {
-
-          el.style.outline =
-            '2px solid #facc15';
-
-          el.style.outlineOffset =
-            '2px';
-
-          el.style.borderRadius =
-            '4px';
-
-          el.style.cursor =
-            'pointer';
-
-        } else {
-
-          el.style.outline =
-            '';
-
-          el.style.outlineOffset =
-            '';
-
-          el.style.cursor =
-            'pointer';
-        }
-      }
-    );
-  }
-
-
-  diaryLines.forEach(
-    function(el, index) {
-
-      if (
-        el.dataset.micSyncBound ===
-        '1'
-      ) {
-        return;
-      }
-
-
-      el.dataset.micSyncBound =
-        '1';
-
-
-      el.addEventListener(
-        'click',
-        function(event) {
-
-          if (
-            !ANNE_STATE.micMode
-          ) {
-            return;
-          }
-
-
-          event.preventDefault();
-          event.stopPropagation();
-
-
-          _anneMicPassageIndex =
-            index;
-
-
-          showCurrentSync(
-            index
-          );
-
-
-          _anneMicLastTranscript =
-            '';
-
-
-          if (
-            _anneMicRecognizeTimer
-          ) {
-
-            clearTimeout(
-              _anneMicRecognizeTimer
-            );
-
-            _anneMicRecognizeTimer =
-              null;
-          }
-
-
-          _anneMicMoving =
-            true;
-
-
-          if (
-            ANNE_STATE.recognition
-          ) {
-
-            try {
-
-              ANNE_STATE.recognition
-                .stop();
-
-            } catch (_) {}
-          }
-
-
-          window.setTimeout(
-            function() {
-
-              _anneMicMoving =
-                false;
-
-
-              if (
-                ANNE_STATE.micMode
-              ) {
-
-                startAnneRecognition();
-              }
-
-            },
-            180
-          );
-        }
-      );
-    }
-  );
-
-
   if (
     diaryLines.length
   ) {
@@ -3553,11 +3239,6 @@ function getCurrentMicSentence() {
       _anneMicPassageIndex =
         0;
     }
-
-
-    showCurrentSync(
-      _anneMicPassageIndex
-    );
 
 
     var diaryEl =
@@ -3607,16 +3288,16 @@ function getCurrentMicSentence() {
   }
 
 
-  var selector =
-    '.anne-passage ' +
-    '.language-line[data-language="' +
-    langInfo.code +
-    '"]';
-
+  // ==========================================================
+  // 3. ORIGINAL ANNE SINGLE PASSAGE
+  // ==========================================================
 
   var sentenceEl =
     document.querySelector(
-      selector
+      '.anne-passage ' +
+      '.language-line[data-language="' +
+      langInfo.code +
+      '"]'
     );
 
 
