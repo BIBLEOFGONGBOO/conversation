@@ -9523,9 +9523,14 @@ function renderConversationLesson() {
 
 // SUBBLOCK 1440
 // ============================================================
-// CONVERSATION BUTTON SYNC
-// 기존 ANNE PREV / NEXT 버튼 디자인 그대로 사용
-// PSG에서도 숨기지 않음
+// BUTTON SYNC
+//
+// PSG ON
+//   PREV / NEXT = Scenario 이동
+//
+// PSG OFF
+//   일반 Pair = PREV / NEXT
+//   마지막 Pair = NEXT SCENARIO
 // ============================================================
 
 function syncConversationButtons() {
@@ -9559,6 +9564,23 @@ function syncConversationButtons() {
     document.getElementById(
       'submitBtn'
     );
+
+
+  var totalPairs =
+    Math.ceil(
+      CONVERSATION_STATE.turns.length /
+      2
+    );
+
+
+  var lastPair =
+    CONVERSATION_STATE.pairIndex >=
+    totalPairs - 1;
+
+
+  var firstPair =
+    CONVERSATION_STATE.pairIndex <=
+    0;
 
 
   if (psg) {
@@ -9595,23 +9617,32 @@ function syncConversationButtons() {
   }
 
 
-  var totalPairs =
-    Math.ceil(
-      CONVERSATION_STATE.turns.length /
-      2
-    );
-
-
   if (prev) {
 
     prev.style.display =
       'inline-flex';
 
     prev.disabled =
-      CONVERSATION_STATE.pairIndex <= 0;
+      false;
 
-    prev.textContent =
-      '◀ PREV';
+
+    if (
+      CONVERSATION_STATE.fullPassage
+    ) {
+
+      prev.textContent =
+        '◀ PREV SCENARIO';
+
+    } else if (firstPair) {
+
+      prev.textContent =
+        '◀ PREV SCENARIO';
+
+    } else {
+
+      prev.textContent =
+        '◀ PREV';
+    }
   }
 
 
@@ -9621,11 +9652,26 @@ function syncConversationButtons() {
       'inline-flex';
 
     next.disabled =
-      CONVERSATION_STATE.pairIndex >=
-      totalPairs - 1;
+      false;
 
-    next.textContent =
-      'NEXT ▶';
+
+    if (
+      CONVERSATION_STATE.fullPassage
+    ) {
+
+      next.textContent =
+        'NEXT SCENARIO ▶';
+
+    } else if (lastPair) {
+
+      next.textContent =
+        'NEXT SCENARIO ▶';
+
+    } else {
+
+      next.textContent =
+        'NEXT ▶';
+    }
   }
 
 
