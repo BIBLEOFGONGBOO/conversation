@@ -2491,12 +2491,21 @@ function normalizeAnneWord(word) {
 // 맞은 단어는 speech-correct 클래스 적용
 // ------------------------------------------------------------
 
+// ------------------------------------------------------------
+// 학생 음성과 현재 문장 비교
+// 맞은 단어는 speech-correct 클래스 적용
+//
+// sentenceElement가 전달되면 그 문장을 사용.
+// 없으면 기존 ANNE 방식 그대로 사용.
+// ------------------------------------------------------------
+
 function compareAndHighlightCurrentSentence(
-  spokenText
+  spokenText,
+  sentenceElement
 ) {
 
-  // 우선 현재 화면에서 영어 문장 후보를 찾음
   const sentenceEl =
+    sentenceElement ||
     document.querySelector(
       "[data-original-text]"
     ) ||
@@ -2509,10 +2518,6 @@ function compareAndHighlightCurrentSentence(
 
     console.error(
       "현재 영어 문장 요소를 찾지 못했습니다."
-    );
-
-    alert(
-      "현재 영어 문장을 찾지 못했습니다."
     );
 
     return;
@@ -2543,27 +2548,32 @@ function compareAndHighlightCurrentSentence(
 
   const html =
     originalWords
-      .map(function (word) {
+      .map(function(word) {
 
         const original =
-          normalizeAnneWord(word);
+          normalizeAnneWord(
+            word
+          );
 
 
         if (
           spokenIndex <
             spokenWords.length &&
           original ===
-            spokenWords[spokenIndex]
+            spokenWords[
+              spokenIndex
+            ]
         ) {
 
           correctCount++;
+
           spokenIndex++;
 
 
           return (
             '<span class="speech-correct">' +
             word +
-            "</span>"
+            '</span>'
           );
         }
 
@@ -2575,7 +2585,9 @@ function compareAndHighlightCurrentSentence(
           );
 
 
-        if (nextIndex !== -1) {
+        if (
+          nextIndex !== -1
+        ) {
 
           correctCount++;
 
@@ -2586,17 +2598,19 @@ function compareAndHighlightCurrentSentence(
           return (
             '<span class="speech-correct">' +
             word +
-            "</span>"
+            '</span>'
           );
         }
 
 
-        return "<span>" +
+        return (
+          '<span>' +
           word +
-          "</span>";
+          '</span>'
+        );
 
       })
-      .join(" ");
+      .join(' ');
 
 
   sentenceEl.innerHTML =
@@ -2617,17 +2631,9 @@ function compareAndHighlightCurrentSentence(
 
 
   console.log(
-    "읽기 일치율:",
-    percent + "%"
+    '[MIC HIGHLIGHT]',
+    percent + '%'
   );
-
-
-  if (score >= 0.8) {
-
-    console.log(
-      "PASS"
-    );
-  }
 }
 </script>
 
