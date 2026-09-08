@@ -7076,69 +7076,9 @@ function collectVisibleSpeechItems() {
       'questionContainer'
     );
 
+
   if (!root) {
-
-    console.warn(
-      '[TTS] questionContainer 없음'
-    );
-
     return [];
-  }
-
-
-  var state =
-    getAnneState();
-
-
-  var currentMode =
-    state
-      ? state.mode
-      : 'study';
-
-
-  var correctAnswer =
-    null;
-
-
-  if (state) {
-
-    var currentDate =
-      state._currentDate;
-
-
-    var dayQuestions =
-      state.questions.filter(
-        function(q) {
-
-          return (
-            q.date ===
-            currentDate
-          );
-        }
-      );
-
-
-    var dayIndex =
-      state.index -
-      (
-        state._currentDayStart ||
-        0
-      );
-
-
-    var currentQuestion =
-      dayQuestions[
-        dayIndex
-      ];
-
-
-    if (currentQuestion) {
-
-      correctAnswer =
-        Number(
-          currentQuestion.answer
-        );
-    }
   }
 
 
@@ -7147,71 +7087,64 @@ function collectVisibleSpeechItems() {
       root.querySelectorAll(
         '.language-line[data-language]'
       )
+    ).filter(
+      function(el) {
+
+        return isSpeechElementVisible(
+          el
+        );
+      }
     );
 
 
-  var items = [];
+  // ==========================================================
+  // CONVERSATION
+  // 현재 노란 테두리 MIC/SYNC Target이 있으면
+  // 그 문장부터 읽기
+  // ==========================================================
+
+  if (
+    window.CONVERSATION_STATE &&
+    elements.length
+  ) {
+
+    var targetIndex =
+      Number(
+        window._anneMicPassageIndex ??
+        _anneMicPassageIndex ??
+        0
+      );
+
+
+    if (
+      targetIndex > 0 &&
+      targetIndex < elements.length
+    ) {
+
+      elements =
+        elements.slice(
+          targetIndex
+        );
+    }
+  }
+
+
+  var items =
+    [];
 
 
   elements.forEach(
     function(el) {
 
-      if (
-        !isSpeechElementVisible(el)
-      ) {
-        return;
-      }
-
-
-      if (
-        el.closest(
-          '#licenseFeedback'
-        ) ||
-        el.closest(
-          '.explanation'
-        )
-      ) {
-        return;
-      }
-
-
-      var choice =
-        el.closest(
-          '.choice'
-        );
-
-
-      if (
-        currentMode ===
-          'learn' &&
-        choice
-      ) {
-
-        var answerNumber =
-          Number(
-            choice.getAttribute(
-              'data-answer'
-            )
-          );
-
-
-        if (
-          answerNumber !==
-          correctAnswer
-        ) {
-          return;
-        }
-      }
-
-
       var text =
         String(
+          el.dataset.originalText ||
           el.textContent ||
           ''
-        );
+        ).trim();
 
 
-      if (!text.trim()) {
+      if (!text) {
         return;
       }
 
@@ -7223,35 +7156,10 @@ function collectVisibleSpeechItems() {
         ).toUpperCase();
 
 
-      if (
-        langCode !== 'ENG' &&
-        langCode !== 'KOR' &&
-        langCode !== 'JPN'
-      ) {
-
-        langCode =
-          'ENG';
-      }
-
-
-      // ======================================================
-      // CONVERSATION ADAPTER
-      // 현재 문장이 속한 Speaker를 TTS item에 직접 저장
-      // ======================================================
-
-      var turnEl =
+      var turn =
         el.closest(
           '.conversation-turn'
         );
-
-
-      var speaker =
-        turnEl
-          ? String(
-              turnEl.dataset.speaker ||
-              ''
-            ).trim()
-          : '';
 
 
       items.push({
@@ -7271,9 +7179,13 @@ function collectVisibleSpeechItems() {
           el,
 
         speaker:
-          speaker
+          turn
+            ? String(
+                turn.dataset.speaker ||
+                ''
+              ).trim()
+            : ''
       });
-
     }
   );
 
@@ -7738,7 +7650,6 @@ function readTextsWithHighlight(
     _isSpeaking =
       false;
 
-
     _currentUtterance =
       null;
 
@@ -7752,6 +7663,54 @@ function readTextsWithHighlight(
       );
     }
 
+
+    // ========================================================
+    // CONVERSATION AUTO
+    // 현재 2-Turn / PSG 읽기 완료 → 다음 단위
+    // ========================================================
+
+    if (
+      window.CONVERSATION_STATE &&
+      !ANNE_STATE.micMode &&
+      ANNE_STATE.auto
+    ) {
+
+      setTimeout(
+        function() {
+
+          if (
+            runId !== _speechRunId
+          ) {
+            return;
+          }
+
+          go(1);
+
+          setTimeout(
+            function() {
+
+              if (
+                !ANNE_STATE.micMode
+              ) {
+
+                speakWithDyslexiaSupport();
+              }
+
+            },
+            350
+          );
+
+        },
+        350
+      );
+
+      return;
+    }
+
+
+    // ========================================================
+    // ORIGINAL ANNE AUTO
+    // ========================================================
 
     var finishedState =
       getAnneState();
@@ -8099,11 +8058,6 @@ function readTextsWithHighlight(
     item.lang;
 
 
-  // ==========================================================
-  // CONVERSATION SPEAKER → GENDER VOICE
-  // 현재 읽는 item의 speaker를 직접 전달
-  // ==========================================================
-
   var voice =
     findVoiceForLanguage(
       item.lang,
@@ -8146,135 +8100,6 @@ function readTextsWithHighlight(
     rate;
 
 
-  var japaneseHighlightTimer =
-    null;
-
-
-  var speechStartedAt =
-    0;
-
-
-  var lastBoundaryTime =
-    0;
-
-
-  var japaneseEstimatedMs =
-    Math.max(
-      1500,
-      (
-        textToSpeak.length *
-        160
-      ) / rate
-    );
-
-
-  function stopJapaneseTimer() {
-
-    if (
-      japaneseHighlightTimer
-    ) {
-
-      clearInterval(
-        japaneseHighlightTimer
-      );
-
-
-      japaneseHighlightTimer =
-        null;
-    }
-  }
-
-
-  function startJapaneseFallback() {
-
-    if (
-      item.langCode !==
-      'JPN'
-    ) {
-      return;
-    }
-
-
-    stopJapaneseTimer();
-
-
-    japaneseHighlightTimer =
-      setInterval(
-        function() {
-
-          if (
-            runId !==
-            _speechRunId
-          ) {
-
-            stopJapaneseTimer();
-
-            return;
-          }
-
-
-          if (
-            !_isSpeaking
-          ) {
-
-            stopJapaneseTimer();
-
-            return;
-          }
-
-
-          var now =
-            Date.now();
-
-
-          if (
-            lastBoundaryTime &&
-            now -
-            lastBoundaryTime <
-            700
-          ) {
-            return;
-          }
-
-
-          var elapsed =
-            now -
-            speechStartedAt;
-
-
-          var ratio =
-            elapsed /
-            japaneseEstimatedMs;
-
-
-          ratio =
-            Math.max(
-              0,
-              Math.min(
-                0.98,
-                ratio
-              )
-            );
-
-
-          var charIndex =
-            Math.floor(
-              textToSpeak.length *
-              ratio
-            );
-
-
-          highlightSpeechAtChar(
-            highlightData,
-            charIndex
-          );
-
-        },
-        120
-      );
-  }
-
-
   utterance.onstart =
     function() {
 
@@ -8290,17 +8115,10 @@ function readTextsWithHighlight(
         true;
 
 
-      speechStartedAt =
-        Date.now();
-
-
       highlightSpeechAtChar(
         highlightData,
         0
       );
-
-
-      startJapaneseFallback();
     };
 
 
@@ -8316,15 +8134,11 @@ function readTextsWithHighlight(
 
 
       if (
-        typeof event.charIndex
-        !== 'number'
+        typeof event.charIndex !==
+        'number'
       ) {
         return;
       }
-
-
-      lastBoundaryTime =
-        Date.now();
 
 
       highlightSpeechAtChar(
@@ -8345,26 +8159,9 @@ function readTextsWithHighlight(
       }
 
 
-      stopJapaneseTimer();
-
-
       clearSpeechHighlight(
         highlightData
       );
-
-
-      if (
-        _speechTimeout
-      ) {
-
-        clearTimeout(
-          _speechTimeout
-        );
-
-
-        _speechTimeout =
-          null;
-      }
 
 
       _isSpeaking =
@@ -8380,8 +8177,7 @@ function readTextsWithHighlight(
           function(u) {
 
             return (
-              u !==
-              utterance
+              u !== utterance
             );
           }
         );
@@ -8413,33 +8209,9 @@ function readTextsWithHighlight(
       }
 
 
-      stopJapaneseTimer();
-
-
-      var error =
-        event &&
-        event.error
-          ? event.error
-          : 'unknown';
-
-
       clearSpeechHighlight(
         highlightData
       );
-
-
-      if (
-        _speechTimeout
-      ) {
-
-        clearTimeout(
-          _speechTimeout
-        );
-
-
-        _speechTimeout =
-          null;
-      }
 
 
       _isSpeaking =
@@ -8458,17 +8230,11 @@ function readTextsWithHighlight(
 
 
       if (
-        error === 'canceled' ||
-        error === 'interrupted'
+        event.error === 'canceled' ||
+        event.error === 'interrupted'
       ) {
         return;
       }
-
-
-      console.warn(
-        '[TTS] 오류:',
-        error
-      );
 
 
       readTextsWithHighlight(
@@ -8477,112 +8243,6 @@ function readTextsWithHighlight(
         runId
       );
     };
-
-
-  var estimatedSeconds;
-
-
-  if (
-    item.langCode === 'JPN' ||
-    item.langCode === 'KOR'
-  ) {
-
-    estimatedSeconds =
-      Math.max(
-        20,
-        textToSpeak.length /
-          (4 * rate)
-          + 15
-      );
-
-  } else {
-
-    var wordCount =
-      textToSpeak
-        .trim()
-        .split(/\s+/)
-        .length;
-
-
-    estimatedSeconds =
-      Math.max(
-        20,
-        wordCount *
-          0.8 /
-          rate
-          + 15
-      );
-  }
-
-
-  estimatedSeconds =
-    Math.min(
-      estimatedSeconds,
-      600
-    );
-
-
-  _speechTimeout =
-    setTimeout(
-      function() {
-
-        if (
-          runId !==
-          _speechRunId
-        ) {
-          return;
-        }
-
-
-        if (
-          _currentUtterance !==
-          utterance
-        ) {
-          return;
-        }
-
-
-        stopJapaneseTimer();
-
-
-        try {
-
-          window.speechSynthesis
-            .cancel();
-
-        } catch (e) {}
-
-
-        clearSpeechHighlight(
-          highlightData
-        );
-
-
-        _isSpeaking =
-          false;
-
-
-        _currentUtterance =
-          null;
-
-
-        if (state) {
-
-          state._utterance =
-            null;
-        }
-
-
-        readTextsWithHighlight(
-          items,
-          index + 1,
-          runId
-        );
-
-      },
-      estimatedSeconds *
-      1000
-    );
 
 
   try {
@@ -8597,34 +8257,6 @@ function readTextsWithHighlight(
 
 
   } catch (e) {
-
-    stopJapaneseTimer();
-
-
-    console.error(
-      '[TTS] speak 실패:',
-      e
-    );
-
-
-    clearSpeechHighlight(
-      highlightData
-    );
-
-
-    if (
-      _speechTimeout
-    ) {
-
-      clearTimeout(
-        _speechTimeout
-      );
-
-
-      _speechTimeout =
-        null;
-    }
-
 
     _isSpeaking =
       false;
