@@ -36,8 +36,7 @@
           return;
         }
 
-        card.hidden =
-          true;
+        card.hidden = true;
 
         button.setAttribute(
           'aria-expanded',
@@ -185,6 +184,73 @@
   );
 
 
+  function bindExclusiveToggle(
+    firstId,
+    secondId
+  ){
+
+    var first =
+      document.getElementById(
+        firstId
+      );
+
+    var second =
+      document.getElementById(
+        secondId
+      );
+
+    if(
+      !first ||
+      !second
+    ){
+      return;
+    }
+
+    first.addEventListener(
+      'click',
+      function(){
+
+        first.setAttribute(
+          'aria-pressed',
+          'true'
+        );
+
+        second.setAttribute(
+          'aria-pressed',
+          'false'
+        );
+      }
+    );
+
+    second.addEventListener(
+      'click',
+      function(){
+
+        second.setAttribute(
+          'aria-pressed',
+          'true'
+        );
+
+        first.setAttribute(
+          'aria-pressed',
+          'false'
+        );
+      }
+    );
+  }
+
+
+  bindExclusiveToggle(
+    'playStartButton',
+    'playStopButton'
+  );
+
+  bindExclusiveToggle(
+    'micStartButton',
+    'micStopButton'
+  );
+
+
   var psgButton =
     document.getElementById(
       'psgButton'
@@ -206,8 +272,7 @@
             'aria-pressed'
           ) === 'true';
 
-        isOn =
-          !isOn;
+        isOn = !isOn;
 
         psgButton.setAttribute(
           'aria-pressed',
@@ -323,69 +388,6 @@
 
     renderDelay();
   }
-
-
-  function bindStartStop(
-    startId,
-    stopId
-  ){
-
-    var startButton =
-      document.getElementById(
-        startId
-      );
-
-    var stopButton =
-      document.getElementById(
-        stopId
-      );
-
-    if(
-      !startButton ||
-      !stopButton
-    ){
-      return;
-    }
-
-    startButton.addEventListener(
-      'click',
-      function(){
-
-        startButton.classList.add(
-          'is-active'
-        );
-
-        stopButton.classList.remove(
-          'is-active'
-        );
-      }
-    );
-
-    stopButton.addEventListener(
-      'click',
-      function(){
-
-        stopButton.classList.add(
-          'is-active'
-        );
-
-        startButton.classList.remove(
-          'is-active'
-        );
-      }
-    );
-  }
-
-
-  bindStartStop(
-    'playStartButton',
-    'playStopButton'
-  );
-
-  bindStartStop(
-    'micStartButton',
-    'micStopButton'
-  );
 
 
   var modeButtons =
