@@ -4452,6 +4452,36 @@ function finalizeAnneMicRecognition(
   }
 }
 
+
+// SUBBLOCK 1110-3
+// ============================================================
+// CONVERSATION MIC HIGHLIGHT ADAPTER
+// ============================================================
+
+function highlightAnneMicWords(
+  sentence,
+  spokenText
+) {
+
+  if (
+    !sentence ||
+    !sentence.element
+  ) {
+    return;
+  }
+
+  if (
+    typeof compareAndHighlightCurrentSentence !==
+    'function'
+  ) {
+    return;
+  }
+
+  compareAndHighlightCurrentSentence(
+    spokenText,
+    sentence.element
+  );
+}
 // SUBBLOCK 1111
 // ============================================================
 // Recognition 생성 및 시작
