@@ -1367,51 +1367,268 @@ function goHome() {
 }
 
 // SUBBLOCK 0507
-function go(d) {
+// ============================================================
+// PREV / NEXT
+//
+// CONVERSATION
+// PSG ON  → 이전/다음 시나리오 전체 PSG
+// PSG OFF → 이전/다음 2-Turn
+//            경계에서는 이전/다음 시나리오로 이동
+//
+// ANNE
+// 기존 동작 그대로 유지
+// ============================================================
+
+async function go(d) {
+
+  // ==========================================================
+  // CONVERSATION
+  // ==========================================================
+
+  var conv =
+    window.CONVERSATION_STATE;
+
+  var list =
+    window.CONVERSATION_LIST_STATE;
+
+
+  if (
+    conv &&
+    conv.row &&
+    Array.isArray(conv.turns) &&
+    conv.turns.length
+  ) {
+
+    var totalPairs =
+      Math.ceil(
+        conv.turns.length / 2
+      );
+
+
+    // ========================================================
+    // PSG OFF → 같은 시나리오 안에서 2-Turn 이동
+    // ========================================================
+
+    if (!conv.fullPassage) {
+
+      var nextPair =
+        conv.pairIndex + d;
+
+
+      if (
+        nextPair >= 0 &&
+        nextPair < totalPairs
+      ) {
+
+        conv.pairIndex =
+          nextPair;
+
+        conv.helpVisible =
+          false;
+
+        renderConversationLesson();
+
+        return;
+      }
+    }
+
+
+    // ========================================================
+    // 시나리오 이동
+    // PSG ON 또는 2-Turn 경계
+    // ========================================================
+
+    var items =
+      list &&
+      Array.isArray(list.items)
+        ? list.items
+        : [];
+
+
+    if (!items.length) {
+
+      console.warn(
+        '[CONVERSATION] Scenario list 없음'
+      );
+
+      return;
+    }
+
+
+    var currentId =
+      String(
+        conv.row.ID || ''
+      );
+
+
+    var currentIndex =
+      items.findIndex(
+        function(item) {
+
+          return (
+            String(item.ID) ===
+            currentId
+          );
+        }
+      );
+
+
+    if (currentIndex < 0) {
+
+      console.warn(
+        '[CONVERSATION] Current ID 없음:',
+        currentId
+      );
+
+      return;
+    }
+
+
+    var targetIndex =
+      currentIndex + d;
+
+
+    if (
+      targetIndex < 0 ||
+      targetIndex >= items.length
+    ) {
+
+      return;
+    }
+
+
+    var keepPsg =
+      !!conv.fullPassage;
+
+
+    var target =
+      items[targetIndex];
+
+
+    console.log(
+      '[CONVERSATION] MOVE:',
+      currentId,
+      '→',
+      target.ID
+    );
+
+
+    var row =
+      await loadConversationById(
+        target.ID,
+        'EN'
+      );
+
+
+    startConversationLesson(
+      row
+    );
+
+
+    // ========================================================
+    // PSG 상태 유지
+    // ========================================================
+
+    CONVERSATION_STATE.fullPassage =
+      keepPsg;
+
+    CONVERSATION_STATE.helpVisible =
+      false;
+
+
+    // ========================================================
+    // PSG OFF
+    // NEXT → 새 시나리오 첫 2-Turn
+    // PREV → 이전 시나리오 마지막 2-Turn
+    // ========================================================
+
+    if (!keepPsg) {
+
+      if (d < 0) {
+
+        CONVERSATION_STATE.pairIndex =
+          Math.max(
+            0,
+            Math.ceil(
+              CONVERSATION_STATE.turns.length /
+              2
+            ) - 1
+          );
+
+      } else {
+
+        CONVERSATION_STATE.pairIndex =
+          0;
+      }
+    }
+
+
+    renderConversationLesson();
+
+    return;
+  }
+
+
+  // ==========================================================
+  // ORIGINAL ANNE
+  // ==========================================================
 
   var currentDate =
     ANNE_STATE._currentDate;
 
   var loadedDates = [];
 
-  ANNE_STATE.questions.forEach(function(q) {
-    if (
-      q.date &&
-      loadedDates.indexOf(q.date) === -1
-    ) {
-      loadedDates.push(q.date);
+
+  ANNE_STATE.questions.forEach(
+    function(q) {
+
+      if (
+        q.date &&
+        loadedDates.indexOf(
+          q.date
+        ) === -1
+      ) {
+
+        loadedDates.push(
+          q.date
+        );
+      }
     }
-  });
+  );
+
 
   var loadedIndex =
-    loadedDates.indexOf(currentDate);
+    loadedDates.indexOf(
+      currentDate
+    );
+
 
   if (loadedIndex < 0) {
     return;
   }
 
 
-  // SUBBLOCK 0507-01
   // ==========================================================
-  // PSG MODE
-  // 현재 Passage → 다음 Passage
-  // 마지막 로딩 SET이면 다음 5 SET 로딩
-  // PSG 상태 유지
+  // ANNE PSG MODE
   // ==========================================================
 
-  if (!ANNE_STATE.annePassageVisible) {
+  if (
+    !ANNE_STATE.annePassageVisible
+  ) {
 
     var nextLoadedIndex =
       loadedIndex + d;
 
 
-    // 현재 로딩된 마지막 SET 이후
     if (
       d > 0 &&
-      nextLoadedIndex >= loadedDates.length
+      nextLoadedIndex >=
+        loadedDates.length
     ) {
 
-      loadNextSets('passage');
+      loadNextSets(
+        'passage'
+      );
 
       return;
     }
@@ -1419,21 +1636,28 @@ function go(d) {
 
     if (
       nextLoadedIndex < 0 ||
-      nextLoadedIndex >= loadedDates.length
+      nextLoadedIndex >=
+        loadedDates.length
     ) {
+
       return;
     }
 
 
     var nextDate =
-      loadedDates[nextLoadedIndex];
+      loadedDates[
+        nextLoadedIndex
+      ];
 
 
-    var newStartIndex = 0;
+    var newStartIndex =
+      0;
+
 
     for (
       var i = 0;
-      i < ANNE_STATE.questions.length;
+      i <
+        ANNE_STATE.questions.length;
       i++
     ) {
 
@@ -1442,7 +1666,8 @@ function go(d) {
         nextDate
       ) {
 
-        newStartIndex = i;
+        newStartIndex =
+          i;
 
         break;
       }
@@ -1456,9 +1681,15 @@ function go(d) {
       newStartIndex;
 
     ANNE_STATE._currentDayCount =
-      ANNE_STATE.questions.filter(function(q) {
-        return q.date === nextDate;
-      }).length;
+      ANNE_STATE.questions.filter(
+        function(q) {
+
+          return (
+            q.date ===
+            nextDate
+          );
+        }
+      ).length;
 
     ANNE_STATE.index =
       newStartIndex;
@@ -1467,7 +1698,6 @@ function go(d) {
       d;
 
 
-    // PSG 상태 유지
     ANNE_STATE.annePassageVisible =
       false;
 
@@ -1482,42 +1712,51 @@ function go(d) {
       !ANNE_STATE.micMode
     ) {
 
-      setTimeout(function() {
+      setTimeout(
+        function() {
 
-        if (
-          window.__licenseSpeechState
-        ) {
+          if (
+            window.__licenseSpeechState
+          ) {
 
-          window.__licenseSpeechState(
-            'licensePlay'
-          );
-        }
+            window.__licenseSpeechState(
+              'licensePlay'
+            );
+          }
 
-        speakWithDyslexiaSupport();
 
-      }, 350);
+          speakWithDyslexiaSupport();
+
+        },
+        350
+      );
     }
+
 
     return;
   }
 
 
-  // SUBBLOCK 0507-02
   // ==========================================================
-  // QZ MODE
-  // 현재 SET 내부에서 문제 이동
-  // 마지막 문제에서는 go()로 다음 SET 이동 안 함
-  // SUBMIT → RESULT → NEXT SET 흐름 사용
+  // ANNE QZ MODE
   // ==========================================================
 
   var dayQuestions =
-    ANNE_STATE.questions.filter(function(q) {
-      return q.date === currentDate;
-    });
+    ANNE_STATE.questions.filter(
+      function(q) {
+
+        return (
+          q.date ===
+          currentDate
+        );
+      }
+    );
+
 
   var dayIndex =
     ANNE_STATE.index -
     ANNE_STATE._currentDayStart;
+
 
   var newDayIndex =
     dayIndex + d;
@@ -1525,7 +1764,8 @@ function go(d) {
 
   if (
     newDayIndex >= 0 &&
-    newDayIndex < dayQuestions.length
+    newDayIndex <
+      dayQuestions.length
   ) {
 
     ANNE_STATE.index =
@@ -1543,20 +1783,24 @@ function go(d) {
       !ANNE_STATE.micMode
     ) {
 
-      setTimeout(function() {
+      setTimeout(
+        function() {
 
-        if (
-          window.__licenseSpeechState
-        ) {
+          if (
+            window.__licenseSpeechState
+          ) {
 
-          window.__licenseSpeechState(
-            'licensePlay'
-          );
-        }
+            window.__licenseSpeechState(
+              'licensePlay'
+            );
+          }
 
-        speakWithDyslexiaSupport();
 
-      }, 350);
+          speakWithDyslexiaSupport();
+
+        },
+        350
+      );
     }
   }
 }
@@ -9408,14 +9652,7 @@ function syncConversationButtons() {
 // SUBBLOCK 1445
 // ============================================================
 // CONVERSATION BUTTON EVENTS
-//
-// PSG ON
-//   PREV / NEXT = 이전 / 다음 시나리오
-//
-// PSG OFF
-//   PREV / NEXT = 2-Turn 이동
-//   마지막 2-Turn에서 NEXT = 다음 시나리오 첫 2-Turn
-//   첫 2-Turn에서 PREV = 이전 시나리오 마지막 2-Turn
+// PREV / NEXT는 기존 go() 사용
 // ============================================================
 
 function installConversationLessonControls() {
@@ -9479,57 +9716,13 @@ function installConversationLessonControls() {
   if (next) {
 
     next.onclick =
-      async function() {
+      function() {
 
-        // ====================================================
-        // PSG ON → 다음 시나리오
-        // ====================================================
-
-        if (
-          CONVERSATION_STATE.fullPassage
-        ) {
-
-          await moveConversationScenario(
-            1,
-            true
-          );
-
-          return;
-        }
-
-
-        // ====================================================
-        // PSG OFF → 다음 2 TURN
-        // 마지막이면 다음 시나리오
-        // ====================================================
-
-        var totalPairs =
-          Math.ceil(
-            CONVERSATION_STATE.turns.length /
-            2
-          );
-
-
-        if (
-          CONVERSATION_STATE.pairIndex <
-          totalPairs - 1
-        ) {
-
-          CONVERSATION_STATE.pairIndex++;
-
-          CONVERSATION_STATE.helpVisible =
-            false;
-
-          renderConversationLesson();
-
-          return;
-        }
-
-
-        await moveConversationScenario(
-          1,
-          false
+        setButtonActive(
+          this
         );
+
+        go(1);
       };
   }
 
@@ -9537,50 +9730,13 @@ function installConversationLessonControls() {
   if (prev) {
 
     prev.onclick =
-      async function() {
+      function() {
 
-        // ====================================================
-        // PSG ON → 이전 시나리오
-        // ====================================================
-
-        if (
-          CONVERSATION_STATE.fullPassage
-        ) {
-
-          await moveConversationScenario(
-            -1,
-            true
-          );
-
-          return;
-        }
-
-
-        // ====================================================
-        // PSG OFF → 이전 2 TURN
-        // 첫 Pair면 이전 시나리오 마지막 Pair
-        // ====================================================
-
-        if (
-          CONVERSATION_STATE.pairIndex >
-          0
-        ) {
-
-          CONVERSATION_STATE.pairIndex--;
-
-          CONVERSATION_STATE.helpVisible =
-            false;
-
-          renderConversationLesson();
-
-          return;
-        }
-
-
-        await moveConversationScenario(
-          -1,
-          false
+        setButtonActive(
+          this
         );
+
+        go(-1);
       };
   }
 }
