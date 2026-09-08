@@ -5340,14 +5340,65 @@ function installAnneMicButton() {
 // ROLE STATE
 // ============================================================
 
-CONVERSATION_STATE.userSpeaker =
-  CONVERSATION_STATE.userSpeaker || '';
+// SUBBLOCK 1150
+// ============================================================
+// CONVERSATION ROLE STATE INITIALIZER
+//
+// BLOCK 1150은 BLOCK 1400의 CONVERSATION_STATE보다
+// 먼저 로드되므로 여기서 STATE를 직접 사용하지 않는다.
+//
+// 실제 Role Play가 시작되는 시점에만
+// CONVERSATION_STATE를 초기화한다.
+// ============================================================
 
-CONVERSATION_STATE.rolePlay =
-  false;
+function ensureConversationRoleState() {
 
-CONVERSATION_STATE.roleTurnIndex =
-  0;
+  if (
+    typeof CONVERSATION_STATE ===
+    'undefined'
+  ) {
+
+    console.warn(
+      '[ROLE] CONVERSATION_STATE not ready'
+    );
+
+    return false;
+  }
+
+
+  if (
+    typeof CONVERSATION_STATE.userSpeaker !==
+    'string'
+  ) {
+
+    CONVERSATION_STATE.userSpeaker =
+      '';
+  }
+
+
+  if (
+    typeof CONVERSATION_STATE.rolePlay !==
+    'boolean'
+  ) {
+
+    CONVERSATION_STATE.rolePlay =
+      false;
+  }
+
+
+  if (
+    !Number.isInteger(
+      CONVERSATION_STATE.roleTurnIndex
+    )
+  ) {
+
+    CONVERSATION_STATE.roleTurnIndex =
+      0;
+  }
+
+
+  return true;
+}
 
 
 // SUBBLOCK 1155
