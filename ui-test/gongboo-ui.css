@@ -10,13 +10,12 @@
   --gb-muted:#69717d;
 
   --gb-accent:#2f6fa3;
-  --gb-accent-soft:#eaf3fb;
+  --gb-accent-soft:#e2eef8;
 
   --gb-current:#f0c84b;
 
   --gb-radius:10px;
   --gb-card-radius:12px;
-
   --gb-button-height:40px;
 
   --gb-shadow:
@@ -67,14 +66,12 @@ button{
   top:0;
   z-index:3000;
 
-  background:
-    rgba(244,246,248,.96);
+  background:rgba(244,246,248,.96);
 
   border-bottom:
     1px solid var(--gb-border);
 
-  backdrop-filter:
-    blur(10px);
+  backdrop-filter:blur(10px);
 }
 
 .gb-topbar-row{
@@ -84,7 +81,6 @@ button{
   );
 
   margin:0 auto;
-
   padding:7px 0;
 }
 
@@ -101,7 +97,7 @@ button{
 }
 
 
-/* MAIN BUTTONS */
+/* MAIN BUTTON */
 
 .gb-tool-button{
   min-width:68px;
@@ -112,14 +108,10 @@ button{
   border:
     1px solid var(--gb-border);
 
-  border-radius:
-    var(--gb-radius);
+  border-radius:var(--gb-radius);
 
-  background:
-    var(--gb-surface);
-
-  color:
-    var(--gb-text);
+  background:var(--gb-surface);
+  color:var(--gb-text);
 
   font-size:12px;
   font-weight:800;
@@ -139,9 +131,7 @@ button{
 
 .gb-chevron{
   font-size:8px;
-
-  color:
-    var(--gb-muted);
+  color:var(--gb-muted);
 }
 
 .gb-tool-button-square{
@@ -152,20 +142,16 @@ button{
 }
 
 .gb-tool-button:hover{
-  background:
-    var(--gb-soft);
+  background:var(--gb-soft);
 }
 
 .gb-tool-button.is-active,
 .gb-tool-button[aria-pressed="true"]{
-  color:
-    var(--gb-accent);
+  color:var(--gb-accent);
 
-  border-color:
-    var(--gb-accent);
+  border-color:var(--gb-accent);
 
-  background:
-    var(--gb-accent-soft);
+  background:var(--gb-accent-soft);
 }
 
 
@@ -189,11 +175,9 @@ button{
   border-radius:
     var(--gb-card-radius);
 
-  background:
-    var(--gb-surface);
+  background:var(--gb-surface);
 
-  box-shadow:
-    var(--gb-shadow);
+  box-shadow:var(--gb-shadow);
 }
 
 .gb-card[hidden]{
@@ -201,11 +185,9 @@ button{
 }
 
 .gb-card-title{
-  padding:
-    2px 6px 7px;
+  padding:2px 6px 7px;
 
-  color:
-    var(--gb-muted);
+  color:var(--gb-muted);
 
   font-size:11px;
   font-weight:900;
@@ -238,17 +220,14 @@ button{
 
   column-gap:16px;
 
-  padding:
-    0 9px;
+  padding:0 9px;
 
   border:0;
   border-radius:8px;
 
-  background:
-    transparent;
+  background:transparent;
 
-  color:
-    var(--gb-text);
+  color:var(--gb-text);
 
   text-align:left;
 
@@ -257,18 +236,14 @@ button{
 
 .gb-system-option:hover,
 .gb-system-option.is-active{
-  background:
-    var(--gb-accent-soft);
+  background:var(--gb-accent-soft);
 }
 
 .gb-system-code{
-  color:
-    var(--gb-accent);
+  color:var(--gb-accent);
 
   font-size:12px;
   font-weight:900;
-
-  letter-spacing:.04em;
 }
 
 .gb-system-name{
@@ -277,16 +252,14 @@ button{
 }
 
 .gb-submenu-arrow{
-  color:
-    var(--gb-muted);
+  color:var(--gb-muted);
 
   font-size:18px;
-
   text-align:right;
 }
 
 
-/* STANDARD CARD ROW */
+/* LANGUAGE */
 
 .gb-card-row{
   min-height:42px;
@@ -302,8 +275,7 @@ button{
 }
 
 .gb-card-label{
-  color:
-    var(--gb-muted);
+  color:var(--gb-muted);
 
   font-size:12px;
   font-weight:800;
@@ -312,20 +284,18 @@ button{
 .gb-select{
   height:31px;
 
-  padding:
-    0 8px;
+  padding:0 8px;
 
   border:
     1px solid var(--gb-border);
 
   border-radius:8px;
 
-  background:
-    var(--gb-surface);
+  background:var(--gb-surface);
 }
 
 
-/* SLIDER */
+/* SLIDERS */
 
 .gb-slider-row{
   min-height:48px;
@@ -344,8 +314,7 @@ button{
 }
 
 .gb-slider-label{
-  color:
-    var(--gb-muted);
+  color:var(--gb-muted);
 
   font-size:12px;
   font-weight:900;
@@ -354,8 +323,7 @@ button{
 .gb-slider-value{
   text-align:right;
 
-  color:
-    var(--gb-text);
+  color:var(--gb-text);
 
   font-size:12px;
   font-weight:900;
@@ -371,7 +339,7 @@ button{
 }
 
 
-/* PLAY FOUR BUTTON ROW */
+/* PLAY */
 
 .gb-four-actions{
   display:grid;
@@ -385,7 +353,7 @@ button{
 }
 
 
-/* MIC THREE BUTTON ROW */
+/* MIC */
 
 .gb-three-actions{
   display:grid;
@@ -399,26 +367,22 @@ button{
 }
 
 
-/* COMPACT TOGGLE + ACTION */
+/* TOGGLE / START / STOP */
 
 .gb-compact-toggle,
 .gb-compact-action{
   min-width:0;
   height:34px;
 
-  padding:
-    0 5px;
+  padding:0 5px;
 
   border:
     1px solid var(--gb-border);
 
   border-radius:8px;
 
-  background:
-    var(--gb-surface);
-
-  color:
-    var(--gb-text);
+  background:var(--gb-surface);
+  color:var(--gb-text);
 
   font-size:10.5px;
   font-weight:900;
@@ -428,21 +392,22 @@ button{
   cursor:pointer;
 }
 
-.gb-compact-toggle[aria-pressed="true"]{
-  color:
-    var(--gb-accent);
-
-  border-color:
-    var(--gb-accent);
-
-  background:
-    var(--gb-accent-soft);
+.gb-compact-toggle:hover,
+.gb-compact-action:hover{
+  background:var(--gb-soft);
 }
 
-.gb-compact-action:hover,
-.gb-compact-toggle:hover{
-  background:
-    var(--gb-soft);
+.gb-compact-toggle[aria-pressed="true"],
+.gb-compact-action[aria-pressed="true"],
+.gb-compact-action.is-active{
+  color:var(--gb-accent);
+
+  border-color:var(--gb-accent);
+
+  background:var(--gb-accent-soft);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(47,111,163,.08);
 }
 
 
@@ -465,11 +430,8 @@ button{
 
   border-radius:8px;
 
-  background:
-    var(--gb-surface);
-
-  color:
-    var(--gb-text);
+  background:var(--gb-surface);
+  color:var(--gb-text);
 
   font-size:11px;
   font-weight:800;
@@ -478,14 +440,11 @@ button{
 }
 
 .gb-mode-button.is-active{
-  color:
-    var(--gb-accent);
+  color:var(--gb-accent);
 
-  border-color:
-    var(--gb-accent);
+  border-color:var(--gb-accent);
 
-  background:
-    var(--gb-accent-soft);
+  background:var(--gb-accent-soft);
 }
 
 .gb-mode-button:disabled{
@@ -501,94 +460,43 @@ button{
 .gb-card-separator{
   height:1px;
 
-  margin:
-    8px 0;
+  margin:8px 0;
 
-  background:
-    #edf0f3;
+  background:#edf0f3;
 }
 
 
-/* CHUNK TOGGLE */
+/* CHUNK */
 
-.gb-toggle-line{
+.gb-chunk-button{
   width:100%;
   height:36px;
 
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  border:
+    1px solid var(--gb-border);
 
-  padding:
-    0 5px;
+  border-radius:8px;
 
-  border:0;
+  background:var(--gb-surface);
 
-  background:
-    transparent;
+  color:var(--gb-text);
 
-  color:
-    var(--gb-muted);
-
-  font-size:12px;
+  font-size:11px;
   font-weight:900;
 
   cursor:pointer;
 }
 
-.gb-toggle-switch{
-  position:relative;
-
-  width:34px;
-  height:20px;
-
-  border:
-    1px solid #cbd1d8;
-
-  border-radius:20px;
-
-  background:#e5e8ec;
-
-  transition:.18s ease;
+.gb-chunk-button:hover{
+  background:var(--gb-soft);
 }
 
-.gb-toggle-knob{
-  position:absolute;
+.gb-chunk-button[aria-pressed="true"]{
+  color:var(--gb-accent);
 
-  top:2px;
-  left:2px;
+  border-color:var(--gb-accent);
 
-  width:14px;
-  height:14px;
-
-  border-radius:50%;
-
-  background:#ffffff;
-
-  box-shadow:
-    0 1px 3px rgba(0,0,0,.20);
-
-  transition:.18s ease;
-}
-
-.gb-toggle-line[aria-pressed="true"]{
-  color:
-    var(--gb-accent);
-}
-
-.gb-toggle-line[aria-pressed="true"]
-.gb-toggle-switch{
-  background:
-    var(--gb-accent);
-
-  border-color:
-    var(--gb-accent);
-}
-
-.gb-toggle-line[aria-pressed="true"]
-.gb-toggle-knob{
-  transform:
-    translateX(14px);
+  background:var(--gb-accent-soft);
 }
 
 
@@ -636,8 +544,7 @@ button{
 
   border-radius:14px;
 
-  background:
-    var(--gb-surface);
+  background:var(--gb-surface);
 }
 
 .gb-demo-label{
@@ -713,8 +620,7 @@ button{
 
   gap:8px;
 
-  padding:
-    8px 0 10px;
+  padding:8px 0 10px;
 
   background:
     linear-gradient(
@@ -732,11 +638,8 @@ button{
 
   border-radius:10px;
 
-  background:
-    var(--gb-surface);
-
-  color:
-    var(--gb-text);
+  background:var(--gb-surface);
+  color:var(--gb-text);
 
   font-size:12px;
   font-weight:800;
@@ -751,7 +654,6 @@ button{
 
   .gb-topbar-row{
     width:100%;
-
     padding:6px;
   }
 
@@ -772,8 +674,7 @@ button{
 
     height:40px;
 
-    padding:
-      0 4px;
+    padding:0 4px;
 
     font-size:11px;
   }
@@ -797,8 +698,7 @@ button{
 
     max-width:355px;
 
-    margin:
-      0 auto;
+    margin:0 auto;
   }
 
   .gb-system-card{
@@ -830,7 +730,6 @@ button{
     width:
       calc(100% - 14px);
   }
-
 }
 
 
@@ -844,8 +743,7 @@ button{
   }
 
   .gb-tool-button{
-    padding:
-      0 2px;
+    padding:0 2px;
 
     font-size:10px;
   }
@@ -856,8 +754,7 @@ button{
 
   .gb-compact-toggle,
   .gb-compact-action{
-    padding:
-      0 2px;
+    padding:0 2px;
 
     font-size:9.5px;
   }
@@ -868,5 +765,4 @@ button{
 
     gap:6px;
   }
-
 }
