@@ -8729,31 +8729,30 @@ function startConversationLesson(
   );
 }
 // ============================================================
-// BLOCK 1500: conversation-list.js
-// CONVERSATION HOME / LIST / SEARCH / FILTER / PAGING
+// BLOCK 1500: conversation-directory.js
+// GROUP → CATEGORY → SUBCATEGORY → TITLE
+// Folder / Directory Navigation
 // ============================================================
 
 
 // SUBBLOCK 1505
 // ============================================================
-// LIST STATE
+// DIRECTORY STATE
 // ============================================================
 
 const CONVERSATION_LIST_STATE = {
 
   rows: [],
 
-  filtered: [],
+  level: 'GROUP',
 
-  page: 0,
+  group: '',
 
-  pageSize: 50,
+  category: '',
+
+  subcategory: '',
 
   search: '',
-
-  group: 'ALL',
-
-  category: 'ALL',
 
   loading: false
 };
@@ -8764,8 +8763,7 @@ window.CONVERSATION_LIST_STATE =
 
 // SUBBLOCK 1510
 // ============================================================
-// CONVERSATION HOME START
-// People 240 + Catalog 로딩
+// HOME START
 // ============================================================
 
 async function startConversationHome() {
@@ -8781,7 +8779,7 @@ async function startConversationHome() {
     true;
 
 
-  showConversationListLoading();
+  showConversationDirectoryLoading();
 
 
   try {
@@ -8789,39 +8787,50 @@ async function startConversationHome() {
     await loadConversationPeople();
 
 
-    var rows =
-      await loadConversationCatalog();
+    // Catalog는 최초 1회만 로딩
+    if (
+      !CONVERSATION_LIST_STATE.rows.length
+    ) {
+
+      CONVERSATION_LIST_STATE.rows =
+        await loadConversationCatalog();
+    }
 
 
-    CONVERSATION_LIST_STATE.rows =
-      rows;
+    CONVERSATION_LIST_STATE.level =
+      'GROUP';
+
+    CONVERSATION_LIST_STATE.group =
+      '';
+
+    CONVERSATION_LIST_STATE.category =
+      '';
+
+    CONVERSATION_LIST_STATE.subcategory =
+      '';
+
+    CONVERSATION_LIST_STATE.search =
+      '';
 
 
-    CONVERSATION_LIST_STATE.page =
-      0;
-
-
-    applyConversationListFilter();
-
-
-    renderConversationHome();
+    renderConversationDirectory();
 
 
     console.log(
-      '[CONVERSATION] HOME READY:',
-      rows.length
+      '[CONVERSATION] DIRECTORY READY:',
+      CONVERSATION_LIST_STATE.rows.length
     );
 
 
   } catch (error) {
 
     console.error(
-      '[CONVERSATION] HOME FAILED:',
+      '[CONVERSATION] DIRECTORY FAILED:',
       error
     );
 
 
-    showConversationListError(
+    showConversationDirectoryError(
       error.message
     );
 
@@ -8839,7 +8848,7 @@ async function startConversationHome() {
 // LOADING
 // ============================================================
 
-function showConversationListLoading() {
+function showConversationDirectoryLoading() {
 
   var setup =
     document.getElementById(
@@ -8887,17 +8896,15 @@ function showConversationListLoading() {
     ">
 
       <div style="
-        font-size:28px;
+        font-size:30px;
         margin-bottom:10px;
       ">
         💬
       </div>
 
-      <div style="
-        font-weight:800;
-      ">
+      <strong>
         Loading Conversations...
-      </div>
+      </strong>
 
     </div>
   `;
@@ -8909,7 +8916,7 @@ function showConversationListLoading() {
 // ERROR
 // ============================================================
 
-function showConversationListError(
+function showConversationDirectoryError(
   message
 ) {
 
@@ -8927,13 +8934,13 @@ function showConversationListError(
   card.innerHTML = `
 
     <div style="
-      padding:30px 10px;
+      padding:30px;
       text-align:center;
     ">
 
       <div style="
         color:#b91c1c;
-        font-weight:800;
+        font-weight:900;
       ">
         Conversation Load Failed
       </div>
@@ -8953,44 +8960,57 @@ function showConversationListError(
 
 // SUBBLOCK 1525
 // ============================================================
-// GROUP OPTIONS
+// UNIQUE VALUES
 // ============================================================
 
-function getConversationGroups() {
+function uniqueConversationValues(
+  rows,
+  field
+) {
 
   return Array.from(
     new Set(
-      CONVERSATION_LIST_STATE.rows
+      rows
         .map(
           function(row) {
 
             return String(
-              row.GROUP || ''
+              row[field] || ''
             ).trim();
-
           }
         )
         .filter(Boolean)
     )
-  ).sort();
+  ).sort(
+    function(a, b) {
+
+      return a.localeCompare(
+        b,
+        undefined,
+        {
+          numeric: true,
+          sensitivity: 'base'
+        }
+      );
+    }
+  );
 }
 
 
 // SUBBLOCK 1530
 // ============================================================
-// CATEGORY OPTIONS
-// GROUP 선택 상태 반영
+// CURRENT ROWS
+// 현재 Directory 위치 기준
 // ============================================================
 
-function getConversationCategories() {
+function getConversationDirectoryRows() {
 
   var rows =
     CONVERSATION_LIST_STATE.rows;
 
 
   if (
-    CONVERSATION_LIST_STATE.group !==
-    'ALL'
+    CONVERSATION_LIST_STATE.group
   ) {
 
     rows =
@@ -9008,123 +9028,174 @@ function getConversationCategories() {
   }
 
 
-  return Array.from(
-    new Set(
-      rows
-        .map(
-          function(row) {
+  if (
+    CONVERSATION_LIST_STATE.category
+  ) {
 
-            return String(
+    rows =
+      rows.filter(
+        function(row) {
+
+          return (
+            String(
               row.CATEGORY || ''
-            ).trim();
+            ) ===
+            CONVERSATION_LIST_STATE.category
+          );
+        }
+      );
+  }
 
-          }
-        )
-        .filter(Boolean)
-    )
-  ).sort();
+
+  if (
+    CONVERSATION_LIST_STATE.subcategory
+  ) {
+
+    rows =
+      rows.filter(
+        function(row) {
+
+          return (
+            String(
+              row.SUBCATEGORY || ''
+            ) ===
+            CONVERSATION_LIST_STATE.subcategory
+          );
+        }
+      );
+  }
+
+
+  return rows;
 }
 
 
 // SUBBLOCK 1535
 // ============================================================
-// FILTER
+// BREADCRUMB
 // ============================================================
 
-function applyConversationListFilter() {
+function renderConversationBreadcrumb() {
 
-  var search =
-    String(
-      CONVERSATION_LIST_STATE.search ||
-      ''
-    )
-    .trim()
-    .toLowerCase();
+  var parts = [];
 
 
-  var group =
-    CONVERSATION_LIST_STATE.group;
-
-
-  var category =
-    CONVERSATION_LIST_STATE.category;
-
-
-  CONVERSATION_LIST_STATE.filtered =
-    CONVERSATION_LIST_STATE.rows.filter(
-      function(row) {
-
-        if (
-          group !== 'ALL' &&
-          String(
-            row.GROUP || ''
-          ) !== group
-        ) {
-          return false;
-        }
-
-
-        if (
-          category !== 'ALL' &&
-          String(
-            row.CATEGORY || ''
-          ) !== category
-        ) {
-          return false;
-        }
-
-
-        if (!search) {
-          return true;
-        }
-
-
-        var haystack =
-          [
-            row.ID,
-            row.GROUP,
-            row.CATEGORY,
-            row.SUBCATEGORY,
-            row.DIALOGUE_TITLE
-          ]
-          .join(' ')
-          .toLowerCase();
-
-
-        return haystack.includes(
-          search
-        );
-      }
-    );
-
-
-  var maxPage =
-    Math.max(
-      0,
-      Math.ceil(
-        CONVERSATION_LIST_STATE.filtered.length /
-        CONVERSATION_LIST_STATE.pageSize
-      ) - 1
-    );
+  parts.push(
+    `<button
+      type="button"
+      data-directory-home="1"
+      style="
+        border:0;
+        background:transparent;
+        color:#075ea8;
+        font-weight:900;
+        cursor:pointer;
+        padding:0;
+      "
+    >
+      CONVERSATION
+    </button>`
+  );
 
 
   if (
-    CONVERSATION_LIST_STATE.page >
-    maxPage
+    CONVERSATION_LIST_STATE.group
   ) {
 
-    CONVERSATION_LIST_STATE.page =
-      maxPage;
+    parts.push(
+      `<button
+        type="button"
+        data-directory-level="GROUP_SELECTED"
+        style="
+          border:0;
+          background:transparent;
+          color:#075ea8;
+          font-weight:800;
+          cursor:pointer;
+          padding:0;
+        "
+      >
+        ${esc(
+          CONVERSATION_LIST_STATE.group
+        )}
+      </button>`
+    );
   }
+
+
+  if (
+    CONVERSATION_LIST_STATE.category
+  ) {
+
+    parts.push(
+      `<button
+        type="button"
+        data-directory-level="CATEGORY_SELECTED"
+        style="
+          border:0;
+          background:transparent;
+          color:#075ea8;
+          font-weight:800;
+          cursor:pointer;
+          padding:0;
+        "
+      >
+        ${esc(
+          CONVERSATION_LIST_STATE.category
+        )}
+      </button>`
+    );
+  }
+
+
+  if (
+    CONVERSATION_LIST_STATE.subcategory
+  ) {
+
+    parts.push(
+      `<span style="
+        color:#475569;
+        font-weight:800;
+      ">
+        ${esc(
+          CONVERSATION_LIST_STATE.subcategory
+        )}
+      </span>`
+    );
+  }
+
+
+  return `
+    <div
+      id="conversationBreadcrumb"
+      style="
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:6px;
+
+        margin-bottom:12px;
+
+        color:#64748b;
+        font-size:12px;
+      "
+    >
+
+      ${parts.join(
+        '<span>›</span>'
+      )}
+
+    </div>
+  `;
 }
 
 
 // SUBBLOCK 1540
 // ============================================================
-// HOME RENDER
+// DIRECTORY MAIN RENDER
 // ============================================================
 
-function renderConversationHome() {
+function renderConversationDirectory() {
 
   var setup =
     document.getElementById(
@@ -9188,10 +9259,11 @@ function renderConversationHome() {
 
 
   if (
-    ANNE_STATE &&
+    typeof ANNE_STATE !==
+      'undefined' &&
     ANNE_STATE.micMode &&
     typeof turnAnneMicOff ===
-    'function'
+      'function'
   ) {
 
     turnAnneMicOff();
@@ -9222,178 +9294,30 @@ function renderConversationHome() {
   }
 
 
-  var groups =
-    getConversationGroups();
-
-
-  var categories =
-    getConversationCategories();
-
-
   card.innerHTML = `
 
     <div style="
       width:100%;
+      text-align:left;
     ">
 
-      <div style="
-        text-align:center;
-        margin-bottom:14px;
-      ">
+      ${renderConversationBreadcrumb()}
 
-        <div style="
-          font-size:27px;
-        ">
-          💬
-        </div>
+      <div
+        id="conversationDirectoryTitle"
+        style="
+          margin-bottom:10px;
 
-        <div style="
-          margin-top:3px;
           font-size:20px;
           font-weight:900;
           color:#172033;
-        ">
-          CONVERSATION
-        </div>
-
-        <div style="
-          margin-top:3px;
-          color:#64748b;
-          font-size:12px;
-        ">
-          ${CONVERSATION_LIST_STATE.filtered.length}
-          Conversations
-        </div>
-
-      </div>
-
-
-      <input
-        id="conversationSearch"
-        type="search"
-        placeholder="Search conversation..."
-        value="${esc(CONVERSATION_LIST_STATE.search)}"
-        style="
-          width:100%;
-          height:42px;
-          padding:0 12px;
-          border:1px solid #cbd5e1;
-          border-radius:9px;
-          font-size:15px;
-          outline:none;
-        "
-      >
-
-
-      <div style="
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:6px;
-        margin-top:7px;
-      ">
-
-        <select
-          id="conversationGroupFilter"
-          style="
-            width:100%;
-            height:38px;
-            border:1px solid #cbd5e1;
-            border-radius:8px;
-            background:#fff;
-            padding:0 7px;
-            font-weight:700;
-          "
-        >
-
-          <option value="ALL">
-            ALL LEVELS
-          </option>
-
-          ${
-            groups.map(
-              function(value) {
-
-                return `
-                  <option
-                    value="${esc(value)}"
-                    ${
-                      value ===
-                      CONVERSATION_LIST_STATE.group
-                        ? 'selected'
-                        : ''
-                    }
-                  >
-                    ${esc(value)}
-                  </option>
-                `;
-
-              }
-            ).join('')
-          }
-
-        </select>
-
-
-        <select
-          id="conversationCategoryFilter"
-          style="
-            width:100%;
-            height:38px;
-            border:1px solid #cbd5e1;
-            border-radius:8px;
-            background:#fff;
-            padding:0 7px;
-            font-weight:700;
-          "
-        >
-
-          <option value="ALL">
-            ALL CATEGORIES
-          </option>
-
-          ${
-            categories.map(
-              function(value) {
-
-                return `
-                  <option
-                    value="${esc(value)}"
-                    ${
-                      value ===
-                      CONVERSATION_LIST_STATE.category
-                        ? 'selected'
-                        : ''
-                    }
-                  >
-                    ${esc(value)}
-                  </option>
-                `;
-
-              }
-            ).join('')
-          }
-
-        </select>
-
-      </div>
-
-
-      <div
-        id="conversationList"
-        style="
-          width:100%;
-          margin-top:12px;
         "
       >
       </div>
 
 
       <div
-        id="conversationPager"
-        style="
-          width:100%;
-          margin-top:12px;
-        "
+        id="conversationDirectoryContent"
       >
       </div>
 
@@ -9401,23 +9325,387 @@ function renderConversationHome() {
   `;
 
 
-  installConversationListControls();
+  installConversationBreadcrumb();
 
 
-  renderConversationList();
+  renderConversationDirectoryContent();
 }
 
 
 // SUBBLOCK 1545
 // ============================================================
-// LIST RENDER
+// DIRECTORY CONTENT
 // ============================================================
 
-function renderConversationList() {
+function renderConversationDirectoryContent() {
+
+  var title =
+    document.getElementById(
+      'conversationDirectoryTitle'
+    );
+
 
   var host =
     document.getElementById(
-      'conversationList'
+      'conversationDirectoryContent'
+    );
+
+
+  if (
+    !title ||
+    !host
+  ) {
+    return;
+  }
+
+
+  var level =
+    CONVERSATION_LIST_STATE.level;
+
+
+  var rows =
+    getConversationDirectoryRows();
+
+
+  // ==========================================================
+  // GROUP
+  // ==========================================================
+
+  if (
+    level === 'GROUP'
+  ) {
+
+    title.textContent =
+      'Choose Level';
+
+
+    var groups =
+      uniqueConversationValues(
+        CONVERSATION_LIST_STATE.rows,
+        'GROUP'
+      );
+
+
+    host.innerHTML =
+      renderConversationFolderList(
+        groups,
+        'GROUP'
+      );
+
+
+    bindConversationFolderButtons();
+
+    return;
+  }
+
+
+  // ==========================================================
+  // CATEGORY
+  // ==========================================================
+
+  if (
+    level === 'CATEGORY'
+  ) {
+
+    title.textContent =
+      'Choose Category';
+
+
+    var categories =
+      uniqueConversationValues(
+        rows,
+        'CATEGORY'
+      );
+
+
+    host.innerHTML =
+      renderConversationFolderList(
+        categories,
+        'CATEGORY'
+      );
+
+
+    bindConversationFolderButtons();
+
+    return;
+  }
+
+
+  // ==========================================================
+  // SUBCATEGORY
+  // ==========================================================
+
+  if (
+    level === 'SUBCATEGORY'
+  ) {
+
+    title.textContent =
+      'Choose Subcategory';
+
+
+    var subcategories =
+      uniqueConversationValues(
+        rows,
+        'SUBCATEGORY'
+      );
+
+
+    host.innerHTML =
+      renderConversationFolderList(
+        subcategories,
+        'SUBCATEGORY'
+      );
+
+
+    bindConversationFolderButtons();
+
+    return;
+  }
+
+
+  // ==========================================================
+  // TITLES
+  // ==========================================================
+
+  title.textContent =
+    CONVERSATION_LIST_STATE.subcategory ||
+    'Conversations';
+
+
+  renderConversationTitles(
+    rows
+  );
+}
+
+
+// SUBBLOCK 1550
+// ============================================================
+// FOLDER LIST
+// ============================================================
+
+function renderConversationFolderList(
+  values,
+  type
+) {
+
+  if (
+    !values.length
+  ) {
+
+    return `
+      <div style="
+        padding:25px 5px;
+        text-align:center;
+        color:#94a3b8;
+      ">
+        No items found.
+      </div>
+    `;
+  }
+
+
+  return values.map(
+    function(value) {
+
+      var count = 0;
+
+
+      if (
+        type === 'GROUP'
+      ) {
+
+        count =
+          CONVERSATION_LIST_STATE.rows.filter(
+            function(row) {
+
+              return (
+                String(
+                  row.GROUP || ''
+                ) === value
+              );
+            }
+          ).length;
+
+      } else {
+
+        count =
+          getConversationDirectoryRows().filter(
+            function(row) {
+
+              return (
+                String(
+                  row[type] || ''
+                ) === value
+              );
+            }
+          ).length;
+      }
+
+
+      return `
+
+        <button
+          type="button"
+          class="conversation-folder"
+          data-folder-type="${esc(type)}"
+          data-folder-value="${esc(value)}"
+          style="
+            display:flex;
+            width:100%;
+            min-height:50px;
+
+            align-items:center;
+            gap:10px;
+
+            padding:8px 5px;
+
+            border:0;
+            border-bottom:1px solid #e2e8f0;
+
+            background:#ffffff;
+
+            text-align:left;
+            cursor:pointer;
+          "
+        >
+
+          <span style="
+            font-size:21px;
+            flex:0 0 auto;
+          ">
+            📁
+          </span>
+
+
+          <span style="
+            flex:1;
+            min-width:0;
+
+            color:#172033;
+            font-size:15px;
+            font-weight:850;
+
+            overflow:hidden;
+            text-overflow:ellipsis;
+          ">
+            ${esc(value)}
+          </span>
+
+
+          <span style="
+            flex:0 0 auto;
+
+            color:#94a3b8;
+            font-size:11px;
+            font-weight:800;
+          ">
+            ${count}
+          </span>
+
+
+          <span style="
+            color:#64748b;
+            font-weight:900;
+          ">
+            ›
+          </span>
+
+        </button>
+      `;
+
+    }
+  ).join('');
+}
+
+
+// SUBBLOCK 1555
+// ============================================================
+// FOLDER CLICK
+// ============================================================
+
+function bindConversationFolderButtons() {
+
+  document
+    .querySelectorAll(
+      '.conversation-folder'
+    )
+    .forEach(
+      function(button) {
+
+        button.onclick =
+          function() {
+
+            var type =
+              button.dataset.folderType;
+
+
+            var value =
+              button.dataset.folderValue;
+
+
+            if (
+              type === 'GROUP'
+            ) {
+
+              CONVERSATION_LIST_STATE.group =
+                value;
+
+              CONVERSATION_LIST_STATE.category =
+                '';
+
+              CONVERSATION_LIST_STATE.subcategory =
+                '';
+
+              CONVERSATION_LIST_STATE.level =
+                'CATEGORY';
+
+
+            } else if (
+              type === 'CATEGORY'
+            ) {
+
+              CONVERSATION_LIST_STATE.category =
+                value;
+
+              CONVERSATION_LIST_STATE.subcategory =
+                '';
+
+              CONVERSATION_LIST_STATE.level =
+                'SUBCATEGORY';
+
+
+            } else if (
+              type === 'SUBCATEGORY'
+            ) {
+
+              CONVERSATION_LIST_STATE.subcategory =
+                value;
+
+              CONVERSATION_LIST_STATE.level =
+                'TITLE';
+            }
+
+
+            renderConversationDirectory();
+          };
+      }
+    );
+}
+
+
+// SUBBLOCK 1560
+// ============================================================
+// TITLE LIST
+// SUBCATEGORY 안에서 실제 Conversation 표시
+// ============================================================
+
+function renderConversationTitles(
+  rows
+) {
+
+  var host =
+    document.getElementById(
+      'conversationDirectoryContent'
     );
 
 
@@ -9426,146 +9714,103 @@ function renderConversationList() {
   }
 
 
-  var start =
-    CONVERSATION_LIST_STATE.page *
-    CONVERSATION_LIST_STATE.pageSize;
+  var sortedRows =
+    rows.slice().sort(
+      function(a, b) {
 
-
-  var end =
-    start +
-    CONVERSATION_LIST_STATE.pageSize;
-
-
-  var rows =
-    CONVERSATION_LIST_STATE.filtered.slice(
-      start,
-      end
+        return Number(
+          a.ID || 0
+        ) -
+        Number(
+          b.ID || 0
+        );
+      }
     );
 
 
-  if (!rows.length) {
+  host.innerHTML = `
 
-    host.innerHTML = `
-
-      <div style="
-        padding:30px 10px;
-        text-align:center;
-        color:#94a3b8;
-      ">
-        No conversations found.
-      </div>
-    `;
+    <div style="
+      margin-bottom:8px;
+      color:#64748b;
+      font-size:12px;
+    ">
+      ${sortedRows.length}
+      Conversations
+    </div>
 
 
-    renderConversationPager();
+    ${
+      sortedRows.map(
+        function(row) {
 
-    return;
-  }
+          return `
 
+            <button
+              type="button"
+              class="conversation-title-item"
+              data-conversation-id="${esc(row.ID)}"
+              style="
+                display:block;
+                width:100%;
 
-  host.innerHTML =
-    rows.map(
-      function(row) {
+                padding:12px 5px;
 
-        return `
+                border:0;
+                border-bottom:1px solid #e2e8f0;
 
-          <button
-            type="button"
-            class="conversation-list-item"
-            data-conversation-id="${esc(row.ID)}"
-            style="
-              display:block;
-              width:100%;
+                background:#fff;
 
-              padding:12px 4px;
+                text-align:left;
+                cursor:pointer;
+              "
+            >
 
-              border:0;
-              border-bottom:1px solid #e2e8f0;
-
-              background:#fff;
-
-              text-align:left;
-              cursor:pointer;
-            "
-          >
-
-            <div style="
-              display:flex;
-              align-items:center;
-              gap:8px;
-            ">
-
-              <strong style="
-                flex:1;
-                min-width:0;
-
-                color:#172033;
-                font-size:15px;
-
-                overflow:hidden;
-                text-overflow:ellipsis;
+              <div style="
+                display:flex;
+                align-items:center;
+                gap:8px;
               ">
-                ${esc(
-                  row.DIALOGUE_TITLE ||
-                  'Conversation'
-                )}
-              </strong>
 
-              <span style="
-                flex:0 0 auto;
-                color:#94a3b8;
-                font-size:11px;
-                font-weight:800;
-              ">
-                ${esc(row.ID)}
-              </span>
+                <strong style="
+                  flex:1;
+                  min-width:0;
 
-            </div>
+                  color:#172033;
+                  font-size:15px;
+
+                  overflow:hidden;
+                  text-overflow:ellipsis;
+                ">
+                  ${esc(
+                    row.DIALOGUE_TITLE ||
+                    'Conversation'
+                  )}
+                </strong>
 
 
-            <div style="
-              margin-top:4px;
+                <span style="
+                  color:#94a3b8;
+                  font-size:11px;
+                  font-weight:800;
+                ">
+                  ${esc(row.ID)}
+                </span>
 
-              color:#64748b;
-              font-size:12px;
+              </div>
 
-              white-space:nowrap;
-              overflow:hidden;
-              text-overflow:ellipsis;
-            ">
+            </button>
+          `;
 
-              ${esc(row.GROUP || '')}
-
-              ${
-                row.CATEGORY
-                  ? ' · ' +
-                    esc(
-                      row.CATEGORY
-                    )
-                  : ''
-              }
-
-              ${
-                row.SUBCATEGORY
-                  ? ' · ' +
-                    esc(
-                      row.SUBCATEGORY
-                    )
-                  : ''
-              }
-
-            </div>
-
-          </button>
-        `;
-
-      }
-    ).join('');
+        }
+      ).join('')
+    }
+  `;
 
 
   document
     .querySelectorAll(
-      '.conversation-list-item'
+      '.conversation-title-item'
     )
     .forEach(
       function(button) {
@@ -9580,260 +9825,95 @@ function renderConversationList() {
           };
       }
     );
-
-
-  renderConversationPager();
 }
 
 
-// SUBBLOCK 1550
+// SUBBLOCK 1565
 // ============================================================
-// PAGING
+// BREADCRUMB CLICK
 // ============================================================
 
-function renderConversationPager() {
+function installConversationBreadcrumb() {
 
-  var host =
-    document.getElementById(
-      'conversationPager'
+  var home =
+    document.querySelector(
+      '[data-directory-home]'
     );
 
 
-  if (!host) {
-    return;
-  }
+  if (home) {
 
-
-  var total =
-    CONVERSATION_LIST_STATE.filtered.length;
-
-
-  var totalPages =
-    Math.max(
-      1,
-      Math.ceil(
-        total /
-        CONVERSATION_LIST_STATE.pageSize
-      )
-    );
-
-
-  var current =
-    CONVERSATION_LIST_STATE.page +
-    1;
-
-
-  host.innerHTML = `
-
-    <div style="
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-    ">
-
-      <button
-        id="conversationPagePrev"
-        type="button"
-        ${current <= 1 ? 'disabled' : ''}
-        style="
-          min-width:80px;
-          height:36px;
-          border:1px solid #cbd5e1;
-          border-radius:8px;
-          background:#fff;
-          font-weight:800;
-          cursor:pointer;
-        "
-      >
-        ◀ PREV
-      </button>
-
-
-      <span style="
-        min-width:70px;
-        text-align:center;
-        color:#475569;
-        font-size:12px;
-        font-weight:800;
-      ">
-        ${current} / ${totalPages}
-      </span>
-
-
-      <button
-        id="conversationPageNext"
-        type="button"
-        ${current >= totalPages ? 'disabled' : ''}
-        style="
-          min-width:80px;
-          height:36px;
-          border:1px solid #cbd5e1;
-          border-radius:8px;
-          background:#fff;
-          font-weight:800;
-          cursor:pointer;
-        "
-      >
-        NEXT ▶
-      </button>
-
-    </div>
-  `;
-
-
-  var prev =
-    document.getElementById(
-      'conversationPagePrev'
-    );
-
-
-  var next =
-    document.getElementById(
-      'conversationPageNext'
-    );
-
-
-  if (prev) {
-
-    prev.onclick =
+    home.onclick =
       function() {
 
-        if (
-          CONVERSATION_LIST_STATE.page >
-          0
-        ) {
+        CONVERSATION_LIST_STATE.level =
+          'GROUP';
 
-          CONVERSATION_LIST_STATE.page--;
+        CONVERSATION_LIST_STATE.group =
+          '';
 
-          renderConversationList();
-        }
+        CONVERSATION_LIST_STATE.category =
+          '';
+
+        CONVERSATION_LIST_STATE.subcategory =
+          '';
+
+        renderConversationDirectory();
       };
   }
-
-
-  if (next) {
-
-    next.onclick =
-      function() {
-
-        var totalPages =
-          Math.ceil(
-            CONVERSATION_LIST_STATE.filtered.length /
-            CONVERSATION_LIST_STATE.pageSize
-          );
-
-
-        if (
-          CONVERSATION_LIST_STATE.page <
-          totalPages - 1
-        ) {
-
-          CONVERSATION_LIST_STATE.page++;
-
-          renderConversationList();
-        }
-      };
-  }
-}
-
-
-// SUBBLOCK 1555
-// ============================================================
-// SEARCH / FILTER EVENTS
-// ============================================================
-
-function installConversationListControls() {
-
-  var search =
-    document.getElementById(
-      'conversationSearch'
-    );
 
 
   var group =
-    document.getElementById(
-      'conversationGroupFilter'
+    document.querySelector(
+      '[data-directory-level="GROUP_SELECTED"]'
     );
-
-
-  var category =
-    document.getElementById(
-      'conversationCategoryFilter'
-    );
-
-
-  if (search) {
-
-    search.oninput =
-      function() {
-
-        CONVERSATION_LIST_STATE.search =
-          this.value;
-
-
-        CONVERSATION_LIST_STATE.page =
-          0;
-
-
-        applyConversationListFilter();
-
-
-        renderConversationList();
-      };
-  }
 
 
   if (group) {
 
-    group.onchange =
+    group.onclick =
       function() {
 
-        CONVERSATION_LIST_STATE.group =
-          this.value;
-
+        CONVERSATION_LIST_STATE.level =
+          'CATEGORY';
 
         CONVERSATION_LIST_STATE.category =
-          'ALL';
+          '';
 
+        CONVERSATION_LIST_STATE.subcategory =
+          '';
 
-        CONVERSATION_LIST_STATE.page =
-          0;
-
-
-        applyConversationListFilter();
-
-
-        renderConversationHome();
+        renderConversationDirectory();
       };
   }
 
 
+  var category =
+    document.querySelector(
+      '[data-directory-level="CATEGORY_SELECTED"]'
+    );
+
+
   if (category) {
 
-    category.onchange =
+    category.onclick =
       function() {
 
-        CONVERSATION_LIST_STATE.category =
-          this.value;
+        CONVERSATION_LIST_STATE.level =
+          'SUBCATEGORY';
 
+        CONVERSATION_LIST_STATE.subcategory =
+          '';
 
-        CONVERSATION_LIST_STATE.page =
-          0;
-
-
-        applyConversationListFilter();
-
-
-        renderConversationList();
+        renderConversationDirectory();
       };
   }
 }
 
 
-// SUBBLOCK 1560
+// SUBBLOCK 1570
 // ============================================================
-// LIST → LESSON
+// TITLE → LESSON
 // ============================================================
 
 async function openConversationFromList(
@@ -9881,15 +9961,42 @@ async function openConversationFromList(
 }
 
 
-// SUBBLOCK 1565
+// SUBBLOCK 1575
 // ============================================================
-// LESSON → LIST
-// 이후 HOME / QUIT에서 사용
+// LESSON → 현재 SUBCATEGORY 목록으로 복귀
 // ============================================================
 
 function returnConversationHome() {
 
-  renderConversationHome();
+  if (
+    CONVERSATION_LIST_STATE.subcategory
+  ) {
+
+    CONVERSATION_LIST_STATE.level =
+      'TITLE';
+
+  } else if (
+    CONVERSATION_LIST_STATE.category
+  ) {
+
+    CONVERSATION_LIST_STATE.level =
+      'SUBCATEGORY';
+
+  } else if (
+    CONVERSATION_LIST_STATE.group
+  ) {
+
+    CONVERSATION_LIST_STATE.level =
+      'CATEGORY';
+
+  } else {
+
+    CONVERSATION_LIST_STATE.level =
+      'GROUP';
+  }
+
+
+  renderConversationDirectory();
 }
 
 window.returnConversationHome =
