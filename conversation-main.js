@@ -4427,7 +4427,69 @@ function stopAnneRecognition() {
       null;
   }
 }
+// SUBBLOCK 1110-2
+// ============================================================
+// MIC RECOGNITION FINALIZE
+// 현재까지 인식한 내용을 확정하고
+// 기존 1111 recognition.onend 채점 로직으로 넘김
+// ============================================================
 
+function finalizeAnneMicRecognition(
+  immediate
+) {
+
+  if (
+    _anneMicRecognizeTimer
+  ) {
+
+    clearTimeout(
+      _anneMicRecognizeTimer
+    );
+
+    _anneMicRecognizeTimer =
+      null;
+  }
+
+
+  var recognition =
+    ANNE_STATE.recognition ||
+    _anneMicCurrentRecognition;
+
+
+  if (!recognition) {
+
+    console.warn(
+      '[MIC] finalize: active recognition 없음'
+    );
+
+    return;
+  }
+
+
+  console.log(
+    '[MIC] finalize:',
+    immediate
+      ? 'STOP'
+      : 'DELAY',
+    _anneMicLastTranscript || ''
+  );
+
+
+  try {
+
+    // abort()가 아니라 stop()
+    // → 현재까지 인식 결과를 보존
+    // → 기존 recognition.onend에서 점수 계산
+    recognition.stop();
+
+  } catch (e) {
+
+    console.warn(
+      '[MIC] finalize stop 실패:',
+      e
+    );
+  }
+}
 
 // SUBBLOCK 1111
 // ============================================================
