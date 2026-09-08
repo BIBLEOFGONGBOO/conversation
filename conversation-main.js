@@ -9286,10 +9286,7 @@ function renderConversationLesson() {
 
 // SUBBLOCK 1440
 // ============================================================
-// PSG / ? / NEXT / PREV BUTTON SYNC
-// PSG에서도 PREV / NEXT 유지
-// PREV = ←
-// NEXT = →
+// PSG / ? / PREV / NEXT BUTTON SYNC
 // ============================================================
 
 function syncConversationButtons() {
@@ -9356,13 +9353,6 @@ function syncConversationButtons() {
       'active',
       CONVERSATION_STATE.helpVisible
     );
-
-    help.setAttribute(
-      'aria-pressed',
-      String(
-        CONVERSATION_STATE.helpVisible
-      )
-    );
   }
 
 
@@ -9379,14 +9369,22 @@ function syncConversationButtons() {
       'inline-block';
 
     prev.disabled =
-      CONVERSATION_STATE.pairIndex <=
-      0;
+      CONVERSATION_STATE.pairIndex <= 0;
 
     prev.textContent =
       '←';
 
     prev.title =
       'Previous';
+
+    prev.style.fontSize =
+      '30px';
+
+    prev.style.fontWeight =
+      '900';
+
+    prev.style.lineHeight =
+      '1';
   }
 
 
@@ -9404,18 +9402,25 @@ function syncConversationButtons() {
 
     next.title =
       'Next';
+
+    next.style.fontSize =
+      '30px';
+
+    next.style.fontWeight =
+      '900';
+
+    next.style.lineHeight =
+      '1';
   }
 
 
   if (skip) {
-
     skip.style.display =
       'none';
   }
 
 
   if (submit) {
-
     submit.style.display =
       'none';
   }
