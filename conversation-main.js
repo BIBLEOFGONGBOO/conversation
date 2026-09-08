@@ -5445,6 +5445,7 @@ function isConversationUserTurn(
 // SUBBLOCK 1165
 // ============================================================
 // SPEAKER 이름 클릭 → MY ROLE 선택
+// 현재 Dialogue의 Speaker 이름을 동적으로 사용
 // ============================================================
 
 function installConversationRoleSelection() {
@@ -5487,6 +5488,13 @@ function installConversationRoleSelection() {
       }
 
 
+      if (
+        !ensureConversationRoleState()
+      ) {
+        return;
+      }
+
+
       var speaker =
         String(
           speakerButton.dataset.speaker ||
@@ -5513,7 +5521,6 @@ function installConversationRoleSelection() {
         true;
 
 
-      // 현재 Conversation 첫 Turn부터 시작
       CONVERSATION_STATE.roleTurnIndex =
         0;
 
