@@ -5507,8 +5507,8 @@ function ensureVoicesLoaded(callback) {
 
 // SUBBLOCK 1306
 // ============================================================
-// CONVERSATION Speaker Gender Voice
-// speaker를 현재 TTS item에서 직접 전달받음
+// LANGUAGE + CONVERSATION GENDER VOICE
+// 기존 ANNE Voice 선택 + Speaker Gender Adapter
 // ============================================================
 
 function findVoiceForLanguage(
@@ -5519,7 +5519,9 @@ function findVoiceForLanguage(
   try {
 
     var voices =
-      window.speechSynthesis.getVoices();
+      window.speechSynthesis
+        .getVoices();
+
 
     if (
       !voices ||
@@ -5529,14 +5531,14 @@ function findVoiceForLanguage(
     }
 
 
-    var normalized =
-      String(lang || '')
-        .replace('_', '-')
-        .toLowerCase();
-
-
-    var prefix =
-      normalized.slice(0, 2);
+    // 1314에서 speaker 전달되면 그것 사용
+    // 전달 안 되더라도 현재 Highlight 문장의 speaker 사용
+    speaker =
+      String(
+        speaker ||
+        window.__conversationCurrentTtsSpeaker ||
+        ''
+      ).trim();
 
 
     var gender =
@@ -5554,24 +5556,53 @@ function findVoiceForLanguage(
     );
 
 
+    var normalized =
+      String(
+        lang || ''
+      )
+      .replace(
+        '_',
+        '-'
+      )
+      .toLowerCase();
+
+
+    var prefix =
+      normalized.slice(
+        0,
+        2
+      );
+
+
     var languageVoices =
       voices.filter(
         function(v) {
 
           var voiceLang =
-            String(v.lang || '')
-              .replace('_', '-')
-              .toLowerCase();
+            String(
+              v.lang || ''
+            )
+            .replace(
+              '_',
+              '-'
+            )
+            .toLowerCase();
+
 
           return (
-            voiceLang === normalized ||
-            voiceLang.startsWith(prefix)
+            voiceLang ===
+              normalized ||
+            voiceLang.startsWith(
+              prefix
+            )
           );
         }
       );
 
 
-    if (!languageVoices.length) {
+    if (
+      !languageVoices.length
+    ) {
 
       languageVoices =
         voices.slice();
@@ -5617,15 +5648,18 @@ function findVoiceForLanguage(
           : [];
 
 
-    if (wantedNames.length) {
+    if (
+      wantedNames.length
+    ) {
 
       var genderVoice =
         languageVoices.find(
           function(v) {
 
             var voiceName =
-              String(v.name || '')
-                .toLowerCase();
+              String(
+                v.name || ''
+              ).toLowerCase();
 
 
             return wantedNames.some(
@@ -5640,7 +5674,9 @@ function findVoiceForLanguage(
         );
 
 
-      if (genderVoice) {
+      if (
+        genderVoice
+      ) {
 
         console.log(
           '[TTS VOICE]',
@@ -5650,46 +5686,49 @@ function findVoiceForLanguage(
           genderVoice.name
         );
 
+
         return genderVoice;
       }
     }
 
 
+    // ========================================================
     // 기존 ANNE fallback
+    // ========================================================
+
     var exact =
       languageVoices.find(
         function(v) {
 
-          return String(v.lang || '')
-            .replace('_', '-')
-            .toLowerCase() === normalized;
+          return String(
+            v.lang || ''
+          )
+          .replace(
+            '_',
+            '-'
+          )
+          .toLowerCase() ===
+            normalized;
         }
       );
 
 
-    if (exact) {
+    if (
+      exact
+    ) {
 
       console.log(
         '[TTS VOICE FALLBACK]',
         exact.name
       );
 
+
       return exact;
     }
 
 
-    if (languageVoices.length) {
-
-      console.log(
-        '[TTS VOICE FALLBACK]',
-        languageVoices[0].name
-      );
-
-      return languageVoices[0];
-    }
-
-
-    return null;
+    return languageVoices[0] ||
+      null;
 
 
   } catch (e) {
@@ -5698,6 +5737,7 @@ function findVoiceForLanguage(
       '[TTS] Voice 검색 실패:',
       e
     );
+
 
     return null;
   }
@@ -5959,58 +5999,149 @@ function createHighlightSpans(
   text,
   langCode
 ) {
-  if (!container || !text) {
+
+  if (
+    !container ||
+    !text
+  ) {
     return null;
   }
+
+
+  // ==========================================================
+  // CONVERSATION ADAPTER
+  // 현재 실제로 읽는 문장의 Speaker를 직접 기억
+  // ==========================================================
+
+  var conversationTurn =
+    container.closest(
+      '.conversation-turn'
+    );
+
+
+  window.__conversationCurrentTtsSpeaker =
+    conversationTurn
+      ? String(
+          conversationTurn.dataset.speaker ||
+          ''
+        ).trim()
+      : '';
+
+
+  console.log(
+    '[TTS CURRENT SPEAKER]',
+    window.__conversationCurrentTtsSpeaker ||
+    '-'
+  );
+
+
   var fragment =
     document.createDocumentFragment();
-  var tokens = [];
+
+
+  var tokens =
+    [];
+
+
   function addToken(
     value,
     start,
     end
   ) {
+
     var span =
-      document.createElement('span');
+      document.createElement(
+        'span'
+      );
+
+
     span.className =
       'hl-word-span';
+
+
     span.dataset.start =
       String(start);
+
+
     span.dataset.end =
       String(end);
+
+
     span.textContent =
       value;
+
+
     span.style.display =
       'inline';
+
+
     span.style.padding =
       '1px 1px';
+
+
     span.style.borderRadius =
       '3px';
+
+
     span.style.transition =
       'background-color 0.08s ease';
-    fragment.appendChild(span);
+
+
+    fragment.appendChild(
+      span
+    );
+
+
     tokens.push({
-      span: span,
-      start: start,
-      end: end
+
+      span:
+        span,
+
+      start:
+        start,
+
+      end:
+        end
     });
   }
+
+
   if (
-    String(langCode).toUpperCase()
-    === 'JPN'
+    String(
+      langCode
+    ).toUpperCase() ===
+    'JPN'
   ) {
-    var cursor = 0;
-    Array.from(text).forEach(
+
+    var cursor =
+      0;
+
+
+    Array.from(
+      text
+    ).forEach(
       function(ch) {
+
         var start =
           cursor;
+
+
         cursor +=
           ch.length;
-        if (/\s/.test(ch)) {
+
+
+        if (
+          /\s/.test(ch)
+        ) {
+
           fragment.appendChild(
-            document.createTextNode(ch)
+            document.createTextNode(
+              ch
+            )
           );
+
         } else {
+
           addToken(
             ch,
             start,
@@ -6019,25 +6150,53 @@ function createHighlightSpans(
         }
       }
     );
+
+
   } else {
+
     var regex =
       /\s+|[^\s]+/g;
+
+
     var match;
+
+
     while (
-      (match = regex.exec(text))
-      !== null
+      (
+        match =
+          regex.exec(
+            text
+          )
+      ) !== null
     ) {
+
       var part =
         match[0];
+
+
       var start =
         match.index;
+
+
       var end =
-        start + part.length;
-      if (/^\s+$/.test(part)) {
+        start +
+        part.length;
+
+
+      if (
+        /^\s+$/.test(
+          part
+        )
+      ) {
+
         fragment.appendChild(
-          document.createTextNode(part)
+          document.createTextNode(
+            part
+          )
         );
+
       } else {
+
         addToken(
           part,
           start,
@@ -6046,16 +6205,25 @@ function createHighlightSpans(
       }
     }
   }
+
+
   container.replaceChildren(
     fragment
   );
+
+
   return {
-    container: container,
-    text: text,
-    tokens: tokens
+
+    container:
+      container,
+
+    text:
+      text,
+
+    tokens:
+      tokens
   };
 }
-
 // SUBBLOCK 1310
 function clearSpeechHighlight(data) {
   if (
