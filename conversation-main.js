@@ -5507,26 +5507,19 @@ function ensureVoicesLoaded(callback) {
 
 // SUBBLOCK 1306
 // ============================================================
-// 기존 ANNE VOICE 선택
-// +
-// CONVERSATION Speaker Gender Adapter
-//
-// Jessica → F → Female Voice
-// Alan    → M → Male Voice
-//
-// Gender 정보를 못 찾으면 기존 언어 Voice 방식으로 fallback
+// CONVERSATION Speaker Gender Voice
+// speaker를 현재 TTS item에서 직접 전달받음
 // ============================================================
 
 function findVoiceForLanguage(
-  lang
+  lang,
+  speaker
 ) {
 
   try {
 
     var voices =
-      window.speechSynthesis
-        .getVoices();
-
+      window.speechSynthesis.getVoices();
 
     if (
       !voices ||
@@ -5537,51 +5530,13 @@ function findVoiceForLanguage(
 
 
     var normalized =
-      String(
-        lang || ''
-      )
-      .replace(
-        '_',
-        '-'
-      )
-      .toLowerCase();
+      String(lang || '')
+        .replace('_', '-')
+        .toLowerCase();
 
 
     var prefix =
-      normalized.slice(
-        0,
-        2
-      );
-
-
-    // ========================================================
-    // 현재 TTS가 읽으려는 Conversation Turn 찾기
-    //
-    // 기존 ANNE Highlight가 현재 읽을 문장에
-    // .hl-word-span을 생성하므로 그것을 이용한다.
-    // ========================================================
-
-    var activeHighlight =
-      document.querySelector(
-        '.hl-word-span'
-      );
-
-
-    var conversationTurn =
-      activeHighlight
-        ? activeHighlight.closest(
-            '.conversation-turn'
-          )
-        : null;
-
-
-    var speaker =
-      conversationTurn
-        ? String(
-            conversationTurn.dataset
-              .speaker || ''
-          ).trim()
-        : '';
+      normalized.slice(0, 2);
 
 
     var gender =
@@ -5599,48 +5554,29 @@ function findVoiceForLanguage(
     );
 
 
-    // ========================================================
-    // 현재 언어 Voice 후보
-    // ========================================================
-
     var languageVoices =
       voices.filter(
         function(v) {
 
           var voiceLang =
-            String(
-              v.lang || ''
-            )
-            .replace(
-              '_',
-              '-'
-            )
-            .toLowerCase();
-
+            String(v.lang || '')
+              .replace('_', '-')
+              .toLowerCase();
 
           return (
-            voiceLang ===
-              normalized ||
-            voiceLang.startsWith(
-              prefix
-            )
+            voiceLang === normalized ||
+            voiceLang.startsWith(prefix)
           );
         }
       );
 
 
-    if (
-      !languageVoices.length
-    ) {
+    if (!languageVoices.length) {
 
       languageVoices =
         voices.slice();
     }
 
-
-    // ========================================================
-    // Windows / Chrome / Edge 주요 Voice 이름
-    // ========================================================
 
     var femaleNames = [
       'zira',
@@ -5681,22 +5617,15 @@ function findVoiceForLanguage(
           : [];
 
 
-    // ========================================================
-    // Gender에 맞는 Voice 검색
-    // ========================================================
-
-    if (
-      wantedNames.length
-    ) {
+    if (wantedNames.length) {
 
       var genderVoice =
         languageVoices.find(
           function(v) {
 
             var voiceName =
-              String(
-                v.name || ''
-              ).toLowerCase();
+              String(v.name || '')
+                .toLowerCase();
 
 
             return wantedNames.some(
@@ -5721,29 +5650,19 @@ function findVoiceForLanguage(
           genderVoice.name
         );
 
-
         return genderVoice;
       }
     }
 
 
-    // ========================================================
-    // 기존 ANNE 방식 FALLBACK
-    // ========================================================
-
+    // 기존 ANNE fallback
     var exact =
       languageVoices.find(
         function(v) {
 
-          return String(
-            v.lang || ''
-          )
-          .replace(
-            '_',
-            '-'
-          )
-          .toLowerCase() ===
-            normalized;
+          return String(v.lang || '')
+            .replace('_', '-')
+            .toLowerCase() === normalized;
         }
       );
 
@@ -5755,20 +5674,16 @@ function findVoiceForLanguage(
         exact.name
       );
 
-
       return exact;
     }
 
 
-    if (
-      languageVoices.length
-    ) {
+    if (languageVoices.length) {
 
       console.log(
         '[TTS VOICE FALLBACK]',
         languageVoices[0].name
       );
-
 
       return languageVoices[0];
     }
@@ -5783,7 +5698,6 @@ function findVoiceForLanguage(
       '[TTS] Voice 검색 실패:',
       e
     );
-
 
     return null;
   }
@@ -5810,44 +5724,75 @@ function isSpeechElementVisible(el) {
 function collectVisibleSpeechItems() {
 
   var root =
-    document.getElementById('questionContainer');
+    document.getElementById(
+      'questionContainer'
+    );
 
   if (!root) {
-    console.warn('[TTS] questionContainer 없음');
+
+    console.warn(
+      '[TTS] questionContainer 없음'
+    );
+
     return [];
   }
+
 
   var state =
     getAnneState();
 
+
   var currentMode =
-    state ? state.mode : 'study';
+    state
+      ? state.mode
+      : 'study';
+
 
   var correctAnswer =
     null;
+
 
   if (state) {
 
     var currentDate =
       state._currentDate;
 
+
     var dayQuestions =
-      state.questions.filter(function(q) {
-        return q.date === currentDate;
-      });
+      state.questions.filter(
+        function(q) {
+
+          return (
+            q.date ===
+            currentDate
+          );
+        }
+      );
+
 
     var dayIndex =
       state.index -
-      (state._currentDayStart || 0);
+      (
+        state._currentDayStart ||
+        0
+      );
+
 
     var currentQuestion =
-      dayQuestions[dayIndex];
+      dayQuestions[
+        dayIndex
+      ];
+
 
     if (currentQuestion) {
+
       correctAnswer =
-        Number(currentQuestion.answer);
+        Number(
+          currentQuestion.answer
+        );
     }
   }
+
 
   var elements =
     Array.from(
@@ -5856,81 +5801,154 @@ function collectVisibleSpeechItems() {
       )
     );
 
+
   var items = [];
 
-  elements.forEach(function(el) {
 
-    // 화면에 안 보이는 것은 제외
-    if (!isSpeechElementVisible(el)) {
-      return;
-    }
-
-    // 모든 모드 공통:
-    // 해설은 읽지 않음
-    if (
-      el.closest('#licenseFeedback') ||
-      el.closest('.explanation')
-    ) {
-      return;
-    }
-
-    // LRN 모드:
-    // 선택지는 정답만 읽음
-    var choice =
-      el.closest('.choice');
-
-    if (
-      currentMode === 'learn' &&
-      choice
-    ) {
-
-      var answerNumber =
-        Number(
-          choice.getAttribute('data-answer')
-        );
+  elements.forEach(
+    function(el) {
 
       if (
-        answerNumber !== correctAnswer
+        !isSpeechElementVisible(el)
       ) {
         return;
       }
+
+
+      if (
+        el.closest(
+          '#licenseFeedback'
+        ) ||
+        el.closest(
+          '.explanation'
+        )
+      ) {
+        return;
+      }
+
+
+      var choice =
+        el.closest(
+          '.choice'
+        );
+
+
+      if (
+        currentMode ===
+          'learn' &&
+        choice
+      ) {
+
+        var answerNumber =
+          Number(
+            choice.getAttribute(
+              'data-answer'
+            )
+          );
+
+
+        if (
+          answerNumber !==
+          correctAnswer
+        ) {
+          return;
+        }
+      }
+
+
+      var text =
+        String(
+          el.textContent ||
+          ''
+        );
+
+
+      if (!text.trim()) {
+        return;
+      }
+
+
+      var langCode =
+        String(
+          el.dataset.language ||
+          'ENG'
+        ).toUpperCase();
+
+
+      if (
+        langCode !== 'ENG' &&
+        langCode !== 'KOR' &&
+        langCode !== 'JPN'
+      ) {
+
+        langCode =
+          'ENG';
+      }
+
+
+      // ======================================================
+      // CONVERSATION ADAPTER
+      // 현재 문장이 속한 Speaker를 TTS item에 직접 저장
+      // ======================================================
+
+      var turnEl =
+        el.closest(
+          '.conversation-turn'
+        );
+
+
+      var speaker =
+        turnEl
+          ? String(
+              turnEl.dataset.speaker ||
+              ''
+            ).trim()
+          : '';
+
+
+      items.push({
+
+        text:
+          text,
+
+        langCode:
+          langCode,
+
+        lang:
+          mapLanguageCode(
+            langCode
+          ),
+
+        container:
+          el,
+
+        speaker:
+          speaker
+      });
+
     }
+  );
 
-    var text =
-      String(el.textContent || '');
-
-    if (!text.trim()) {
-      return;
-    }
-
-    var langCode =
-      String(
-        el.dataset.language || 'ENG'
-      ).toUpperCase();
-
-    if (
-      langCode !== 'ENG' &&
-      langCode !== 'KOR' &&
-      langCode !== 'JPN'
-    ) {
-      langCode = 'ENG';
-    }
-
-    items.push({
-      text: text,
-      langCode: langCode,
-      lang: mapLanguageCode(langCode),
-      container: el
-    });
-
-  });
 
   console.log(
     '[TTS] 화면 읽기 목록:',
-    items.map(function(x) {
-      return x.langCode;
-    }).join(' → ')
+    items.map(
+      function(x) {
+
+        return (
+          x.langCode +
+          (
+            x.speaker
+              ? '(' +
+                x.speaker +
+                ')'
+              : ''
+          )
+        );
+      }
+    ).join(' → ')
   );
+
 
   return items;
 }
