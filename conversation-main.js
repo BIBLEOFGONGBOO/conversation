@@ -4391,6 +4391,66 @@ function stopAnneRecognition() {
   }
 }
 
+// SUBBLOCK 1110-2
+// ============================================================
+// MIC RECOGNITION FINALIZE
+// STOP / DELAY 후 현재까지 인식한 음성을 확정
+// MIC MODE 자체는 OFF 하지 않음
+// ============================================================
+
+function finalizeAnneMicRecognition(
+  immediate
+) {
+
+  if (
+    _anneMicRecognizeTimer
+  ) {
+
+    clearTimeout(
+      _anneMicRecognizeTimer
+    );
+
+    _anneMicRecognizeTimer =
+      null;
+  }
+
+
+  var recognition =
+    ANNE_STATE.recognition ||
+    _anneMicCurrentRecognition;
+
+
+  if (!recognition) {
+
+    console.warn(
+      '[MIC] finalize: active recognition 없음'
+    );
+
+    return;
+  }
+
+
+  console.log(
+    '[MIC] finalize:',
+    immediate
+      ? 'STOP'
+      : 'DELAY',
+    _anneMicLastTranscript || ''
+  );
+
+
+  try {
+
+    recognition.stop();
+
+  } catch (e) {
+
+    console.warn(
+      '[MIC] finalize stop 실패:',
+      e
+    );
+  }
+}
 
 // SUBBLOCK 1111
 // ============================================================
