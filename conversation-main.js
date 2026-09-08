@@ -228,7 +228,7 @@ async function fetchConversationRows(options) {
 
 // SUBBLOCK 0202
 // ============================================================
-// TEST - ID 300001 / EN 한 행 조회
+// TEST - ID 100001 / EN 한 행 조회
 // ============================================================
 
 async function testConversationConnection() {
@@ -239,7 +239,6 @@ async function testConversationConnection() {
       '[CONVERSATION] DB connection test start'
     );
 
-
     var rows =
       await fetchConversationRows({
 
@@ -247,7 +246,7 @@ async function testConversationConnection() {
           'ID,LNG,GROUP,CATEGORY,SUBCATEGORY,DIALOGUE_TITLE,DIALOGUE,HELP',
 
         filters:
-          'ID=eq.300001' +
+          'ID=eq.100001' +
           '&LNG=eq.EN' +
           '&limit=1'
       });
@@ -256,7 +255,7 @@ async function testConversationConnection() {
     if (!rows.length) {
 
       console.warn(
-        '[CONVERSATION] 300001 / EN not found'
+        '[CONVERSATION] 100001 / EN not found'
       );
 
       return null;
