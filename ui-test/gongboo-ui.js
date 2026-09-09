@@ -1111,3 +1111,265 @@ window.addEventListener(
     );
   }
 );
+// SUBBLOCK 8000 : CONVERSATION MIC ADAPTER
+
+var templateMicStart =
+  document.getElementById(
+    'micStartButton'
+  );
+
+var templateMicStop =
+  document.getElementById(
+    'micStopButton'
+  );
+
+var templateMicAuto =
+  document.getElementById(
+    'micAutoToggle'
+  );
+
+var templatePass =
+  document.getElementById(
+    'passRange'
+  );
+
+var templateDelay =
+  document.getElementById(
+    'delayRange'
+  );
+
+
+// ============================================================
+// PASS
+// ============================================================
+
+if(templatePass){
+
+  templatePass.addEventListener(
+    'input',
+    function(){
+
+      var value =
+        Number(
+          templatePass.value
+        );
+
+
+      window.__micThreshold =
+        value;
+
+
+      localStorage.setItem(
+        'gongboo.anne.micThreshold',
+        String(value)
+      );
+
+
+      if(
+        typeof saveLastSettings ===
+        'function'
+      ){
+        saveLastSettings();
+      }
+    }
+  );
+
+
+  if(
+    Number.isFinite(
+      Number(window.__micThreshold)
+    )
+  ){
+
+    templatePass.value =
+      String(
+        window.__micThreshold
+      );
+
+    var passValue =
+      document.getElementById(
+        'passValue'
+      );
+
+    if(passValue){
+
+      passValue.textContent =
+        window.__micThreshold +
+        '%';
+    }
+  }
+}
+
+
+// ============================================================
+// DELAY
+// ============================================================
+
+if(templateDelay){
+
+  templateDelay.addEventListener(
+    'input',
+    function(){
+
+      var value =
+        Number(
+          templateDelay.value
+        );
+
+
+      window.__micRecognizeDelay =
+        value;
+
+
+      localStorage.setItem(
+        'gongboo.anne.micRecognizeDelay',
+        String(value)
+      );
+    }
+  );
+
+
+  if(
+    Number.isFinite(
+      Number(
+        window.__micRecognizeDelay
+      )
+    )
+  ){
+
+    templateDelay.value =
+      String(
+        window.__micRecognizeDelay
+      );
+
+    var delayValue =
+      document.getElementById(
+        'delayValue'
+      );
+
+    if(delayValue){
+
+      delayValue.textContent =
+        Number(
+          window.__micRecognizeDelay
+        ).toFixed(1) +
+        's';
+    }
+  }
+}
+
+
+// ============================================================
+// AUTO
+// ============================================================
+
+if(templateMicAuto){
+
+  templateMicAuto.setAttribute(
+    'aria-pressed',
+    String(
+      !!window.__micAutoAdvance
+    )
+  );
+
+
+  templateMicAuto.addEventListener(
+    'click',
+    function(){
+
+      var isOn =
+        templateMicAuto.getAttribute(
+          'aria-pressed'
+        ) === 'true';
+
+
+      window.__micAutoAdvance =
+        isOn;
+
+
+      localStorage.setItem(
+        'gongboo.anne.micAutoAdvance',
+        String(isOn)
+      );
+    }
+  );
+}
+
+
+// ============================================================
+// START
+// ============================================================
+
+if(templateMicStart){
+
+  templateMicStart.addEventListener(
+    'click',
+    function(){
+
+      if(
+        typeof turnAnneMicOn ===
+        'function'
+      ){
+
+        turnAnneMicOn();
+      }
+
+
+      templateMicStart.setAttribute(
+        'aria-pressed',
+        'true'
+      );
+
+
+      if(templateMicStop){
+
+        templateMicStop.setAttribute(
+          'aria-pressed',
+          'false'
+        );
+      }
+    }
+  );
+}
+
+
+// ============================================================
+// STOP
+// 기존 MIC의 STOP과 동일:
+// 현재까지 인식 → 즉시 확정 / 채점
+// MIC 자체는 계속 ON
+// ============================================================
+
+if(templateMicStop){
+
+  templateMicStop.addEventListener(
+    'click',
+    function(){
+
+      if(
+        typeof finalizeAnneMicRecognition ===
+        'function'
+      ){
+
+        finalizeAnneMicRecognition(
+          true
+        );
+      }
+
+
+      templateMicStop.setAttribute(
+        'aria-pressed',
+        'true'
+      );
+
+
+      if(templateMicStart){
+
+        templateMicStart.setAttribute(
+          'aria-pressed',
+          'false'
+        );
+      }
+    }
+  );
+}
