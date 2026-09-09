@@ -1373,3 +1373,119 @@ if(templateMicStop){
     }
   );
 }
+
+// SUBBLOCK 8250 : MIC CARD POSITION
+// 카드 우상단 = PLAY 버튼 우상단
+// MIC 버튼은 그대로 보이고 PLAY 버튼 위로 카드가 올라옴
+
+(function(){
+
+  var micButton =
+    document.getElementById(
+      'micButton'
+    );
+
+  var playButton =
+    document.getElementById(
+      'playButton'
+    );
+
+  var micCard =
+    document.getElementById(
+      'micCard'
+    );
+
+
+  if(
+    !micButton ||
+    !playButton ||
+    !micCard
+  ){
+    return;
+  }
+
+
+  function positionMicCard(){
+
+    if(
+      micCard.hidden
+    ){
+      return;
+    }
+
+
+    var playRect =
+      playButton.getBoundingClientRect();
+
+
+    var cardWidth =
+      micCard.offsetWidth;
+
+
+    var left =
+      playRect.right -
+      cardWidth;
+
+
+    var top =
+      playRect.top;
+
+
+    // 화면 왼쪽 밖으로 나가는 것 방지
+    left =
+      Math.max(
+        6,
+        left
+      );
+
+
+    micCard.style.position =
+      'fixed';
+
+
+    micCard.style.left =
+      Math.round(
+        left
+      ) + 'px';
+
+
+    micCard.style.top =
+      Math.round(
+        top
+      ) + 'px';
+
+
+    micCard.style.right =
+      'auto';
+
+
+    micCard.style.zIndex =
+      '5000';
+  }
+
+
+  micButton.addEventListener(
+    'click',
+    function(){
+
+      window.setTimeout(
+        positionMicCard,
+        0
+      );
+    }
+  );
+
+
+  window.addEventListener(
+    'resize',
+    positionMicCard
+  );
+
+
+  window.addEventListener(
+    'scroll',
+    positionMicCard,
+    true
+  );
+
+})();
