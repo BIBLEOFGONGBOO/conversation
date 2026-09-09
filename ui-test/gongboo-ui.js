@@ -904,3 +904,51 @@ if (templateNextButton) {
     }
   );
 }
+// SUBBLOCK 7500 : CONVERSATION PLAY AUTO ADAPTER
+
+var templatePlayAuto =
+  document.getElementById(
+    'playAutoToggle'
+  );
+
+var legacyPlayAuto =
+  document.getElementById(
+    'licenseAuto'
+  );
+
+
+if(
+  templatePlayAuto &&
+  legacyPlayAuto
+){
+
+  templatePlayAuto.addEventListener(
+    'click',
+    function(){
+
+      legacyPlayAuto.click();
+
+
+      var isOn =
+        legacyPlayAuto.getAttribute(
+          'aria-pressed'
+        ) === 'true';
+
+
+      templatePlayAuto.setAttribute(
+        'aria-pressed',
+        String(isOn)
+      );
+    }
+  );
+
+
+  templatePlayAuto.setAttribute(
+    'aria-pressed',
+    legacyPlayAuto.getAttribute(
+      'aria-pressed'
+    ) === 'true'
+      ? 'true'
+      : 'false'
+  );
+}
