@@ -1374,9 +1374,9 @@ if(templateMicStop){
   );
 }
 
-// SUBBLOCK 8250 : MIC CARD POSITION
-// 카드 우상단 = PLAY 버튼 우상단
-// MIC 버튼은 그대로 보이고 PLAY 버튼 위로 카드가 올라옴
+// SUBBLOCK 8250 : MIC CARD POSITION / SIZE
+// PLAY 버튼 위치를 덮는 현재 위치 유지
+// 카드 가로/세로 약 20% 추가 축소
 
 (function(){
 
@@ -1431,7 +1431,6 @@ if(templateMicStop){
       playRect.top;
 
 
-    // 화면 왼쪽 밖으로 나가는 것 방지
     left =
       Math.max(
         6,
