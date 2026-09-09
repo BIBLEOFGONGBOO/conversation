@@ -1489,3 +1489,227 @@ if(templateMicStop){
   );
 
 })();
+
+// SUBBLOCK 8500 : MIC LEGACY PANEL / SCORE / HIGHLIGHT ADAPTER
+
+window.addEventListener(
+  'load',
+  function(){
+
+    // ========================================================
+    // 1. 기존 MIC 카드 제거
+    // ========================================================
+
+    var oldPanel =
+      document.getElementById(
+        'anneMicPanel'
+      );
+
+    if(oldPanel){
+      oldPanel.remove();
+    }
+
+
+    // ========================================================
+    // 2. 기존 MAIN이 MIC Panel을 요구하면
+    //    새 Template micCard를 돌려줌
+    // ========================================================
+
+    window.ensureAnneMicPanel =
+      function(){
+
+        var micCard =
+          document.getElementById(
+            'micCard'
+          );
+
+        if(!micCard){
+          return null;
+        }
+
+
+        // 기존 MAIN이 점수를 기록할 숨은 저장소
+        var scoreStore =
+          document.getElementById(
+            'anneMicScore'
+          );
+
+
+        if(!scoreStore){
+
+          scoreStore =
+            document.createElement(
+              'div'
+            );
+
+          scoreStore.id =
+            'anneMicScore';
+
+          scoreStore.hidden =
+            true;
+
+          micCard.appendChild(
+            scoreStore
+          );
+        }
+
+
+        return micCard;
+      };
+
+
+    // ========================================================
+    // 3. 기존 위치 함수 차단
+    //    위치는 Template SUBBLOCK 8250이 전담
+    // ========================================================
+
+    window.positionAnneMicPanel =
+      function(){
+        return;
+      };
+
+
+    // ========================================================
+    // 4. 점수 → 새 STOP 버튼 오른쪽 표시
+    // ========================================================
+
+    window.showAnneMicScore =
+      function(
+        score,
+        passed
+      ){
+
+        var scoreStore =
+          document.getElementById(
+            'anneMicScore'
+          );
+
+
+        if(scoreStore){
+
+          scoreStore.textContent =
+            score +
+            '% ' +
+            (
+              passed
+                ? 'PASS'
+                : 'AGAIN'
+            );
+        }
+
+
+        var stopButton =
+          document.getElementById(
+            'micStopButton'
+          );
+
+
+        if(stopButton){
+
+          stopButton.innerHTML =
+            '<span>■ STOP</span>' +
+            '<span class="gb-mic-score">' +
+            score +
+            '%</span>';
+        }
+      };
+
+
+    // ========================================================
+    // 5. MIC 맞은 단어 Highlight
+    // 기존 MAIN highlightAnneMicWords()가 이 함수를 호출함
+    // ========================================================
+
+    window.compareAndHighlightCurrentSentence =
+      function(
+        spokenText,
+        sentenceElement
+      ){
+
+        if(!sentenceElement){
+          return;
+        }
+
+
+        var originalText =
+          sentenceElement.dataset.originalText ||
+          sentenceElement.textContent ||
+          '';
+
+
+        var originalWords =
+          String(
+            originalText
+          )
+          .split(/\s+/)
+          .filter(Boolean);
+
+
+        var spokenWords =
+          String(
+            spokenText || ''
+          )
+          .toLowerCase()
+          .replace(
+            /[^a-z0-9'\s]/g,
+            ' '
+          )
+          .split(/\s+/)
+          .filter(Boolean);
+
+
+        var spokenIndex =
+          0;
+
+
+        sentenceElement.innerHTML =
+          originalWords
+            .map(
+              function(word){
+
+                var normalized =
+                  word
+                    .toLowerCase()
+                    .replace(
+                      /[^a-z0-9']/g,
+                      ''
+                    );
+
+
+                var foundIndex =
+                  spokenWords.indexOf(
+                    normalized,
+                    spokenIndex
+                  );
+
+
+                if(foundIndex !== -1){
+
+                  spokenIndex =
+                    foundIndex + 1;
+
+
+                  return (
+                    '<span class="speech-correct">' +
+                    word +
+                    '</span>'
+                  );
+                }
+
+
+                return (
+                  '<span>' +
+                  word +
+                  '</span>'
+                );
+              }
+            )
+            .join(' ');
+      };
+
+
+    console.log(
+      '[MIC TEMPLATE] Legacy card disabled / score + highlight connected'
+    );
+  }
+);
