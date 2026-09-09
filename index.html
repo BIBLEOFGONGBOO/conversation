@@ -1,11 +1,11 @@
-<!-- SUBBLOCK 0100 -->
+<!-- SUBBLOCK 0000 : DOCUMENT / HEAD -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>GONGBOO Common Mobile UI Template v1.6</title>
+  <title>GONGBOO Common Mobile UI Template v2.0</title>
 
   <link rel="stylesheet" href="./gongboo-ui.css" />
 </head>
@@ -16,10 +16,10 @@
 
   <header class="gb-topbar">
     <div class="gb-topbar-row">
-
       <div class="gb-toolbar">
 
-        <!-- SYSTEM -->
+
+<!-- SUBBLOCK 0500 : SYSTEM SELECTOR -->
         <div class="gb-card-wrap">
 
           <button
@@ -75,10 +75,11 @@
             </button>
 
           </div>
+
         </div>
 
 
-        <!-- PSG -->
+<!-- SUBBLOCK 1000 : PSG -->
         <button
           id="psgButton"
           class="gb-tool-button"
@@ -89,7 +90,7 @@
         </button>
 
 
-        <!-- LANG -->
+<!-- SUBBLOCK 1500 : LANGUAGE -->
         <div class="gb-card-wrap">
 
           <button
@@ -137,11 +138,13 @@
               </select>
 
             </div>
+
           </div>
+
         </div>
 
 
-        <!-- PLAY -->
+<!-- SUBBLOCK 2000 : PLAY -->
         <div class="gb-card-wrap">
 
           <button
@@ -226,11 +229,13 @@
               </button>
 
             </div>
+
           </div>
+
         </div>
 
 
-        <!-- MIC -->
+<!-- SUBBLOCK 2500 : MIC -->
         <div class="gb-card-wrap">
 
           <button
@@ -331,11 +336,13 @@
               </button>
 
             </div>
+
           </div>
+
         </div>
 
 
-        <!-- MORE -->
+<!-- SUBBLOCK 3000 : MORE / MODE / COMMON TOOLS -->
         <div class="gb-card-wrap">
 
           <button
@@ -356,7 +363,6 @@
               MODE
             </div>
 
-            <!-- ROW 1 -->
             <div class="gb-mode-row">
 
               <button
@@ -385,7 +391,6 @@
 
             <div class="gb-card-separator"></div>
 
-            <!-- ROW 2 -->
             <div class="gb-more-grid">
 
               <button
@@ -415,9 +420,6 @@
                 MAP
               </button>
 
-
-              <!-- ROW 3 -->
-
               <button
                 class="gb-more-grid-button"
                 type="button"
@@ -441,9 +443,6 @@
               >
                 OPTION
               </button>
-
-
-              <!-- ROW 4 -->
 
               <button
                 class="gb-more-grid-button"
@@ -482,13 +481,17 @@
             </button>
 
           </div>
+
         </div>
 
+
+<!-- SUBBLOCK 3500 : TOOLBAR / HEADER CLOSE -->
       </div>
     </div>
   </header>
 
 
+<!-- SUBBLOCK 4000 : CONTENT -->
   <main class="gb-content">
 
     <section class="gb-demo-card">
@@ -556,6 +559,7 @@
   </main>
 
 
+<!-- SUBBLOCK 4500 : PREV / NEXT -->
   <footer class="gb-bottom-nav">
 
     <button
@@ -576,6 +580,8 @@
 
   </footer>
 
+
+<!-- SUBBLOCK 5000 : SCRIPT LOAD / PAGE CLOSE -->
 </div>
 
 <script src="./gongboo-ui.js"></script>
