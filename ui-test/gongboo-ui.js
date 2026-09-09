@@ -485,42 +485,99 @@ if(playStopButton){
   }
 
 
-  /* SUBBLOCK 3000 : SPEED */
+/* SUBBLOCK 3000 : SPEED */
 
-  var speedRange =
-    document.getElementById(
-      'speedRange'
-    );
+var speedRange =
+  document.getElementById(
+    'speedRange'
+  );
 
-  var speedValue =
-    document.getElementById(
-      'speedValue'
-    );
+var speedValue =
+  document.getElementById(
+    'speedValue'
+  );
 
 
-  if(
-    speedRange &&
-    speedValue
-  ){
+if(
+  speedRange &&
+  speedValue
+){
 
-    function renderSpeed(){
+  function applyConversationSpeed(){
 
-      speedValue.textContent =
-        Number(
-          speedRange.value
-        ).toFixed(2) +
-        '×';
+    var value =
+      Number(
+        speedRange.value
+      );
+
+
+    speedValue.textContent =
+      value.toFixed(2) +
+      '×';
+
+
+    var legacySpeed =
+      document.getElementById(
+        'licenseSpeed'
+      );
+
+
+    if(!legacySpeed){
+      return;
     }
 
 
-    speedRange.addEventListener(
-      'input',
-      renderSpeed
-    );
+    var valueText =
+      String(value);
 
 
-    renderSpeed();
+    var optionExists =
+      Array.from(
+        legacySpeed.options
+      ).some(
+        function(option){
+
+          return (
+            option.value ===
+            valueText
+          );
+        }
+      );
+
+
+    if(!optionExists){
+
+      var option =
+        document.createElement(
+          'option'
+        );
+
+      option.value =
+        valueText;
+
+      option.textContent =
+        value.toFixed(2) +
+        '×';
+
+      legacySpeed.appendChild(
+        option
+      );
+    }
+
+
+    legacySpeed.value =
+      valueText;
   }
+
+
+  speedRange.addEventListener(
+    'input',
+    applyConversationSpeed
+  );
+
+
+  applyConversationSpeed();
+}
 
 
   /* SUBBLOCK 3500 : PASS */
