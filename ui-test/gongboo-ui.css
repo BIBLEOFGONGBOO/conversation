@@ -1219,3 +1219,30 @@ button{
 #micCard{
   padding-top:12px;
 }
+
+
+
+/* SUBBLOCK 8500 : MIC SCORE / SPEECH HIGHLIGHT */
+
+.speech-correct{
+  background:#fef08a;
+  color:#111827;
+  box-shadow:
+    inset 0 -3px 0 #facc15;
+  border-radius:3px;
+  padding:1px 1px;
+}
+
+
+#micStopButton{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+}
+
+
+.gb-mic-score{
+  font-weight:900;
+  white-space:nowrap;
+}
