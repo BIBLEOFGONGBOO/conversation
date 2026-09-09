@@ -1914,3 +1914,73 @@ window.addEventListener(
   }
 
 })();
+
+
+// SUBBLOCK 8650 : MIC CARD TOGGLE CLOSE
+// MIC 버튼 다시 클릭 → 카드 닫기 + MIC OFF
+
+(function(){
+
+  var micButton =
+    document.getElementById(
+      'micButton'
+    );
+
+  var micCard =
+    document.getElementById(
+      'micCard'
+    );
+
+
+  if(
+    !micButton ||
+    !micCard
+  ){
+    return;
+  }
+
+
+  micButton.addEventListener(
+    'click',
+    function(){
+
+      var isOpen =
+        !micCard.hidden;
+
+
+      if(
+        isOpen &&
+        window.ANNE_STATE &&
+        window.ANNE_STATE.micMode &&
+        typeof turnAnneMicOff ===
+          'function'
+      ){
+
+        turnAnneMicOff();
+      }
+
+
+      window.setTimeout(
+        function(){
+
+          if(
+            micCard.hidden
+          ){
+
+            micButton.classList.remove(
+              'is-active'
+            );
+
+            micButton.setAttribute(
+              'aria-expanded',
+              'false'
+            );
+          }
+
+        },
+        0
+      );
+    }
+  );
+
+})();
