@@ -326,81 +326,92 @@
   );
 
 
-  /* SUBBLOCK 2000 : PLAY */
+  /* SUBBLOCK 2000 : PLAY / STOP */
 
-  var playStartButton =
-    document.getElementById(
-      'playStartButton'
-    );
+var playStartButton =
+  document.getElementById(
+    'playStartButton'
+  );
 
-  var playStopButton =
-    document.getElementById(
-      'playStopButton'
-    );
+var playStopButton =
+  document.getElementById(
+    'playStopButton'
+  );
 
-  var isPlaying =
-    false;
+var isPlaying =
+  false;
 
 
-  function setPlayState(
-    playing
-  ){
+function setPlayState(
+  playing
+){
 
-    isPlaying =
-      !!playing;
-
-    if(playStartButton){
-
-      playStartButton.setAttribute(
-        'aria-pressed',
-        isPlaying
-          ? 'true'
-          : 'false'
-      );
-    }
-
-    if(playStopButton){
-
-      playStopButton.setAttribute(
-        'aria-pressed',
-        isPlaying
-          ? 'false'
-          : 'true'
-      );
-    }
-  }
+  isPlaying =
+    !!playing;
 
 
   if(playStartButton){
 
-    playStartButton.addEventListener(
-
-      'click',
-
-      function(){
-
-        setPlayState(
-          true
-        );
-      }
+    playStartButton.setAttribute(
+      'aria-pressed',
+      String(isPlaying)
     );
   }
 
 
   if(playStopButton){
 
-    playStopButton.addEventListener(
-
-      'click',
-
-      function(){
-
-        setPlayState(
-          false
-        );
-      }
+    playStopButton.setAttribute(
+      'aria-pressed',
+      String(!isPlaying)
     );
   }
+}
+
+
+if(playStartButton){
+
+  playStartButton.addEventListener(
+    'click',
+    function(){
+
+      if(
+        typeof speakWithDyslexiaSupport ===
+        'function'
+      ){
+
+        setPlayState(
+          true
+        );
+
+        speakWithDyslexiaSupport();
+      }
+    }
+  );
+}
+
+
+if(playStopButton){
+
+  playStopButton.addEventListener(
+    'click',
+    function(){
+
+      if(
+        typeof stopSpeech ===
+        'function'
+      ){
+
+        stopSpeech();
+      }
+
+
+      setPlayState(
+        false
+      );
+    }
+  );
+}
 
 
   /* SUBBLOCK 2500 : MIC START / STOP */
