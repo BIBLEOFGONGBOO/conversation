@@ -1,4 +1,4 @@
-// SUBBLOCK 0300
+// SUBBLOCK 0000 : INIT / CONFIG
 
 (function(){
 
@@ -10,10 +10,19 @@
     ['moreButton','moreCard']
   ];
 
+  var isPlaying = false;
 
-  /* =========================================================
-     TOOLTIP TEXT
-  ========================================================= */
+  var currentTurnIndex = 0;
+
+  var turns =
+    Array.from(
+      document.querySelectorAll(
+        '.gb-conversation-turn'
+      )
+    );
+
+
+// SUBBLOCK 0500 : TOOLTIP CONFIG
 
   var tooltipMap = {
 
@@ -27,7 +36,7 @@
       'Language settings',
 
     playButton:
-      'Playback and voice settings',
+      'Playback settings',
 
     micButton:
       'Microphone and pronunciation settings',
@@ -39,7 +48,7 @@
       'Repeat playback',
 
     playAutoToggle:
-      'Automatically continue playback',
+      'Automatic playback',
 
     playStartButton:
       'Start playback',
@@ -76,11 +85,12 @@
   Object.keys(
     tooltipMap
   ).forEach(
-
     function(id){
 
       var element =
-        document.getElementById(id);
+        document.getElementById(
+          id
+        );
 
       if(!element){
         return;
@@ -99,69 +109,39 @@
   );
 
 
-  var modeTooltip = {
-    LRN:'Learning Mode',
-    STD:'Study Mode',
-    QZ:'Quiz Mode'
-  };
-
-
   document.querySelectorAll(
     '.gb-mode-button'
   ).forEach(
-
     function(button){
 
-      var key =
+      var text =
         button.textContent.trim();
 
-      if(
-        modeTooltip[key]
-      ){
+      var labelMap = {
+        LRN:'Learning Mode',
+        STD:'Study Mode',
+        QZ:'Quiz Mode'
+      };
 
+      if(
+        labelMap[text]
+      ){
         button.setAttribute(
           'data-tooltip',
-          modeTooltip[key]
+          labelMap[text]
         );
       }
     }
   );
 
 
-  document.querySelectorAll(
-    '.gb-system-option'
-  ).forEach(
-
-    function(button){
-
-      var name =
-        button.querySelector(
-          '.gb-system-name'
-        );
-
-      if(!name){
-        return;
-      }
-
-      button.setAttribute(
-        'data-tooltip',
-        'Open ' +
-        name.textContent.trim()
-      );
-    }
-  );
-
-
-  /* =========================================================
-     CARD OPEN / CLOSE
-  ========================================================= */
+// SUBBLOCK 1000 : CARD OPEN / CLOSE
 
   function closeCards(
     exceptCard
   ){
 
     cardPairs.forEach(
-
       function(pair){
 
         var button =
@@ -182,8 +162,7 @@
           return;
         }
 
-        card.hidden =
-          true;
+        card.hidden = true;
 
         button.setAttribute(
           'aria-expanded',
@@ -199,7 +178,6 @@
 
 
   cardPairs.forEach(
-
     function(pair){
 
       var button =
@@ -220,9 +198,7 @@
       }
 
       button.addEventListener(
-
         'click',
-
         function(event){
 
           event.stopPropagation();
@@ -251,11 +227,8 @@
         }
       );
 
-
       card.addEventListener(
-
         'click',
-
         function(event){
 
           event.stopPropagation();
@@ -266,9 +239,7 @@
 
 
   document.addEventListener(
-
     'click',
-
     function(){
 
       closeCards();
@@ -276,9 +247,7 @@
   );
 
 
-  /* =========================================================
-     SIMPLE TOGGLE
-  ========================================================= */
+// SUBBLOCK 1500 : SIMPLE TOGGLE CONTROL
 
   function bindToggle(
     id
@@ -294,9 +263,7 @@
     }
 
     button.addEventListener(
-
       'click',
-
       function(){
 
         var current =
@@ -332,9 +299,7 @@
   );
 
 
-  /* =========================================================
-     PLAY
-  ========================================================= */
+// SUBBLOCK 2000 : PLAY START / STOP STATE
 
   var playStartButton =
     document.getElementById(
@@ -345,9 +310,6 @@
     document.getElementById(
       'playStopButton'
     );
-
-  var isPlaying =
-    false;
 
 
   function setPlayState(
@@ -382,9 +344,7 @@
   if(playStartButton){
 
     playStartButton.addEventListener(
-
       'click',
-
       function(){
 
         setPlayState(
@@ -398,9 +358,7 @@
   if(playStopButton){
 
     playStopButton.addEventListener(
-
       'click',
-
       function(){
 
         setPlayState(
@@ -411,9 +369,7 @@
   }
 
 
-  /* =========================================================
-     MIC START / STOP
-  ========================================================= */
+// SUBBLOCK 2500 : MIC START / STOP STATE
 
   var micStartButton =
     document.getElementById(
@@ -455,9 +411,7 @@
   if(micStartButton){
 
     micStartButton.addEventListener(
-
       'click',
-
       function(){
 
         setMicState(
@@ -471,9 +425,7 @@
   if(micStopButton){
 
     micStopButton.addEventListener(
-
       'click',
-
       function(){
 
         setMicState(
@@ -484,9 +436,7 @@
   }
 
 
-  /* =========================================================
-     SPEED
-  ========================================================= */
+// SUBBLOCK 3000 : SPEED SLIDER
 
   var speedRange =
     document.getElementById(
@@ -499,34 +449,33 @@
     );
 
 
-  if(
-    speedRange &&
-    speedValue
-  ){
+  function renderSpeed(){
 
-    function renderSpeed(){
-
-      speedValue.textContent =
-        Number(
-          speedRange.value
-        ).toFixed(2) +
-        '×';
+    if(
+      !speedRange ||
+      !speedValue
+    ){
+      return;
     }
 
+    speedValue.textContent =
+      Number(
+        speedRange.value
+      ).toFixed(2) +
+      '×';
+  }
+
+
+  if(speedRange){
 
     speedRange.addEventListener(
       'input',
       renderSpeed
     );
-
-
-    renderSpeed();
   }
 
 
-  /* =========================================================
-     PASS
-  ========================================================= */
+// SUBBLOCK 3500 : PASS / DELAY SLIDERS
 
   var passRange =
     document.getElementById(
@@ -539,32 +488,29 @@
     );
 
 
-  if(
-    passRange &&
-    passValue
-  ){
+  function renderPass(){
 
-    function renderPass(){
-
-      passValue.textContent =
-        passRange.value +
-        '%';
+    if(
+      !passRange ||
+      !passValue
+    ){
+      return;
     }
 
+    passValue.textContent =
+      passRange.value +
+      '%';
+  }
+
+
+  if(passRange){
 
     passRange.addEventListener(
       'input',
       renderPass
     );
-
-
-    renderPass();
   }
 
-
-  /* =========================================================
-     DELAY
-  ========================================================= */
 
   var delayRange =
     document.getElementById(
@@ -577,34 +523,33 @@
     );
 
 
-  if(
-    delayRange &&
-    delayValue
-  ){
+  function renderDelay(){
 
-    function renderDelay(){
-
-      delayValue.textContent =
-        Number(
-          delayRange.value
-        ).toFixed(1) +
-        's';
+    if(
+      !delayRange ||
+      !delayValue
+    ){
+      return;
     }
 
+    delayValue.textContent =
+      Number(
+        delayRange.value
+      ).toFixed(1) +
+      's';
+  }
+
+
+  if(delayRange){
 
     delayRange.addEventListener(
       'input',
       renderDelay
     );
-
-
-    renderDelay();
   }
 
 
-  /* =========================================================
-     PSG
-  ========================================================= */
+// SUBBLOCK 4000 : PSG CONTROL
 
   var psgButton =
     document.getElementById(
@@ -617,45 +562,48 @@
     );
 
 
+  function isPsgOn(){
+
+    return !!(
+      psgButton &&
+      psgButton.getAttribute(
+        'aria-pressed'
+      ) === 'true'
+    );
+  }
+
+
   if(psgButton){
 
     psgButton.addEventListener(
-
       'click',
-
       function(){
 
-        var isOn =
-          psgButton.getAttribute(
-            'aria-pressed'
-          ) === 'true';
-
-        isOn =
-          !isOn;
+        var newState =
+          !isPsgOn();
 
         psgButton.setAttribute(
           'aria-pressed',
-          isOn
+          newState
             ? 'true'
             : 'false'
         );
 
         psgExtra.forEach(
-
           function(turn){
 
             turn.hidden =
-              !isOn;
+              !newState;
           }
         );
+
+        updateNavigationLabels();
       }
     );
   }
 
 
-  /* =========================================================
-     MODE
-  ========================================================= */
+// SUBBLOCK 4500 : MODE CONTROL
 
   var modeButtons =
     document.querySelectorAll(
@@ -664,17 +612,13 @@
 
 
   modeButtons.forEach(
-
     function(button){
 
       button.addEventListener(
-
         'click',
-
         function(){
 
           modeButtons.forEach(
-
             function(item){
 
               item.classList.remove(
@@ -692,38 +636,45 @@
   );
 
 
-  /* =========================================================
-     TURN
-  ========================================================= */
+// SUBBLOCK 5000 : TURN SELECTION
 
-  var turns =
-    document.querySelectorAll(
-      '.gb-conversation-turn'
+  function setCurrentTurn(
+    index
+  ){
+
+    if(
+      index < 0 ||
+      index >= turns.length
+    ){
+      return;
+    }
+
+    currentTurnIndex =
+      index;
+
+    turns.forEach(
+      function(turn,indexNumber){
+
+        turn.classList.toggle(
+          'is-current',
+          indexNumber === currentTurnIndex
+        );
+      }
     );
+
+    updateNavigationLabels();
+  }
 
 
   turns.forEach(
-
-    function(turn){
+    function(turn,index){
 
       turn.addEventListener(
-
         'click',
-
         function(){
 
-          turns.forEach(
-
-            function(item){
-
-              item.classList.remove(
-                'is-current'
-              );
-            }
-          );
-
-          turn.classList.add(
-            'is-current'
+          setCurrentTurn(
+            index
           );
         }
       );
@@ -731,52 +682,190 @@
   );
 
 
-  /* =========================================================
-     SPACE = PLAY / STOP
-  ========================================================= */
+// SUBBLOCK 5500 : PREV / NEXT LABEL CONTROL
+
+  var prevButton =
+    document.getElementById(
+      'prevButton'
+    );
+
+  var nextButton =
+    document.getElementById(
+      'nextButton'
+    );
+
+
+  function updateNavigationLabels(){
+
+    if(!nextButton){
+      return;
+    }
+
+    if(
+      isPsgOn()
+    ){
+      nextButton.textContent =
+        'NEXT SCENARIO ▶';
+
+      return;
+    }
+
+    if(
+      currentTurnIndex >=
+      turns.length - 1
+    ){
+      nextButton.textContent =
+        'NEXT SCENARIO ▶';
+    }
+    else{
+      nextButton.textContent =
+        'NEXT ▶';
+    }
+  }
+
+
+// SUBBLOCK 6000 : PREV / NEXT ACTION
+
+  function goPrev(){
+
+    if(
+      currentTurnIndex > 0
+    ){
+      setCurrentTurn(
+        currentTurnIndex - 1
+      );
+    }
+  }
+
+
+  function goNext(){
+
+    if(
+      isPsgOn()
+    ){
+      return;
+    }
+
+    if(
+      currentTurnIndex >=
+      turns.length - 1
+    ){
+      return;
+    }
+
+    setCurrentTurn(
+      currentTurnIndex + 1
+    );
+  }
+
+
+  if(prevButton){
+
+    prevButton.addEventListener(
+      'click',
+      goPrev
+    );
+  }
+
+
+  if(nextButton){
+
+    nextButton.addEventListener(
+      'click',
+      goNext
+    );
+  }
+
+
+// SUBBLOCK 6500 : KEYBOARD TARGET CHECK
+
+  function isTypingTarget(
+    target
+  ){
+
+    if(!target){
+      return false;
+    }
+
+    var tag =
+      String(
+        target.tagName || ''
+      ).toUpperCase();
+
+    return (
+      tag === 'INPUT' ||
+      tag === 'SELECT' ||
+      tag === 'TEXTAREA' ||
+      target.isContentEditable
+    );
+  }
+
+
+// SUBBLOCK 7000 : KEYBOARD CONTROL
 
   document.addEventListener(
-
     'keydown',
-
     function(event){
 
-      var target =
-        event.target;
+      if(
+        event.key === 'Escape'
+      ){
+        closeCards();
+
+        return;
+      }
 
       if(
-        target &&
-        (
-          target.tagName === 'INPUT' ||
-          target.tagName === 'SELECT' ||
-          target.tagName === 'TEXTAREA'
+        isTypingTarget(
+          event.target
         )
       ){
         return;
       }
 
+      if(
+        event.key ===
+        'ArrowLeft'
+      ){
+        event.preventDefault();
+
+        goPrev();
+
+        return;
+      }
 
       if(
-        event.code === 'Space'
+        event.key ===
+        'ArrowRight'
       ){
+        event.preventDefault();
 
+        goNext();
+
+        return;
+      }
+
+      if(
+        event.code ===
+        'Space'
+      ){
         event.preventDefault();
 
         setPlayState(
           !isPlaying
         );
       }
-
-
-      if(
-        event.key === 'Escape'
-      ){
-
-        closeCards();
-      }
     }
   );
 
+
+// SUBBLOCK 7500 : INITIAL STATE
+
+  renderSpeed();
+
+  renderPass();
+
+  renderDelay();
 
   setPlayState(
     false
@@ -785,5 +874,16 @@
   setMicState(
     false
   );
+
+  if(
+    turns.length > 0
+  ){
+    setCurrentTurn(
+      0
+    );
+  }
+  else{
+    updateNavigationLabels();
+  }
 
 })();
