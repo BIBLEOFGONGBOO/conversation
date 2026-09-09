@@ -1200,24 +1200,45 @@ button{
 
 
 
-/* SUBBLOCK 8250 : MIC CARD COMPACT POSITION */
+/* SUBBLOCK 8250 : MIC CARD COMPACT HEIGHT */
 
 #micCard{
   max-width:340px;
+
+  /* 상하 여백 축소 */
+  padding-top:6px;
+  padding-bottom:6px;
 }
 
 
-/* 첫줄 MIC 제거 */
+/* 첫줄 MIC 제목 제거 */
 
 #micCard > .gb-card-title{
   display:none;
 }
 
 
-/* 제목 제거 후 상단 여백 축소 */
+/* 카드 내부 행 상하 간격 축소 */
 
-#micCard{
-  padding-top:12px;
+#micCard .gb-setting-row{
+  min-height:38px;
+  padding-top:4px;
+  padding-bottom:4px;
+}
+
+
+/* AUTO / START / STOP 행 높이 축소 */
+
+#micCard button{
+  min-height:34px;
+}
+
+
+/* 내부 구분선 주변 간격 축소 */
+
+#micCard .gb-card-divider{
+  margin-top:4px;
+  margin-bottom:4px;
 }
 
 
