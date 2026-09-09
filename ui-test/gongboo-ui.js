@@ -1510,7 +1510,8 @@ window.addEventListener(
 
 
     // ========================================================
-    // 2. 기존 MAIN용 MIC Panel Adapter
+    // 2. 기존 MAIN이 MIC Panel을 요구하면
+    //    새 Template micCard를 돌려줌
     // ========================================================
 
     window.ensureAnneMicPanel =
@@ -1556,7 +1557,7 @@ window.addEventListener(
 
 
     // ========================================================
-    // 3. 기존 MAIN의 카드 위치 제어 차단
+    // 3. 기존 위치 함수 차단
     // ========================================================
 
     window.positionAnneMicPanel =
@@ -1566,91 +1567,7 @@ window.addEventListener(
 
 
     // ========================================================
-    // 4. 기존 MAIN MIC ON/OFF 보존
-    // 단, 새 micCard의 display/hidden은 건드리지 못하게 함
-    // ========================================================
-
-    var originalMicOn =
-      window.turnAnneMicOn;
-
-    var originalMicOff =
-      window.turnAnneMicOff;
-
-
-    if(
-      typeof originalMicOn ===
-      'function'
-    ){
-
-      window.turnAnneMicOn =
-        function(){
-
-          var micCard =
-            document.getElementById(
-              'micCard'
-            );
-
-
-          var wasHidden =
-            micCard
-              ? micCard.hidden
-              : true;
-
-
-          originalMicOn();
-
-
-          if(micCard){
-
-            micCard.style.removeProperty(
-              'display'
-            );
-
-            micCard.hidden =
-              wasHidden;
-          }
-        };
-    }
-
-
-    if(
-      typeof originalMicOff ===
-      'function'
-    ){
-
-      window.turnAnneMicOff =
-        function(){
-
-          var micCard =
-            document.getElementById(
-              'micCard'
-            );
-
-
-          var wasHidden =
-            micCard
-              ? micCard.hidden
-              : true;
-
-
-          originalMicOff();
-
-
-          if(micCard){
-
-            micCard.style.removeProperty(
-              'display'
-            );
-
-            micCard.hidden =
-              wasHidden;
-          }
-        };
-    }
-
-
-    // ========================================================
-    // 5. 점수 → 새 STOP 버튼 오른쪽 표시
+    // 4. 점수 → 새 STOP 버튼 오른쪽 표시
     // ========================================================
 
     window.showAnneMicScore =
@@ -1696,7 +1613,7 @@ window.addEventListener(
 
 
     // ========================================================
-    // 6. 맞은 단어 Highlight
+    // 5. 맞은 단어 Highlight
     // ========================================================
 
     window.compareAndHighlightCurrentSentence =
@@ -1788,9 +1705,7 @@ window.addEventListener(
 
 
     console.log(
-      '[MIC TEMPLATE] single card controller active'
+      '[MIC TEMPLATE] Legacy card disabled / score + highlight connected'
     );
   }
 );
-
-})();
