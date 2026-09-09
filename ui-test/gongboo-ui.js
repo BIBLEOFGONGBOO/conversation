@@ -1724,6 +1724,55 @@ window.addEventListener(
       };
 
 
+// SUBBLOCK 8750 : CONVERSATION CHUNK ADAPTER
+
+var templateChunkButton =
+  document.getElementById(
+    'chunkToggle'
+  );
+
+
+if(templateChunkButton){
+
+  templateChunkButton.addEventListener(
+    'click',
+    function(){
+
+      if(
+        !window.CONVERSATION_STATE ||
+        !window.CONVERSATION_STATE.row
+      ){
+        return;
+      }
+
+
+      var isOn =
+        templateChunkButton.getAttribute(
+          'aria-pressed'
+        ) === 'true';
+
+
+      window.CONVERSATION_STATE.helpVisible =
+        isOn;
+
+
+      if(
+        typeof renderConversationLesson ===
+        'function'
+      ){
+
+        renderConversationLesson();
+      }
+
+
+      templateChunkButton.setAttribute(
+        'aria-pressed',
+        String(isOn)
+      );
+    }
+  );
+}
+    
     console.log(
       '[MIC TEMPLATE] legacy bridge ready'
     );
