@@ -588,51 +588,10 @@
 
   /* SUBBLOCK 4500 : PSG */
 
-  var psgButton =
-    document.getElementById(
-      'psgButton'
-    );
-
-  var psgExtra =
-    document.querySelectorAll(
-      '.gb-psg-extra'
-    );
-
-
-  if(psgButton){
-
-    psgButton.addEventListener(
-
-      'click',
-
-      function(){
-
-        var isOn =
-          psgButton.getAttribute(
-            'aria-pressed'
-          ) === 'true';
-
-        isOn =
-          !isOn;
-
-        psgButton.setAttribute(
-          'aria-pressed',
-          isOn
-            ? 'true'
-            : 'false'
-        );
-
-        psgExtra.forEach(
-
-          function(turn){
-
-            turn.hidden =
-              !isOn;
-          }
-        );
-      }
-    );
-  }
+/*
+  PSG actual behavior is supplied
+  by the active system adapter.
+*/
 
 
   /* SUBBLOCK 5000 : MODE */
@@ -765,3 +724,41 @@
   );
 
 })();
+// SUBBLOCK 6750 : CONVERSATION PSG ADAPTER
+
+var templatePsgButton =
+  document.getElementById(
+    'psgButton'
+  );
+
+var legacyPsgButton =
+  document.getElementById(
+    'biblePassageToggle'
+  );
+
+
+if (
+  templatePsgButton &&
+  legacyPsgButton
+) {
+
+  templatePsgButton.addEventListener(
+    'click',
+    function() {
+
+      legacyPsgButton.click();
+
+
+      var isOn =
+        legacyPsgButton.getAttribute(
+          'aria-pressed'
+        ) === 'true';
+
+
+      templatePsgButton.setAttribute(
+        'aria-pressed',
+        String(isOn)
+      );
+    }
+  );
+}
