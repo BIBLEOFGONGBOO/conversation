@@ -12,6 +12,147 @@
 
 
   /* =========================================================
+     TOOLTIP TEXT
+  ========================================================= */
+
+  var tooltipMap = {
+
+    systemButton:
+      'Select learning system',
+
+    psgButton:
+      'Show or hide the full scenario',
+
+    langButton:
+      'Language settings',
+
+    playButton:
+      'Playback and voice settings',
+
+    micButton:
+      'Microphone and pronunciation settings',
+
+    moreButton:
+      'More learning tools',
+
+    repeatToggle:
+      'Repeat playback',
+
+    playAutoToggle:
+      'Automatically continue playback',
+
+    playStartButton:
+      'Start playback',
+
+    playStopButton:
+      'Stop playback',
+
+    micAutoToggle:
+      'Automatically continue after pronunciation',
+
+    micStartButton:
+      'Start microphone recognition',
+
+    micStopButton:
+      'Stop recognition and score',
+
+    chunkToggle:
+      'Show or hide learning chunks',
+
+    peopleButton:
+      'Bible people',
+
+    mapButton:
+      'Bible map',
+
+    prevButton:
+      'Previous turn or scenario',
+
+    nextButton:
+      'Next turn or scenario'
+  };
+
+
+  Object.keys(
+    tooltipMap
+  ).forEach(
+
+    function(id){
+
+      var element =
+        document.getElementById(id);
+
+      if(!element){
+        return;
+      }
+
+      element.setAttribute(
+        'data-tooltip',
+        tooltipMap[id]
+      );
+
+      element.setAttribute(
+        'aria-label',
+        tooltipMap[id]
+      );
+    }
+  );
+
+
+  var modeTooltip = {
+    LRN:'Learning Mode',
+    STD:'Study Mode',
+    QZ:'Quiz Mode'
+  };
+
+
+  document.querySelectorAll(
+    '.gb-mode-button'
+  ).forEach(
+
+    function(button){
+
+      var key =
+        button.textContent.trim();
+
+      if(
+        modeTooltip[key]
+      ){
+
+        button.setAttribute(
+          'data-tooltip',
+          modeTooltip[key]
+        );
+      }
+    }
+  );
+
+
+  document.querySelectorAll(
+    '.gb-system-option'
+  ).forEach(
+
+    function(button){
+
+      var name =
+        button.querySelector(
+          '.gb-system-name'
+        );
+
+      if(!name){
+        return;
+      }
+
+      button.setAttribute(
+        'data-tooltip',
+        'Open ' +
+        name.textContent.trim()
+      );
+    }
+  );
+
+
+  /* =========================================================
      CARD OPEN / CLOSE
   ========================================================= */
 
@@ -20,6 +161,7 @@
   ){
 
     cardPairs.forEach(
+
       function(pair){
 
         var button =
@@ -40,7 +182,8 @@
           return;
         }
 
-        card.hidden = true;
+        card.hidden =
+          true;
 
         button.setAttribute(
           'aria-expanded',
@@ -56,6 +199,7 @@
 
 
   cardPairs.forEach(
+
     function(pair){
 
       var button =
@@ -76,7 +220,9 @@
       }
 
       button.addEventListener(
+
         'click',
+
         function(event){
 
           event.stopPropagation();
@@ -105,8 +251,11 @@
         }
       );
 
+
       card.addEventListener(
+
         'click',
+
         function(event){
 
           event.stopPropagation();
@@ -117,7 +266,9 @@
 
 
   document.addEventListener(
+
     'click',
+
     function(){
 
       closeCards();
@@ -143,7 +294,9 @@
     }
 
     button.addEventListener(
+
       'click',
+
       function(){
 
         var current =
@@ -180,7 +333,7 @@
 
 
   /* =========================================================
-     PLAY START / STOP
+     PLAY
   ========================================================= */
 
   var playStartButton =
@@ -191,11 +344,6 @@
   var playStopButton =
     document.getElementById(
       'playStopButton'
-    );
-
-  var playButton =
-    document.getElementById(
-      'playButton'
     );
 
   var isPlaying =
@@ -228,21 +376,15 @@
           : 'true'
       );
     }
-
-    if(playButton){
-
-      playButton.classList.toggle(
-        'is-playing',
-        isPlaying
-      );
-    }
   }
 
 
   if(playStartButton){
 
     playStartButton.addEventListener(
+
       'click',
+
       function(){
 
         setPlayState(
@@ -256,7 +398,9 @@
   if(playStopButton){
 
     playStopButton.addEventListener(
+
       'click',
+
       function(){
 
         setPlayState(
@@ -311,7 +455,9 @@
   if(micStartButton){
 
     micStartButton.addEventListener(
+
       'click',
+
       function(){
 
         setMicState(
@@ -325,7 +471,9 @@
   if(micStopButton){
 
     micStopButton.addEventListener(
+
       'click',
+
       function(){
 
         setMicState(
@@ -337,7 +485,7 @@
 
 
   /* =========================================================
-     SPEED 0.25x ~ 2.00x
+     SPEED
   ========================================================= */
 
   var speedRange =
@@ -365,17 +513,19 @@
         '×';
     }
 
+
     speedRange.addEventListener(
       'input',
       renderSpeed
     );
+
 
     renderSpeed();
   }
 
 
   /* =========================================================
-     MIC PASS
+     PASS
   ========================================================= */
 
   var passRange =
@@ -401,17 +551,19 @@
         '%';
     }
 
+
     passRange.addEventListener(
       'input',
       renderPass
     );
+
 
     renderPass();
   }
 
 
   /* =========================================================
-     MIC DELAY 0 ~ 5.0s
+     DELAY
   ========================================================= */
 
   var delayRange =
@@ -439,12 +591,65 @@
         's';
     }
 
+
     delayRange.addEventListener(
       'input',
       renderDelay
     );
 
+
     renderDelay();
+  }
+
+
+  /* =========================================================
+     PSG
+  ========================================================= */
+
+  var psgButton =
+    document.getElementById(
+      'psgButton'
+    );
+
+  var psgExtra =
+    document.querySelectorAll(
+      '.gb-psg-extra'
+    );
+
+
+  if(psgButton){
+
+    psgButton.addEventListener(
+
+      'click',
+
+      function(){
+
+        var isOn =
+          psgButton.getAttribute(
+            'aria-pressed'
+          ) === 'true';
+
+        isOn =
+          !isOn;
+
+        psgButton.setAttribute(
+          'aria-pressed',
+          isOn
+            ? 'true'
+            : 'false'
+        );
+
+        psgExtra.forEach(
+
+          function(turn){
+
+            turn.hidden =
+              !isOn;
+          }
+        );
+      }
+    );
   }
 
 
@@ -459,13 +664,17 @@
 
 
   modeButtons.forEach(
+
     function(button){
 
       button.addEventListener(
+
         'click',
+
         function(){
 
           modeButtons.forEach(
+
             function(item){
 
               item.classList.remove(
@@ -484,57 +693,37 @@
 
 
   /* =========================================================
-     CONVERSATION TURN
+     TURN
   ========================================================= */
 
   var turns =
-    Array.from(
-      document.querySelectorAll(
-        '.gb-conversation-turn'
-      )
+    document.querySelectorAll(
+      '.gb-conversation-turn'
     );
-
-  var currentTurnIndex =
-    0;
-
-
-  function setCurrentTurn(
-    index
-  ){
-
-    if(
-      index < 0 ||
-      index >= turns.length
-    ){
-      return;
-    }
-
-    currentTurnIndex =
-      index;
-
-    turns.forEach(
-      function(turn,indexNumber){
-
-        turn.classList.toggle(
-          'is-current',
-          indexNumber === currentTurnIndex
-        );
-      }
-    );
-
-    updateNavigationLabels();
-  }
 
 
   turns.forEach(
-    function(turn,index){
+
+    function(turn){
 
       turn.addEventListener(
+
         'click',
+
         function(){
 
-          setCurrentTurn(
-            index
+          turns.forEach(
+
+            function(item){
+
+              item.classList.remove(
+                'is-current'
+              );
+            }
+          );
+
+          turn.classList.add(
+            'is-current'
           );
         }
       );
@@ -543,263 +732,26 @@
 
 
   /* =========================================================
-     PSG
-  ========================================================= */
-
-  var psgButton =
-    document.getElementById(
-      'psgButton'
-    );
-
-  var psgExtra =
-    document.querySelectorAll(
-      '.gb-psg-extra'
-    );
-
-
-  function isPsgOn(){
-
-    return !!(
-      psgButton &&
-      psgButton.getAttribute(
-        'aria-pressed'
-      ) === 'true'
-    );
-  }
-
-
-  if(psgButton){
-
-    psgButton.addEventListener(
-      'click',
-      function(){
-
-        var newState =
-          !isPsgOn();
-
-        psgButton.setAttribute(
-          'aria-pressed',
-          newState
-            ? 'true'
-            : 'false'
-        );
-
-        psgExtra.forEach(
-          function(turn){
-
-            turn.hidden =
-              !newState;
-          }
-        );
-
-        updateNavigationLabels();
-      }
-    );
-  }
-
-
-  /* =========================================================
-     PREV / NEXT
-  ========================================================= */
-
-  var prevButton =
-    document.getElementById(
-      'prevButton'
-    );
-
-  var nextButton =
-    document.getElementById(
-      'nextButton'
-    );
-
-
-  function updateNavigationLabels(){
-
-    if(!nextButton){
-      return;
-    }
-
-    /*
-      PSG ON
-      = Passage / Full Scenario Mode
-      = NEXT SCENARIO
-    */
-
-    if(
-      isPsgOn()
-    ){
-
-      nextButton.textContent =
-        'NEXT SCENARIO ▶';
-
-      return;
-    }
-
-
-    /*
-      PSG OFF
-      마지막 Turn
-      = NEXT SCENARIO
-    */
-
-    if(
-      currentTurnIndex >=
-      turns.length - 1
-    ){
-
-      nextButton.textContent =
-        'NEXT SCENARIO ▶';
-    }
-    else{
-
-      nextButton.textContent =
-        'NEXT ▶';
-    }
-  }
-
-
-  function goPrev(){
-
-    if(
-      currentTurnIndex > 0
-    ){
-
-      setCurrentTurn(
-        currentTurnIndex - 1
-      );
-    }
-  }
-
-
-  function goNext(){
-
-    /*
-      PSG ON에서는
-      실제 시스템 연결 후
-      다음 Scenario로 이동
-    */
-
-    if(
-      isPsgOn()
-    ){
-
-      return;
-    }
-
-
-    /*
-      마지막 Turn이면
-      실제 시스템 연결 후
-      다음 Scenario로 이동
-    */
-
-    if(
-      currentTurnIndex >=
-      turns.length - 1
-    ){
-
-      return;
-    }
-
-
-    setCurrentTurn(
-      currentTurnIndex + 1
-    );
-  }
-
-
-  if(prevButton){
-
-    prevButton.addEventListener(
-      'click',
-      goPrev
-    );
-  }
-
-
-  if(nextButton){
-
-    nextButton.addEventListener(
-      'click',
-      goNext
-    );
-  }
-
-
-  /* =========================================================
-     KEYBOARD
-     LEFT  = PREV
-     RIGHT = NEXT
      SPACE = PLAY / STOP
   ========================================================= */
 
-  function isTypingTarget(
-    target
-  ){
-
-    if(!target){
-      return false;
-    }
-
-    var tag =
-      String(
-        target.tagName || ''
-      ).toUpperCase();
-
-    return (
-      tag === 'INPUT' ||
-      tag === 'SELECT' ||
-      tag === 'TEXTAREA' ||
-      target.isContentEditable
-    );
-  }
-
-
   document.addEventListener(
+
     'keydown',
+
     function(event){
 
-      if(
-        event.key === 'Escape'
-      ){
-
-        closeCards();
-
-        return;
-      }
-
+      var target =
+        event.target;
 
       if(
-        isTypingTarget(
-          event.target
+        target &&
+        (
+          target.tagName === 'INPUT' ||
+          target.tagName === 'SELECT' ||
+          target.tagName === 'TEXTAREA'
         )
       ){
-        return;
-      }
-
-
-      if(
-        event.key ===
-        'ArrowLeft'
-      ){
-
-        event.preventDefault();
-
-        goPrev();
-
-        return;
-      }
-
-
-      if(
-        event.key ===
-        'ArrowRight'
-      ){
-
-        event.preventDefault();
-
-        goNext();
-
         return;
       }
 
@@ -814,13 +766,17 @@
           !isPlaying
         );
       }
+
+
+      if(
+        event.key === 'Escape'
+      ){
+
+        closeCards();
+      }
     }
   );
 
-
-  /* =========================================================
-     INITIAL
-  ========================================================= */
 
   setPlayState(
     false
@@ -828,10 +784,6 @@
 
   setMicState(
     false
-  );
-
-  setCurrentTurn(
-    0
   );
 
 })();
