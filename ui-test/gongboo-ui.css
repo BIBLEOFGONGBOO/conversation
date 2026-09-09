@@ -1,4 +1,4 @@
-/* SUBBLOCK 0000 : ROOT / BASE */
+/* SUBBLOCK 0200 */
 
 :root{
   --gb-bg:#eef3f7;
@@ -64,7 +64,7 @@ button{
 }
 
 
-/* SUBBLOCK 0500 : TOP BAR */
+/* TOP */
 
 .gb-topbar{
   position:sticky;
@@ -77,7 +77,8 @@ button{
   border-bottom:
     1px solid var(--gb-border);
 
-  backdrop-filter:blur(10px);
+  backdrop-filter:
+    blur(10px);
 }
 
 .gb-topbar-row{
@@ -87,6 +88,7 @@ button{
   );
 
   margin:0 auto;
+
   padding:7px 0;
 }
 
@@ -103,7 +105,7 @@ button{
 }
 
 
-/* SUBBLOCK 1000 : MAIN TOOL BUTTONS */
+/* MAIN TOOL BUTTONS */
 
 .gb-tool-button{
   min-width:68px;
@@ -117,9 +119,11 @@ button{
   border-radius:
     var(--gb-radius);
 
-  background:var(--gb-surface);
+  background:
+    var(--gb-surface);
 
-  color:#20252c;
+  color:
+    #20252c;
 
   font-size:12px;
   font-weight:900;
@@ -153,29 +157,27 @@ button{
 }
 
 .gb-tool-button:hover{
-  background:var(--gb-soft);
+  background:
+    var(--gb-soft);
 }
 
 .gb-tool-button.is-active,
 .gb-tool-button[aria-pressed="true"]{
-  color:#ffffff;
+  color:
+    var(--gb-accent-strong);
 
   border-color:
     var(--gb-accent);
 
   background:
-    linear-gradient(
-      180deg,
-      #2d7fe7,
-      var(--gb-accent-strong)
-    );
+    var(--gb-accent-soft);
 
   box-shadow:
-    0 3px 8px rgba(23,105,210,.28);
+    0 0 0 1px rgba(23,105,210,.08);
 }
 
 
-/* SUBBLOCK 1500 : COMMON CARD */
+/* CARD */
 
 .gb-card{
   position:absolute;
@@ -195,7 +197,8 @@ button{
   border-radius:
     var(--gb-card-radius);
 
-  background:var(--gb-surface);
+  background:
+    var(--gb-surface);
 
   box-shadow:
     var(--gb-shadow);
@@ -209,24 +212,17 @@ button{
   padding:
     2px 4px 7px;
 
-  color:#1c1c1c;
+  color:
+    #1c1c1c;
 
   font-size:12px;
-  font-weight:900;
+  font-weight:950;
 
   letter-spacing:.04em;
 }
 
-.gb-card-separator{
-  height:1px;
 
-  margin:8px 0;
-
-  background:#e8ecf0;
-}
-
-
-/* SUBBLOCK 2000 : SYSTEM CARD */
+/* SYSTEM */
 
 .gb-system-card{
   left:0;
@@ -250,14 +246,17 @@ button{
 
   column-gap:16px;
 
-  padding:0 9px;
+  padding:
+    0 9px;
 
   border:0;
   border-radius:8px;
 
-  background:transparent;
+  background:
+    transparent;
 
-  color:var(--gb-text);
+  color:
+    var(--gb-text);
 
   text-align:left;
 
@@ -275,7 +274,7 @@ button{
     var(--gb-accent-strong);
 
   font-size:12px;
-  font-weight:900;
+  font-weight:950;
 }
 
 .gb-system-name{
@@ -284,7 +283,8 @@ button{
 }
 
 .gb-submenu-arrow{
-  color:var(--gb-muted);
+  color:
+    var(--gb-muted);
 
   font-size:18px;
 
@@ -292,7 +292,7 @@ button{
 }
 
 
-/* SUBBLOCK 2500 : LANGUAGE / CARD ROW */
+/* GENERAL CARD ROW */
 
 .gb-card-row{
   min-height:42px;
@@ -308,31 +308,35 @@ button{
 }
 
 .gb-card-label{
-  color:#111111;
+  color:
+    #111111;
 
   font-size:12px;
-  font-weight:900;
+  font-weight:950;
 }
 
 .gb-select{
   height:31px;
 
-  padding:0 8px;
+  padding:
+    0 8px;
 
   border:
     1px solid #c8d0da;
 
   border-radius:8px;
 
-  background:#ffffff;
+  background:
+    #ffffff;
 
-  color:#1a1a1a;
+  color:
+    #1a1a1a;
 
   font-weight:700;
 }
 
 
-/* SUBBLOCK 3000 : SLIDERS */
+/* SLIDER ROW */
 
 .gb-slider-row{
   min-height:48px;
@@ -351,31 +355,34 @@ button{
 }
 
 .gb-slider-label{
-  color:#111111;
+  color:
+    #111111;
 
   font-size:12px;
-  font-weight:900;
+  font-weight:950;
 }
 
 .gb-slider-value{
   text-align:right;
 
-  color:#111111;
+  color:
+    #111111;
 
   font-size:12px;
-  font-weight:900;
+  font-weight:950;
 }
 
 .gb-range{
   width:100%;
 
-  accent-color:#1477f2;
+  accent-color:
+    #1477f2;
 
   cursor:pointer;
 }
 
 
-/* SUBBLOCK 3500 : PLAY / MIC ACTION ROWS */
+/* PLAY ROW */
 
 .gb-four-actions{
   display:grid;
@@ -388,6 +395,9 @@ button{
   margin-top:8px;
 }
 
+
+/* MIC ROW */
+
 .gb-three-actions{
   display:grid;
 
@@ -399,24 +409,30 @@ button{
   margin-top:8px;
 }
 
+
+/* COMPACT BUTTONS */
+
 .gb-compact-toggle,
 .gb-compact-action{
   min-width:0;
   height:36px;
 
-  padding:0 6px;
+  padding:
+    0 6px;
 
   border:
     1px solid #cfd7e1;
 
   border-radius:8px;
 
-  background:#ffffff;
+  background:
+    #ffffff;
 
-  color:#222222;
+  color:
+    #222222;
 
   font-size:10.5px;
-  font-weight:900;
+  font-weight:950;
 
   white-space:nowrap;
 
@@ -425,8 +441,12 @@ button{
 
 .gb-compact-toggle:hover,
 .gb-compact-action:hover{
-  background:#f4f7fa;
+  background:
+    #f4f7fa;
 }
+
+
+/* TOGGLE ACTIVE */
 
 .gb-compact-toggle[aria-pressed="true"]{
   color:#ffffff;
@@ -445,11 +465,15 @@ button{
     0 2px 6px rgba(23,105,210,.25);
 }
 
+
+/* START ACTIVE */
+
 #playStartButton[aria-pressed="true"],
 #micStartButton[aria-pressed="true"]{
   color:#ffffff;
 
-  border-color:#165ab7;
+  border-color:
+    #165ab7;
 
   background:
     linear-gradient(
@@ -461,6 +485,9 @@ button{
   box-shadow:
     0 2px 7px rgba(22,79,166,.28);
 }
+
+
+/* STOP ACTIVE */
 
 #playStopButton[aria-pressed="true"],
 #micStopButton[aria-pressed="true"]{
@@ -481,120 +508,94 @@ button{
 }
 
 
-/* SUBBLOCK 4000 : MODE BUTTONS */
+/* MODE */
 
 .gb-mode-row{
   display:grid;
 
   grid-template-columns:
-    repeat(3,minmax(0,1fr));
+    repeat(3,1fr);
 
   gap:6px;
 }
 
 .gb-mode-button{
-  width:100%;
-  min-width:0;
   height:34px;
-
-  padding:0 4px;
 
   border:
     1px solid var(--gb-border);
 
   border-radius:8px;
 
-  background:#ffffff;
+  background:
+    #ffffff;
 
-  color:#222222;
+  color:
+    #222222;
 
   font-size:11px;
   font-weight:900;
 
   cursor:pointer;
-}
-
-.gb-mode-button:hover:not(:disabled){
-  background:#f7f9fb;
 }
 
 .gb-mode-button.is-active{
-  color:#ffffff;
+  color:
+    var(--gb-accent-strong);
 
   border-color:
     var(--gb-accent);
 
   background:
-    linear-gradient(
-      180deg,
-      #2d7fe7,
-      var(--gb-accent-strong)
-    );
-
-  box-shadow:
-    0 3px 8px rgba(23,105,210,.28);
+    var(--gb-accent-soft);
 }
 
 .gb-mode-button:disabled{
-  color:#b7bcc3;
+  color:#a8adb5;
 
-  border-color:#dfe3e8;
+  background:
+    #f0f1f3;
 
-  background:#f4f5f7;
-
-  opacity:.85;
+  opacity:.65;
 
   cursor:not-allowed;
 }
 
+.gb-card-separator{
+  height:1px;
 
-/* SUBBLOCK 4500 : MORE CARD 3-COLUMN GRID */
+  margin:
+    8px 0;
 
-.gb-more-grid{
-  width:100%;
-
-  display:grid;
-
-  grid-template-columns:
-    repeat(3,minmax(0,1fr));
-
-  gap:6px;
+  background:
+    #e8ecf0;
 }
 
-.gb-more-grid-button{
+
+/* CHUNK */
+
+.gb-chunk-button{
   width:100%;
-  min-width:0;
-  height:34px;
-
-  margin:0;
-  padding:0 4px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  height:36px;
 
   border:
     1px solid var(--gb-border);
 
   border-radius:8px;
 
-  background:#ffffff;
+  background:
+    #ffffff;
 
-  color:#222222;
+  color:
+    #222222;
 
   font-size:11px;
-  font-weight:900;
-
-  white-space:nowrap;
+  font-weight:950;
 
   cursor:pointer;
 }
 
-.gb-more-grid-button:hover:not(:disabled){
-  background:#f7f9fb;
-}
-
-.gb-more-grid-button[aria-pressed="true"]{
+.gb-chunk-button[aria-pressed="true"]{
   color:#ffffff;
 
   border-color:
@@ -603,28 +604,13 @@ button{
   background:
     linear-gradient(
       180deg,
-      #2d7fe7,
+      #2d7fe5,
       var(--gb-accent-strong)
     );
-
-  box-shadow:
-    0 3px 8px rgba(23,105,210,.28);
-}
-
-.gb-more-grid-button:disabled{
-  color:#b7bcc3;
-
-  border-color:#dfe3e8;
-
-  background:#f4f5f7;
-
-  opacity:.85;
-
-  cursor:not-allowed;
 }
 
 
-/* SUBBLOCK 5000 : LOGIN */
+/* LOGIN */
 
 .gb-login-button{
   width:100%;
@@ -635,9 +621,11 @@ button{
 
   border-radius:8px;
 
-  background:#f0f1f3;
+  background:
+    #f0f1f3;
 
-  color:#a4aab2;
+  color:
+    #a4aab2;
 
   font-size:12px;
   font-weight:900;
@@ -648,7 +636,7 @@ button{
 }
 
 
-/* SUBBLOCK 5500 : CONTENT */
+/* CONTENT */
 
 .gb-content{
   width:min(
@@ -675,7 +663,8 @@ button{
 .gb-demo-label{
   margin-bottom:10px;
 
-  color:#9198a2;
+  color:
+    #9198a2;
 
   font-size:11px;
   font-weight:900;
@@ -700,15 +689,12 @@ button{
   margin-top:7px;
 }
 
-.gb-conversation-turn:hover{
-  background:#f9fafb;
-}
-
 .gb-conversation-turn.is-current{
   border-color:
     var(--gb-current);
 
-  background:#fffdf6;
+  background:
+    #fffdf6;
 }
 
 .gb-speaker{
@@ -724,7 +710,7 @@ button{
 }
 
 
-/* SUBBLOCK 6000 : PREV / NEXT */
+/* PREV NEXT */
 
 .gb-bottom-nav{
   position:fixed;
@@ -768,9 +754,11 @@ button{
 
   border-radius:10px;
 
-  background:#ffffff;
+  background:
+    #ffffff;
 
-  color:#20252c;
+  color:
+    #20252c;
 
   font-size:12px;
   font-weight:900;
@@ -778,28 +766,136 @@ button{
   cursor:pointer;
 }
 
-.gb-nav-button:hover{
-  background:
-    var(--gb-soft);
 
-  border-color:#bfc8d3;
+/* MOBILE */
+/* SUBBLOCK 0210 */
+
+
+/* =========================================================
+   COMMON ACTIVE STATE
+   선택된 버튼은 모두 진한 파랑 + 흰 글씨
+========================================================= */
+
+.gb-tool-button.is-active,
+.gb-tool-button[aria-pressed="true"],
+.gb-compact-toggle[aria-pressed="true"],
+.gb-compact-action[aria-pressed="true"],
+.gb-chunk-button[aria-pressed="true"],
+.gb-mode-button.is-active{
+
+  color:#ffffff;
+
+  border-color:#1769d2;
+
+  background:
+    linear-gradient(
+      180deg,
+      #2d7fe7 0%,
+      #1769d2 100%
+    );
+
+  box-shadow:
+    0 3px 8px rgba(23,105,210,.28);
 }
 
 
-/* SUBBLOCK 6500 : COMMON TOOLTIP */
+/* STOP은 위험 동작이므로 RED 유지 */
+
+#playStopButton[aria-pressed="true"],
+#micStopButton[aria-pressed="true"]{
+
+  color:#ffffff;
+
+  border-color:#c81f26;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ef3038 0%,
+      #df2029 100%
+    );
+
+  box-shadow:
+    0 3px 8px rgba(223,32,41,.26);
+}
+
+
+/* =========================================================
+   BIBLE TOOLS
+========================================================= */
+
+.gb-bible-tools{
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:6px;
+}
+
+
+.gb-secondary-tool{
+
+  height:34px;
+
+  border:
+    1px solid var(--gb-border);
+
+  border-radius:8px;
+
+  background:#ffffff;
+
+  color:#222222;
+
+  font-size:11px;
+  font-weight:900;
+
+  cursor:pointer;
+}
+
+
+.gb-secondary-tool:not(:disabled):hover{
+
+  background:
+    var(--gb-soft);
+}
+
+
+.gb-secondary-tool:disabled{
+
+  color:#a8adb5;
+
+  border-color:#e0e3e7;
+
+  background:#f0f1f3;
+
+  opacity:.60;
+
+  cursor:not-allowed;
+}
+
+
+/* =========================================================
+   COMMON HOVER TOOLTIP
+========================================================= */
 
 [data-tooltip]{
+
   position:relative;
 }
 
+
 [data-tooltip]::after{
+
   content:
     attr(data-tooltip);
 
   position:absolute;
 
   left:50%;
-  top:calc(100% + 8px);
+  bottom:
+    calc(100% + 8px);
 
   transform:
     translateX(-50%);
@@ -826,6 +922,7 @@ button{
   pointer-events:none;
 
   opacity:0;
+
   visibility:hidden;
 
   transition:
@@ -833,13 +930,16 @@ button{
     visibility .14s ease;
 }
 
+
 [data-tooltip]::before{
+
   content:"";
 
   position:absolute;
 
   left:50%;
-  top:calc(100% + 3px);
+  bottom:
+    calc(100% + 3px);
 
   transform:
     translateX(-50%);
@@ -852,12 +952,13 @@ button{
   border-right:
     5px solid transparent;
 
-  border-bottom:
+  border-top:
     5px solid rgba(23,28,35,.94);
 
   pointer-events:none;
 
   opacity:0;
+
   visibility:hidden;
 
   transition:
@@ -865,15 +966,69 @@ button{
     visibility .14s ease;
 }
 
+
 [data-tooltip]:hover::after,
 [data-tooltip]:hover::before{
+
   opacity:1;
+
   visibility:visible;
 }
 
 
-/* SUBBLOCK 7000 : MOBILE */
+/* Card 안쪽 버튼 Tooltip은 아래쪽으로 표시 */
 
+.gb-card [data-tooltip]::after{
+
+  top:
+    calc(100% + 7px);
+
+  bottom:auto;
+}
+
+
+.gb-card [data-tooltip]::before{
+
+  top:
+    calc(100% + 2px);
+
+  bottom:auto;
+
+  border-top:0;
+
+  border-bottom:
+    5px solid rgba(23,28,35,.94);
+}
+
+
+/* TOUCH 장치에서는 Hover Tooltip 숨김 */
+/* SUBBLOCK 0220 */
+
+/* TOP TOOLBAR TOOLTIP — show below button */
+
+.gb-toolbar > [data-tooltip]::after,
+.gb-toolbar > .gb-card-wrap > [data-tooltip]::after{
+  top:calc(100% + 8px);
+  bottom:auto;
+}
+
+.gb-toolbar > [data-tooltip]::before,
+.gb-toolbar > .gb-card-wrap > [data-tooltip]::before{
+  top:calc(100% + 3px);
+  bottom:auto;
+
+  border-top:0;
+  border-bottom:
+    5px solid rgba(23,28,35,.94);
+}
+@media (hover:none){
+
+  [data-tooltip]::after,
+  [data-tooltip]::before{
+
+    display:none;
+  }
+}
 @media (max-width:600px){
 
   .gb-topbar-row{
@@ -899,7 +1054,8 @@ button{
 
     height:40px;
 
-    padding:0 4px;
+    padding:
+      0 4px;
 
     font-size:11px;
   }
@@ -923,7 +1079,8 @@ button{
 
     max-width:355px;
 
-    margin:0 auto;
+    margin:
+      0 auto;
   }
 
   .gb-system-card{
@@ -958,8 +1115,6 @@ button{
 }
 
 
-/* SUBBLOCK 7500 : SMALL MOBILE */
-
 @media (max-width:340px){
 
   .gb-toolbar{
@@ -970,7 +1125,8 @@ button{
   }
 
   .gb-tool-button{
-    padding:0 2px;
+    padding:
+      0 2px;
 
     font-size:10px;
   }
@@ -981,7 +1137,8 @@ button{
 
   .gb-compact-toggle,
   .gb-compact-action{
-    padding:0 2px;
+    padding:
+      0 2px;
 
     font-size:9.5px;
   }
@@ -991,26 +1148,5 @@ button{
       50px 1fr 46px;
 
     gap:6px;
-  }
-
-  .gb-more-grid,
-  .gb-mode-row{
-    gap:4px;
-  }
-
-  .gb-more-grid-button,
-  .gb-mode-button{
-    font-size:10px;
-  }
-}
-
-
-/* SUBBLOCK 8000 : TOUCH DEVICE */
-
-@media (hover:none){
-
-  [data-tooltip]::after,
-  [data-tooltip]::before{
-    display:none;
   }
 }
