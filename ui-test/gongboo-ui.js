@@ -1778,3 +1778,14 @@ if(templateChunkButton){
     );
   }
 );
+
+/* SUBBLOCK 8275 : PLAY CARD TITLE HIDE / COMPACT */
+
+#playCard > .gb-card-title{
+  display:none;
+}
+
+#playCard{
+  padding-top:6px;
+}
+
