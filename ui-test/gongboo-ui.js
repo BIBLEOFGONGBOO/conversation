@@ -762,3 +762,50 @@ if (
     }
   );
 }
+// SUBBLOCK 7000 : CONVERSATION PREV / NEXT ADAPTER
+
+var templatePrevButton =
+  document.getElementById(
+    'prevButton'
+  );
+
+var templateNextButton =
+  document.getElementById(
+    'nextButton'
+  );
+
+
+if (templatePrevButton) {
+
+  templatePrevButton.addEventListener(
+    'click',
+    function() {
+
+      if (
+        typeof go ===
+        'function'
+      ) {
+
+        go(-1);
+      }
+    }
+  );
+}
+
+
+if (templateNextButton) {
+
+  templateNextButton.addEventListener(
+    'click',
+    function() {
+
+      if (
+        typeof go ===
+        'function'
+      ) {
+
+        go(1);
+      }
+    }
+  );
+}
