@@ -1489,14 +1489,14 @@ if(templateMicStop){
 
 })();
 
-// SUBBLOCK 8500 : MIC LEGACY PANEL / SCORE / HIGHLIGHT ADAPTER
+// SUBBLOCK 8500 : MIC LEGACY BRIDGE / SCORE / HIGHLIGHT
 
 window.addEventListener(
   'load',
   function(){
 
     // ========================================================
-    // 1. 기존 MIC 카드 제거
+    // 1. 기존 MIC Panel 제거
     // ========================================================
 
     var oldPanel =
@@ -1510,54 +1510,74 @@ window.addEventListener(
 
 
     // ========================================================
-    // 2. 기존 MAIN이 MIC Panel을 요구하면
-    //    새 Template micCard를 돌려줌
+    // 2. 기존 MAIN 전용 보이지 않는 Bridge Panel
+    //
+    // 중요:
+    // 기존 MAIN이 micCard를 직접 display:block 처리하지 못하게 함.
+    // 실제 카드 OPEN/CLOSE는 gongboo-ui.js 0300만 담당.
     // ========================================================
 
     window.ensureAnneMicPanel =
       function(){
 
-        var micCard =
+        var bridge =
           document.getElementById(
-            'micCard'
-          );
-
-        if(!micCard){
-          return null;
-        }
-
-
-        var scoreStore =
-          document.getElementById(
-            'anneMicScore'
+            'anneMicPanel'
           );
 
 
-        if(!scoreStore){
+        if(!bridge){
 
-          scoreStore =
+          bridge =
             document.createElement(
               'div'
             );
 
+
+          bridge.id =
+            'anneMicPanel';
+
+
+          bridge.style.cssText = `
+            position:fixed;
+            left:-99999px;
+            top:-99999px;
+            width:1px;
+            height:1px;
+            overflow:hidden;
+            opacity:0;
+            pointer-events:none;
+          `;
+
+
+          var scoreStore =
+            document.createElement(
+              'div'
+            );
+
+
           scoreStore.id =
             'anneMicScore';
 
-          scoreStore.hidden =
-            true;
 
-          micCard.appendChild(
+          bridge.appendChild(
             scoreStore
+          );
+
+
+          document.body.appendChild(
+            bridge
           );
         }
 
 
-        return micCard;
+        return bridge;
       };
 
 
     // ========================================================
-    // 3. 기존 위치 함수 차단
+    // 3. 기존 MAIN의 MIC Panel 위치 함수 무효화
+    // 실제 새 카드 위치는 8250이 담당
     // ========================================================
 
     window.positionAnneMicPanel =
@@ -1567,7 +1587,7 @@ window.addEventListener(
 
 
     // ========================================================
-    // 4. 점수 → 새 STOP 버튼 오른쪽 표시
+    // 4. 점수 → 새 MIC STOP 버튼
     // ========================================================
 
     window.showAnneMicScore =
@@ -1705,7 +1725,7 @@ window.addEventListener(
 
 
     console.log(
-      '[MIC TEMPLATE] Legacy card disabled / score + highlight connected'
+      '[MIC TEMPLATE] legacy bridge ready'
     );
   }
 );
