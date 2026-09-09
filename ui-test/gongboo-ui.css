@@ -572,11 +572,24 @@ button{
 }
 
 
-/* SUBBLOCK 4500 : CHUNK */
+/* SUBBLOCK 4500 : MORE CARD BUTTON GRID */
 
-.gb-chunk-button{
+.gb-more-grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0,1fr));
+
+  gap:6px;
+}
+
+
+.gb-more-grid-button{
   width:100%;
-  height:36px;
+  min-width:0;
+  height:34px;
+
+  padding:0 4px;
 
   border:
     1px solid var(--gb-border);
@@ -590,12 +603,26 @@ button{
     #222222;
 
   font-size:11px;
-  font-weight:950;
+  font-weight:900;
 
   cursor:pointer;
 }
 
-.gb-chunk-button[aria-pressed="true"]{
+
+/* STD와 같은 깨끗한 HOVER */
+
+.gb-more-grid-button:hover:not(:disabled){
+  background:
+    #f7f9fb;
+
+  border-color:
+    var(--gb-accent);
+}
+
+
+/* CHUNK ON = LRN과 같은 ACTIVE */
+
+.gb-more-grid-button[aria-pressed="true"]{
   color:#ffffff;
 
   border-color:
@@ -604,9 +631,26 @@ button{
   background:
     linear-gradient(
       180deg,
-      #2d7fe5,
-      var(--gb-accent-strong)
+      #2d7fe7 0%,
+      #1769d2 100%
     );
+
+  box-shadow:
+    0 3px 8px rgba(23,105,210,.28);
+}
+
+
+/* PEOPLE / MAP / OPTION = QZ와 같은 DISABLED */
+
+.gb-more-grid-button:disabled{
+  color:#a8adb5;
+
+  background:
+    #f0f1f3;
+
+  opacity:.65;
+
+  cursor:not-allowed;
 }
 
 
