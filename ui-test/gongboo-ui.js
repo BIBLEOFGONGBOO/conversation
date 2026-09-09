@@ -1713,3 +1713,205 @@ window.addEventListener(
     );
   }
 );
+
+
+
+// SUBBLOCK 8600 : MIC CLICK TARGET SYNC
+// 클릭한 노란 박스 문장을 실제 MIC Target으로 고정
+// START 시 기존 MAIN이 index=0으로 초기화해도 다시 선택 문장으로 복원
+
+(function(){
+
+  var selectedMicIndex =
+    0;
+
+
+  // ==========================================================
+  // 현재 화면의 Conversation 문장 목록
+  // ==========================================================
+
+  function getVisibleConversationLines(){
+
+    return Array.from(
+      document.querySelectorAll(
+        '.conversation-turn .conversation-text'
+      )
+    ).filter(
+      function(el){
+
+        var rect =
+          el.getBoundingClientRect();
+
+
+        return (
+          rect.width > 0 &&
+          rect.height > 0
+        );
+      }
+    );
+  }
+
+
+  // ==========================================================
+  // 선택 문장으로 MIC 강제 이동
+  // ==========================================================
+
+  function forceSelectedMicTarget(){
+
+    var lines =
+      getVisibleConversationLines();
+
+
+    if(
+      !lines.length
+    ){
+      return;
+    }
+
+
+    selectedMicIndex =
+      Math.max(
+        0,
+        Math.min(
+          selectedMicIndex,
+          lines.length - 1
+        )
+      );
+
+
+    _anneMicPassageIndex =
+      selectedMicIndex;
+
+
+    console.log(
+      '[MIC TARGET SYNC]',
+      selectedMicIndex,
+      lines[selectedMicIndex]
+        .dataset.originalText ||
+      lines[selectedMicIndex]
+        .textContent
+    );
+
+
+    // MIC가 이미 켜져 있으면
+    // 선택 문장에서 Recognition 즉시 재시작
+    if(
+      window.ANNE_STATE &&
+      window.ANNE_STATE.micMode
+    ){
+
+      if(
+        typeof stopAnneRecognition ===
+        'function'
+      ){
+        stopAnneRecognition();
+      }
+
+
+      window.setTimeout(
+        function(){
+
+          _anneMicPassageIndex =
+            selectedMicIndex;
+
+
+          if(
+            typeof startAnneRecognition ===
+            'function'
+          ){
+            startAnneRecognition();
+          }
+
+        },
+        120
+      );
+    }
+  }
+
+
+  // ==========================================================
+  // 문장 CLICK
+  // 노란 테두리가 이동한 바로 그 문장의 index 저장
+  // ==========================================================
+
+  document.addEventListener(
+    'click',
+    function(event){
+
+      var textEl =
+        event.target.closest(
+          '.conversation-text'
+        );
+
+
+      if(!textEl){
+        return;
+      }
+
+
+      var lines =
+        getVisibleConversationLines();
+
+
+      var index =
+        lines.indexOf(
+          textEl
+        );
+
+
+      if(index < 0){
+        return;
+      }
+
+
+      selectedMicIndex =
+        index;
+
+
+      _anneMicPassageIndex =
+        index;
+
+
+      window.__gongbooMicTargetElement =
+        textEl;
+
+
+      // 기존 MAIN의 클릭 처리 후
+      // 다시 한번 정확한 Target으로 고정
+      window.setTimeout(
+        forceSelectedMicTarget,
+        220
+      );
+    },
+    true
+  );
+
+
+  // ==========================================================
+  // 새 Template MIC START
+  //
+  // 기존 turnAnneMicOn()이 passageIndex를 0으로 만들기 때문에
+  // START 직후 사용자가 선택한 문장으로 다시 복원
+  // ==========================================================
+
+  var micStartButton =
+    document.getElementById(
+      'micStartButton'
+    );
+
+
+  if(micStartButton){
+
+    micStartButton.addEventListener(
+      'click',
+      function(){
+
+        window.setTimeout(
+          forceSelectedMicTarget,
+          180
+        );
+      }
+    );
+  }
+
+})();
