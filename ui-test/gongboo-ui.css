@@ -1197,3 +1197,25 @@ button{
     gap:6px;
   }
 }
+
+
+
+/* SUBBLOCK 8250 : MIC CARD COMPACT POSITION */
+
+#micCard{
+  max-width:340px;
+}
+
+
+/* 첫줄 MIC 제거 */
+
+#micCard > .gb-card-title{
+  display:none;
+}
+
+
+/* 제목 제거 후 상단 여백 축소 */
+
+#micCard{
+  padding-top:12px;
+}
