@@ -911,44 +911,203 @@ var templatePlayAuto =
     'playAutoToggle'
   );
 
-var legacyPlayAuto =
-  document.getElementById(
-    'licenseAuto'
-  );
 
-
-if(
-  templatePlayAuto &&
-  legacyPlayAuto
-){
+if(templatePlayAuto){
 
   templatePlayAuto.addEventListener(
     'click',
     function(){
 
-      legacyPlayAuto.click();
-
-
       var isOn =
-        legacyPlayAuto.getAttribute(
+        templatePlayAuto.getAttribute(
           'aria-pressed'
         ) === 'true';
 
 
-      templatePlayAuto.setAttribute(
-        'aria-pressed',
-        String(isOn)
-      );
+      if(
+        window.ANNE_STATE
+      ){
+
+        window.ANNE_STATE.auto =
+          isOn;
+      }
+
+
+      var legacyPlayAuto =
+        document.getElementById(
+          'licenseAuto'
+        );
+
+
+      if(legacyPlayAuto){
+
+        legacyPlayAuto.setAttribute(
+          'aria-pressed',
+          String(isOn)
+        );
+
+        legacyPlayAuto.classList.toggle(
+          'active',
+          isOn
+        );
+
+        legacyPlayAuto.textContent =
+          isOn
+            ? 'AUTO ON'
+            : 'AUTO';
+      }
+
+
+      if(
+        typeof saveLastSettings ===
+        'function'
+      ){
+
+        saveLastSettings();
+      }
     }
   );
 
 
-  templatePlayAuto.setAttribute(
-    'aria-pressed',
-    legacyPlayAuto.getAttribute(
-      'aria-pressed'
-    ) === 'true'
-      ? 'true'
-      : 'false'
+  window.addEventListener(
+    'load',
+    function(){
+
+      window.setTimeout(
+        function(){
+
+          var isOn =
+            !!(
+              window.ANNE_STATE &&
+              window.ANNE_STATE.auto
+            );
+
+
+          templatePlayAuto.setAttribute(
+            'aria-pressed',
+            String(isOn)
+          );
+
+        },
+        200
+      );
+    }
   );
 }
+
+// SUBBLOCK 7750 : CONVERSATION REPEAT ADAPTER
+
+var repeatButton =
+  document.getElementById(
+    'repeatToggle'
+  );
+
+
+window.__gongbooRepeatEnabled =
+  false;
+
+
+if(repeatButton){
+
+  repeatButton.addEventListener(
+    'click',
+    function(){
+
+      window.__gongbooRepeatEnabled =
+        repeatButton.getAttribute(
+          'aria-pressed'
+        ) === 'true';
+    }
+  );
+}
+
+
+window.addEventListener(
+  'load',
+  function(){
+
+    window.setTimeout(
+      function(){
+
+        if(
+          window.__gongbooRepeatWrapped
+        ){
+          return;
+        }
+
+
+        if(
+          typeof window.readTextsWithHighlight !==
+          'function'
+        ){
+          return;
+        }
+
+
+        var originalReadTextsWithHighlight =
+          window.readTextsWithHighlight;
+
+
+        window.readTextsWithHighlight =
+          function(
+            items,
+            index,
+            runId
+          ){
+
+            if(
+              index >= items.length &&
+              window.__gongbooRepeatEnabled
+            ){
+
+              window.setTimeout(
+                function(){
+
+                  var startButton =
+                    document.getElementById(
+                      'playStartButton'
+                    );
+
+
+                  var stillPlaying =
+                    startButton &&
+                    startButton.getAttribute(
+                      'aria-pressed'
+                    ) === 'true';
+
+
+                  if(
+                    window.__gongbooRepeatEnabled &&
+                    stillPlaying &&
+                    typeof window.speakWithDyslexiaSupport ===
+                    'function'
+                  ){
+
+                    window.speakWithDyslexiaSupport();
+                  }
+
+                },
+                350
+              );
+
+
+              return;
+            }
+
+
+            return originalReadTextsWithHighlight(
+              items,
+              index,
+              runId
+            );
+          };
+
+
+        window.__gongbooRepeatWrapped =
+          true;
+
+      },
+      300
+    );
+  }
+);
