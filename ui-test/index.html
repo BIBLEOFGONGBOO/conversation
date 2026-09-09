@@ -453,71 +453,27 @@
 
 
 <!-- SUBBLOCK 3500 : CONTENT -->
-  <main class="gb-content">
+<main class="gb-content">
 
-    <section class="gb-demo-card">
+  <section
+    id="conversationCard"
+    class="gb-demo-card"
+  >
 
-      <div class="gb-demo-label">
-        SAMPLE CONTENT
-      </div>
+    <div
+      id="conversationTitle"
+      class="gb-demo-label"
+    >
+      Loading Conversation...
+    </div>
 
-      <article
-        class="gb-conversation-turn is-current"
-        tabindex="0"
-      >
-        <div class="gb-speaker">
-          Peter
-        </div>
+    <div
+      id="conversationTurns"
+    ></div>
 
-        <div class="gb-text">
-          Good morning, Anna. Did you sleep well?
-        </div>
-      </article>
+  </section>
 
-      <article
-        class="gb-conversation-turn"
-        tabindex="0"
-      >
-        <div class="gb-speaker">
-          Anna
-        </div>
-
-        <div class="gb-text">
-          Yes, I did. I feel ready for the day.
-        </div>
-      </article>
-
-      <article
-        class="gb-conversation-turn gb-psg-extra"
-        tabindex="0"
-        hidden
-      >
-        <div class="gb-speaker">
-          Peter
-        </div>
-
-        <div class="gb-text">
-          Great. Let's grab some coffee before work.
-        </div>
-      </article>
-
-      <article
-        class="gb-conversation-turn gb-psg-extra"
-        tabindex="0"
-        hidden
-      >
-        <div class="gb-speaker">
-          Anna
-        </div>
-
-        <div class="gb-text">
-          Sounds good. The cafe around the corner is open.
-        </div>
-      </article>
-
-    </section>
-
-  </main>
+</main>
 
 
 <!-- SUBBLOCK 4000 : PREV / NEXT -->
@@ -544,7 +500,9 @@
 </div>
 
 <!-- SUBBLOCK 4500 : SCRIPT LOAD / PAGE CLOSE -->
+
 <script src="./gongboo-ui.js"></script>
+<script src="./conversation-main.js"></script>
 
 </body>
 </html>
