@@ -452,24 +452,48 @@
   </header>
 
 
-<!-- SUBBLOCK 3500 : CONTENT -->
+<!-- SUBBLOCK 3500 : CONTENT / CONVERSATION HOST -->
+
 <main class="gb-content">
 
   <section
-    id="conversationCard"
+    id="setupSection"
     class="gb-demo-card"
   >
 
-    <div
-      id="conversationTitle"
-      class="gb-demo-label"
-    >
-      Loading Conversation...
+    <div class="card-new">
+      Loading Conversation Directory...
     </div>
 
+  </section>
+
+
+  <section
+    id="quizMain"
+    class="gb-demo-card"
+    style="display:none;"
+  >
+
     <div
-      id="conversationTurns"
-    ></div>
+      class="progress-area"
+      style="display:none;"
+    >
+      <div
+        id="quizProgressBar"
+      ></div>
+    </div>
+
+
+    <div
+      id="quizContent"
+      style="display:none;"
+    >
+
+      <div
+        id="questionContainer"
+      ></div>
+
+    </div>
 
   </section>
 
@@ -534,18 +558,6 @@
   </select>
 
   <div id="bibleHeaderActionRow"></div>
-
-  <div id="setupSection"></div>
-
-  <div id="quizMain"></div>
-
-  <div id="quizContent"></div>
-
-  <div class="progress-area">
-    <div id="quizProgressBar"></div>
-  </div>
-
-  <div id="questionContainer"></div>
 
 </div>
   
