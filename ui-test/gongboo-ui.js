@@ -679,49 +679,76 @@ if(playStopButton){
   );
 
 
-  /* SUBBLOCK 6000 : KEYBOARD / SPACE PLAY-STOP */
+ /* SUBBLOCK 6000 : KEYBOARD / SPACE PLAY-STOP */
 
-  document.addEventListener(
+document.addEventListener(
+  'keydown',
+  function(event){
 
-    'keydown',
-
-    function(event){
-
-      var target =
-        event.target;
-
-      if(
-        target &&
-        (
-          target.tagName === 'INPUT' ||
-          target.tagName === 'SELECT' ||
-          target.tagName === 'TEXTAREA'
-        )
-      ){
-        return;
-      }
+    var target =
+      event.target;
 
 
-      if(
-        event.code === 'Space'
-      ){
+    if(
+      target &&
+      (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'SELECT' ||
+        target.tagName === 'TEXTAREA'
+      )
+    ){
+      return;
+    }
 
-        event.preventDefault();
+
+    if(
+      event.code === 'Space'
+    ){
+
+      event.preventDefault();
+
+
+      if(isPlaying){
+
+        if(
+          typeof stopSpeech ===
+          'function'
+        ){
+
+          stopSpeech();
+        }
+
 
         setPlayState(
-          !isPlaying
+          false
         );
-      }
+
+      }else{
+
+        if(
+          typeof speakWithDyslexiaSupport ===
+          'function'
+        ){
+
+          setPlayState(
+            true
+          );
 
 
-      if(
-        event.key === 'Escape'
-      ){
-
-        closeCards();
+          speakWithDyslexiaSupport();
+        }
       }
     }
-  );
+
+
+    if(
+      event.key === 'Escape'
+    ){
+
+      closeCards();
+    }
+  }
+);
 
 
   // SUBBLOCK 6500 : INITIAL STATE
