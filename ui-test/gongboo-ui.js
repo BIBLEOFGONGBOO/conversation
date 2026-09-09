@@ -1510,8 +1510,7 @@ window.addEventListener(
 
 
     // ========================================================
-    // 2. 기존 MAIN이 MIC Panel을 요구하면
-    //    새 Template micCard를 돌려줌
+    // 2. 기존 MAIN용 MIC Panel Adapter
     // ========================================================
 
     window.ensureAnneMicPanel =
@@ -1527,7 +1526,6 @@ window.addEventListener(
         }
 
 
-        // 기존 MAIN이 점수를 기록할 숨은 저장소
         var scoreStore =
           document.getElementById(
             'anneMicScore'
@@ -1558,8 +1556,7 @@ window.addEventListener(
 
 
     // ========================================================
-    // 3. 기존 위치 함수 차단
-    //    위치는 Template SUBBLOCK 8250이 전담
+    // 3. 기존 MAIN의 카드 위치 제어 차단
     // ========================================================
 
     window.positionAnneMicPanel =
@@ -1569,7 +1566,91 @@ window.addEventListener(
 
 
     // ========================================================
-    // 4. 점수 → 새 STOP 버튼 오른쪽 표시
+    // 4. 기존 MAIN MIC ON/OFF 보존
+    // 단, 새 micCard의 display/hidden은 건드리지 못하게 함
+    // ========================================================
+
+    var originalMicOn =
+      window.turnAnneMicOn;
+
+    var originalMicOff =
+      window.turnAnneMicOff;
+
+
+    if(
+      typeof originalMicOn ===
+      'function'
+    ){
+
+      window.turnAnneMicOn =
+        function(){
+
+          var micCard =
+            document.getElementById(
+              'micCard'
+            );
+
+
+          var wasHidden =
+            micCard
+              ? micCard.hidden
+              : true;
+
+
+          originalMicOn();
+
+
+          if(micCard){
+
+            micCard.style.removeProperty(
+              'display'
+            );
+
+            micCard.hidden =
+              wasHidden;
+          }
+        };
+    }
+
+
+    if(
+      typeof originalMicOff ===
+      'function'
+    ){
+
+      window.turnAnneMicOff =
+        function(){
+
+          var micCard =
+            document.getElementById(
+              'micCard'
+            );
+
+
+          var wasHidden =
+            micCard
+              ? micCard.hidden
+              : true;
+
+
+          originalMicOff();
+
+
+          if(micCard){
+
+            micCard.style.removeProperty(
+              'display'
+            );
+
+            micCard.hidden =
+              wasHidden;
+          }
+        };
+    }
+
+
+    // ========================================================
+    // 5. 점수 → 새 STOP 버튼 오른쪽 표시
     // ========================================================
 
     window.showAnneMicScore =
@@ -1615,8 +1696,7 @@ window.addEventListener(
 
 
     // ========================================================
-    // 5. MIC 맞은 단어 Highlight
-    // 기존 MAIN highlightAnneMicWords()가 이 함수를 호출함
+    // 6. 맞은 단어 Highlight
     // ========================================================
 
     window.compareAndHighlightCurrentSentence =
@@ -1708,279 +1788,9 @@ window.addEventListener(
 
 
     console.log(
-      '[MIC TEMPLATE] Legacy card disabled / score + highlight connected'
+      '[MIC TEMPLATE] single card controller active'
     );
   }
 );
-
-
-
-// SUBBLOCK 8600 : MIC CLICK TARGET SYNC
-// 클릭한 노란 박스 문장을 실제 MIC Target으로 고정
-// START 시 기존 MAIN이 index=0으로 초기화해도 다시 선택 문장으로 복원
-
-(function(){
-
-  var selectedMicIndex =
-    0;
-
-
-  // ==========================================================
-  // 현재 화면의 Conversation 문장 목록
-  // ==========================================================
-
-  function getVisibleConversationLines(){
-
-    return Array.from(
-      document.querySelectorAll(
-        '.conversation-turn .conversation-text'
-      )
-    ).filter(
-      function(el){
-
-        var rect =
-          el.getBoundingClientRect();
-
-
-        return (
-          rect.width > 0 &&
-          rect.height > 0
-        );
-      }
-    );
-  }
-
-
-  // ==========================================================
-  // 선택 문장으로 MIC 강제 이동
-  // ==========================================================
-
-  function forceSelectedMicTarget(){
-
-    var lines =
-      getVisibleConversationLines();
-
-
-    if(
-      !lines.length
-    ){
-      return;
-    }
-
-
-    selectedMicIndex =
-      Math.max(
-        0,
-        Math.min(
-          selectedMicIndex,
-          lines.length - 1
-        )
-      );
-
-
-    _anneMicPassageIndex =
-      selectedMicIndex;
-
-
-    console.log(
-      '[MIC TARGET SYNC]',
-      selectedMicIndex,
-      lines[selectedMicIndex]
-        .dataset.originalText ||
-      lines[selectedMicIndex]
-        .textContent
-    );
-
-
-    // MIC가 이미 켜져 있으면
-    // 선택 문장에서 Recognition 즉시 재시작
-    if(
-      window.ANNE_STATE &&
-      window.ANNE_STATE.micMode
-    ){
-
-      if(
-        typeof stopAnneRecognition ===
-        'function'
-      ){
-        stopAnneRecognition();
-      }
-
-
-      window.setTimeout(
-        function(){
-
-          _anneMicPassageIndex =
-            selectedMicIndex;
-
-
-          if(
-            typeof startAnneRecognition ===
-            'function'
-          ){
-            startAnneRecognition();
-          }
-
-        },
-        120
-      );
-    }
-  }
-
-
-  // ==========================================================
-  // 문장 CLICK
-  // 노란 테두리가 이동한 바로 그 문장의 index 저장
-  // ==========================================================
-
-  document.addEventListener(
-    'click',
-    function(event){
-
-      var textEl =
-        event.target.closest(
-          '.conversation-text'
-        );
-
-
-      if(!textEl){
-        return;
-      }
-
-
-      var lines =
-        getVisibleConversationLines();
-
-
-      var index =
-        lines.indexOf(
-          textEl
-        );
-
-
-      if(index < 0){
-        return;
-      }
-
-
-      selectedMicIndex =
-        index;
-
-
-      _anneMicPassageIndex =
-        index;
-
-
-      window.__gongbooMicTargetElement =
-        textEl;
-
-
-      // 기존 MAIN의 클릭 처리 후
-      // 다시 한번 정확한 Target으로 고정
-      window.setTimeout(
-        forceSelectedMicTarget,
-        220
-      );
-    },
-    true
-  );
-
-
-  // ==========================================================
-  // 새 Template MIC START
-  //
-  // 기존 turnAnneMicOn()이 passageIndex를 0으로 만들기 때문에
-  // START 직후 사용자가 선택한 문장으로 다시 복원
-  // ==========================================================
-
-  var micStartButton =
-    document.getElementById(
-      'micStartButton'
-    );
-
-
-  if(micStartButton){
-
-    micStartButton.addEventListener(
-      'click',
-      function(){
-
-        window.setTimeout(
-          forceSelectedMicTarget,
-          180
-        );
-      }
-    );
-  }
-
-})();
-
-
-// SUBBLOCK 8650 : MIC CARD TOGGLE CLOSE
-// MIC 버튼 다시 클릭 → 카드 닫기 + MIC OFF
-
-(function(){
-
-  var micButton =
-    document.getElementById(
-      'micButton'
-    );
-
-  var micCard =
-    document.getElementById(
-      'micCard'
-    );
-
-
-  if(
-    !micButton ||
-    !micCard
-  ){
-    return;
-  }
-
-
-  micButton.addEventListener(
-    'click',
-    function(){
-
-      var isOpen =
-        !micCard.hidden;
-
-
-      if(
-        isOpen &&
-        window.ANNE_STATE &&
-        window.ANNE_STATE.micMode &&
-        typeof turnAnneMicOff ===
-          'function'
-      ){
-
-        turnAnneMicOff();
-      }
-
-
-      window.setTimeout(
-        function(){
-
-          if(
-            micCard.hidden
-          ){
-
-            micButton.classList.remove(
-              'is-active'
-            );
-
-            micButton.setAttribute(
-              'aria-expanded',
-              'false'
-            );
-          }
-
-        },
-        0
-      );
-    }
-  );
 
 })();
