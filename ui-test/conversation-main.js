@@ -5788,6 +5788,7 @@ function startAnneRecognition() {
 // SUBBLOCK 1112
 // ============================================================
 // MIC ON
+// 현재 노란 테두리로 선택한 문장 위치 유지
 // ============================================================
 
 function turnAnneMicOn() {
@@ -5810,13 +5811,31 @@ function turnAnneMicOn() {
   ) {
 
     stopSpeech();
-
   }
 
 
   ANNE_STATE.micMode =
     true;
-  _anneMicPassageIndex = 0;
+
+
+  // ==========================================================
+  // 중요:
+  // 예전처럼 무조건 0으로 초기화하지 않는다.
+  //
+  // 사용자가 문장을 클릭하면 기존 SUBBLOCK 1103-2가
+  // _anneMicPassageIndex를 이미 정확한 문장으로 설정함.
+  // ==========================================================
+
+  if (
+    !Number.isInteger(
+      _anneMicPassageIndex
+    ) ||
+    _anneMicPassageIndex < 0
+  ) {
+
+    _anneMicPassageIndex =
+      0;
+  }
 
 
   btn.classList.add(
@@ -5845,8 +5864,11 @@ function turnAnneMicOn() {
   positionAnneMicPanel();
 
 
-  panel.style.display =
-    'block';
+  if(panel){
+
+    panel.style.display =
+      'block';
+  }
 
 
   if (
@@ -5855,7 +5877,6 @@ function turnAnneMicOn() {
   ) {
 
     playMicOnSound();
-
   }
 
 
