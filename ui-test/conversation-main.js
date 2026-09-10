@@ -6236,56 +6236,34 @@ function installConversationRoleSelection() {
     '1';
 
   root.addEventListener(
-    'click',
-    function(event) {
+  'click',
+  function(event) {
 
-      var button =
-        event.target.closest(
-          '.conversation-speaker'
-        );
+    var button = event.target.closest(
+      '.conversation-speaker'
+    );
 
-      if (!button) {
-        return;
-      }
-
-      if (
-        !ensureConversationRoleState()
-      ) {
-        return;
-      }
-
-      var speaker =
-        String(
-          button.dataset.speaker ||
-          button.textContent ||
-          ''
-        )
-        .replace(/:$/, '')
-        .trim();
-
-      if (!speaker) {
-        return;
-      }
-
-      CONVERSATION_STATE.userSpeaker =
-        speaker;
-
-      CONVERSATION_STATE.rolePlay =
-        true;
-
-      CONVERSATION_STATE.roleTurnIndex =
-        0;
-
-      console.log(
-        '[ROLE] MY ROLE:',
-        speaker
-      );
-
-      refreshConversationRoleUI();
-
-      startConversationRolePlay();
+    if (!button) {
+      return;
     }
-  );
+
+    var speaker = String(
+      button.dataset.speaker ||
+      button.textContent ||
+      ''
+    )
+    .replace(/:$/, '')
+    .trim();
+
+    if (!speaker) {
+      return;
+    }
+
+    window.location.href =
+      'https://bibleofgongboo.github.io/biblenew/ui-test/?person=' +
+      encodeURIComponent(speaker);
+  }
+);
 }
 
 
