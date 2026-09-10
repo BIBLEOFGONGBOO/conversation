@@ -2102,6 +2102,10 @@ function syncAnneToggleButtons() {
       psgOn ? '700' : '',
       'important'
     );
+
+    p.style.removeProperty(
+      'filter'
+    );
   }
 
   if (q) {
