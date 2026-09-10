@@ -5817,6 +5817,16 @@ function turnAnneMicOn() {
   ANNE_STATE.micMode =
     true;
 
+  if (
+    typeof window.gongbooSetMicActive ===
+    'function'
+  ) {
+
+    window.gongbooSetMicActive(
+      true
+    );
+  }
+
 
   // ==========================================================
   // 중요:
@@ -5893,6 +5903,16 @@ function turnAnneMicOff() {
 
   ANNE_STATE.micMode =
     false;
+
+  if (
+    typeof window.gongbooSetMicActive ===
+    'function'
+  ) {
+
+    window.gongbooSetMicActive(
+      false
+    );
+  }
 
 
   _anneMicMoving =
@@ -7583,6 +7603,16 @@ function stopSpeech() {
       window.speechSynthesis.cancel();
     } catch (e) {}
   }
+
+  if (
+    typeof window.gongbooSetPlayActive ===
+    'function'
+  ) {
+
+    window.gongbooSetPlayActive(
+      false
+    );
+  }
   document
     .querySelectorAll(
       '.hl-word-span'
@@ -7673,6 +7703,16 @@ function readTextsWithHighlight(
 
     _currentUtterance =
       null;
+
+    if (
+      typeof window.gongbooSetPlayActive ===
+      'function'
+    ) {
+
+      window.gongbooSetPlayActive(
+        false
+      );
+    }
 
 
     if (
@@ -10634,3 +10674,16 @@ function returnConversationHome() {
 
 window.returnConversationHome =
   returnConversationHome;
+
+// Template v2 product bridge: the common controls delegate to the existing
+// CONVERSATION learning engine without changing its data or scoring flow.
+window.GongbooTemplateAdapter = {
+  startPlay: speakWithDyslexiaSupport,
+  stopPlay: stopSpeech,
+  startMic: turnAnneMicOn,
+  stopMic: turnAnneMicOff,
+  finalizeMic: finalizeAnneMicRecognition
+};
+
+window.finalizeAnneMicRecognition =
+  finalizeAnneMicRecognition;
