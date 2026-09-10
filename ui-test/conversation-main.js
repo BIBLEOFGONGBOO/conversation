@@ -1048,7 +1048,7 @@ function setupHome() {
   }
 
   $('biblePassageToggle').disabled = false;
-  $('bibleQuizToggle').disabled = false;
+  $('bibleQuizToggle').disabled = true;
 
   saveLastSettings();
 
@@ -1329,7 +1329,7 @@ function enterQuiz(at) {
   document.querySelector('.sat-title').textContent = TITLES[ANNE_STATE.product];
   
   $('biblePassageToggle').disabled = false;
-  $('bibleQuizToggle').disabled = false;
+  $('bibleQuizToggle').disabled = true;
   
   ANNE_STATE.annePassageVisible = true;
   ANNE_STATE.anneQuizVisible = true;
@@ -7658,6 +7658,20 @@ function speakWithDyslexiaSupport() {
     );
     return;
   }
+
+  // The shared PLAY button starts blue before speech begins.  The preceding
+  // stopSpeech() call clears it, so restore the active state after a playable
+  // sentence list is confirmed.
+  if (
+    typeof window.gongbooSetPlayActive ===
+    'function'
+  ) {
+
+    window.gongbooSetPlayActive(
+      true
+    );
+  }
+
   var runId =
     ++_speechRunId;
   ensureVoicesLoaded(
