@@ -136,7 +136,7 @@ const SUPABASE_CONFIG = Object.freeze({
     'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation',
 
   peopleRestUrl:
-    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation-240',
+    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation',
 
   bibleLinksRestUrl:
     'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation_name_bible_links',
@@ -148,7 +148,7 @@ const SUPABASE_CONFIG = Object.freeze({
     'conversation',
 
   peopleTable:
-    'conversation-240',
+    'conversation',
 
   bibleLinksTable:
     'conversation_name_bible_links'
