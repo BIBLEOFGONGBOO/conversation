@@ -8878,8 +8878,7 @@ function getCurrentConversationPair() {
 // SUBBLOCK 1425
 // ============================================================
 // TURN HTML
-// PSG 전체보기에서도 MIC 노란 테두리는 미리 표시하지 않음
-// 노란 테두리는 오직 MIC 현재 Target 1문장만 표시
+// Speaker name → BIBLE person information
 // ============================================================
 
 function renderConversationTurn(
@@ -8891,7 +8890,6 @@ function renderConversationTurn(
     return '';
   }
 
-
   var languageCode =
     String(
       CONVERSATION_STATE.row?.LNG ||
@@ -8899,14 +8897,12 @@ function renderConversationTurn(
     )
     .toUpperCase();
 
-
   var anneLanguageCode =
     languageCode === 'KO'
       ? 'KOR'
       : languageCode === 'JP'
         ? 'JPN'
         : 'ENG';
-
 
   return `
     <div
@@ -8922,10 +8918,10 @@ function renderConversationTurn(
       "
     >
 
-      <button
-        type="button"
+      <a
         class="conversation-speaker"
         data-speaker="${esc(turn.speaker)}"
+        href="https://bibleofgongboo.github.io/biblenew/ui-test/?person=${encodeURIComponent(turn.speaker)}"
         style="
           display:inline;
           margin:0 5px 0 0;
@@ -8936,10 +8932,11 @@ function renderConversationTurn(
           font-size:15px;
           font-weight:900;
           cursor:pointer;
+          text-decoration:none;
         "
       >
         ${esc(turn.speaker)}:
-      </button>
+      </a>
 
       <span
         class="
