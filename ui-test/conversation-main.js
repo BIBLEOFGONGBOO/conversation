@@ -138,6 +138,9 @@ const SUPABASE_CONFIG = Object.freeze({
   peopleRestUrl:
     'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation-240',
 
+  bibleLinksRestUrl:
+    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation_name_bible_links',
+
   publishableKey:
     'sb_publishable_9Kg6bvsSqZzOGMavBG3_1w_WO6WGbGB',
 
@@ -145,7 +148,10 @@ const SUPABASE_CONFIG = Object.freeze({
     'conversation',
 
   peopleTable:
-    'conversation-240'
+    'conversation-240',
+
+  bibleLinksTable:
+    'conversation_name_bible_links'
 });
 
 
@@ -748,6 +754,114 @@ async function loadConversationPeople() {
 
     return {};
   }
+}
+
+
+// ============================================================
+// CONVERSATION NAME → BIBLE PERSON ID
+// The database link is authoritative. Never guess by gender or name.
+// ============================================================
+
+var CONVERSATION_BIBLE_LINKS = {};
+
+window.CONVERSATION_BIBLE_LINKS =
+  CONVERSATION_BIBLE_LINKS;
+
+
+async function loadConversationBibleLinks() {
+
+  try {
+
+    var response =
+      await fetch(
+        SUPABASE_CONFIG.bibleLinksRestUrl +
+        '?select=NAME,BIBLE_PERSON_ID,BIBLE_CANONICAL_NAME',
+        {
+          method: 'GET',
+          headers: {
+            'apikey': SUPABASE_CONFIG.publishableKey,
+            'Authorization': 'Bearer ' + SUPABASE_CONFIG.publishableKey,
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+    var text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(
+        'Bible links API Error ' + response.status + ': ' + text
+      );
+    }
+
+    var rows = text ? JSON.parse(text) : [];
+
+    CONVERSATION_BIBLE_LINKS = {};
+
+    rows.forEach(
+      function(row) {
+
+        var name = String(row.NAME || '').trim();
+        var personId = String(row.BIBLE_PERSON_ID || '').trim();
+
+        if (!name || !personId) {
+          return;
+        }
+
+        CONVERSATION_BIBLE_LINKS[name.toLowerCase()] = {
+          personId: personId,
+          canonicalName: String(row.BIBLE_CANONICAL_NAME || '').trim()
+        };
+      }
+    );
+
+    window.CONVERSATION_BIBLE_LINKS = CONVERSATION_BIBLE_LINKS;
+
+    console.log(
+      '[CONVERSATION BIBLE LINKS] loaded:',
+      Object.keys(CONVERSATION_BIBLE_LINKS).length
+    );
+
+    return CONVERSATION_BIBLE_LINKS;
+
+  } catch (error) {
+
+    console.error(
+      '[CONVERSATION BIBLE LINKS] load failed:',
+      error
+    );
+
+    return {};
+  }
+}
+
+
+function getConversationBiblePersonId(speaker) {
+
+  var link = CONVERSATION_BIBLE_LINKS[
+    String(speaker || '').trim().toLowerCase()
+  ];
+
+  return link ? link.personId : '';
+}
+
+
+function getConversationBiblePersonUrl(speaker) {
+
+  var personId = getConversationBiblePersonId(speaker);
+
+  if (!personId) {
+    return '#';
+  }
+
+  var bibleBaseUrl =
+    window.location.pathname.indexOf('/ui-test/') !== -1
+      ? 'https://bibleofgongboo.github.io/biblenew/ui-test/'
+      : 'https://bibleofgongboo.github.io/biblenew/';
+
+  return bibleBaseUrl +
+    '?personId=' +
+    encodeURIComponent(personId);
 }
 
 
@@ -6259,9 +6373,20 @@ function installConversationRoleSelection() {
       return;
     }
 
-    window.location.href =
-      'https://bibleofgongboo.github.io/biblenew/ui-test/?person=' +
-      encodeURIComponent(speaker);
+    event.preventDefault();
+
+    var targetUrl =
+      getConversationBiblePersonUrl(speaker);
+
+    if (targetUrl === '#') {
+      console.error(
+        '[CONVERSATION BIBLE LINKS] No person ID for:',
+        speaker
+      );
+      return;
+    }
+
+    window.location.href = targetUrl;
   }
 );
 }
@@ -8921,7 +9046,7 @@ function renderConversationTurn(
       <a
         class="conversation-speaker"
         data-speaker="${esc(turn.speaker)}"
-        href="https://bibleofgongboo.github.io/biblenew/ui-test/?person=${encodeURIComponent(turn.speaker)}"
+        href="${esc(getConversationBiblePersonUrl(turn.speaker))}"
         style="
           display:inline;
           margin:0 5px 0 0;
@@ -10509,7 +10634,10 @@ async function openConversationFromList(
       ).length
     ) {
 
-      await loadConversationPeople();
+      await Promise.all([
+        loadConversationPeople(),
+        loadConversationBibleLinks()
+      ]);
     }
 
 
