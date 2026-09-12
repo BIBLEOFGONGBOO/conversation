@@ -568,7 +568,7 @@ if(playStopButton){
       );
 
     if(quickRecognize){
-      quickRecognize.hidden = !running;
+      quickRecognize.hidden = false;
     }
 
     if(micWrap){
@@ -654,6 +654,39 @@ if(playStopButton){
 
         if(typeof turnAnneMicOn === 'function'){
           turnAnneMicOn();
+        }
+      }
+    );
+  }
+
+
+  var micExitButton =
+    document.getElementById(
+      'micExitButton'
+    );
+
+  if(micExitButton){
+    micExitButton.addEventListener(
+      'click',
+      function(event){
+        event.preventDefault();
+        event.stopPropagation();
+
+        var adapter =
+          window.GongbooTemplateAdapter || {};
+
+        if(typeof adapter.exitMic === 'function'){
+          adapter.exitMic();
+        }else if(typeof adapter.stopMic === 'function'){
+          adapter.stopMic();
+        }else if(typeof turnAnneMicOff === 'function'){
+          turnAnneMicOff();
+        }
+
+        setMicState(false);
+
+        if(typeof window.gongbooCloseCards === 'function'){
+          window.gongbooCloseCards();
         }
       }
     );

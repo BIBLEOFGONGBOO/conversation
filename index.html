@@ -16,7 +16,7 @@
 
   <link
     rel="stylesheet"
-    href="./gongboo-ui.css?v=template2-12"
+    href="./gongboo-ui.css?v=template2-13"
   />
 
   <link
@@ -73,7 +73,9 @@
     >
       <span class="gb-system-code">CON</span>
       <span class="gb-system-name">CONVERSATION</span>
-    </button>
+    </button
+
+    
 
     <button
       class="gb-system-option"
@@ -84,6 +86,15 @@
       <span class="gb-system-name">BIBLE</span>
     </button>
 
+  <button
+  class="gb-system-option"
+  type="button"
+  onclick="window.location.href='/anne/'"
+>
+  <span class="gb-system-code">EAS</span>
+  <span class="gb-system-name">EASY LEARNING</span>
+</button>
+    
     <button
       class="gb-system-option"
       type="button"
@@ -248,118 +259,147 @@
               </button>
 
             </div>
+
+            
           </div>
         </div>
 
 
-        <!-- SUBBLOCK 2500 : MIC -->
-        <div
-          id="micControlWrap"
-          class="gb-card-wrap gb-split-wrap"
-        >
+<!-- SUBBLOCK 2500 : MIC -->
+<div
+  id="micControlWrap"
+  class="gb-card-wrap gb-split-wrap"
+>
 
-          <div class="gb-split-control">
-            <button
-              id="micButton"
-              class="gb-tool-button gb-split-primary"
-              type="button"
-              aria-pressed="false"
-            >
-              <span id="micButtonLabel">MIC</span>
-            </button>
-            <button
-              id="micMenuButton"
-              class="gb-tool-button gb-split-menu"
-              type="button"
-              aria-expanded="false"
-              aria-controls="micCard"
-            >
-              <span aria-hidden="true">▼</span>
-            </button>
-          </div>
+  <div class="gb-split-control">
+    <button
+      id="micButton"
+      class="gb-tool-button gb-split-primary"
+      type="button"
+      aria-pressed="false"
+    >
+      <span id="micButtonLabel">MIC</span>
+    </button>
 
-          <div
-            id="micCard"
-            class="gb-card"
-            hidden
-          >
-            <div class="gb-card-title">
-              MIC
-            </div>
+    <button
+      id="micMenuButton"
+      class="gb-tool-button gb-split-menu"
+      type="button"
+      aria-expanded="false"
+      aria-controls="micCard"
+    >
+      <span aria-hidden="true">▼</span>
+    </button>
+  </div>
 
-            <div class="gb-slider-row">
+  <div
+    id="micCard"
+    class="gb-card"
+    hidden
+  >
+    <div class="gb-card-title">
+      MIC
+    </div>
 
-              <span class="gb-slider-label">
-                PASS
-              </span>
+    <div class="gb-slider-row">
+      <span class="gb-slider-label">
+        PASS
+      </span>
 
-              <input
-                id="passRange"
-                class="gb-range"
-                type="range"
-                min="50"
-                max="100"
-                step="1"
-                value="70"
-              />
+      <input
+        id="passRange"
+        class="gb-range"
+        type="range"
+        min="50"
+        max="100"
+        step="1"
+        value="70"
+      />
 
-              <span
-                id="passValue"
-                class="gb-slider-value"
-              >
-                70%
-              </span>
+      <span
+        id="passValue"
+        class="gb-slider-value"
+      >
+        70%
+      </span>
+    </div>
 
-            </div>
+    <div class="gb-slider-row">
+      <span class="gb-slider-label">
+        DELAY
+      </span>
 
-            <div class="gb-slider-row">
+      <input
+        id="delayRange"
+        class="gb-range"
+        type="range"
+        min="0"
+        max="5"
+        step="0.1"
+        value="2"
+      />
 
-              <span class="gb-slider-label">
-                DELAY
-              </span>
+      <span
+        id="delayValue"
+        class="gb-slider-value"
+      >
+        2.0s
+      </span>
+    </div>
 
-              <input
-                id="delayRange"
-                class="gb-range"
-                type="range"
-                min="0"
-                max="5"
-                step="0.1"
-                value="2"
-              />
+    <div
+      style="
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:6px;
+        margin-top:8px;
+      "
+    >
+      <button
+        id="micAutoToggle"
+        class="gb-compact-toggle"
+        type="button"
+        aria-pressed="false"
+      >
+        AUTO
+      </button>
 
-              <span
-                id="delayValue"
-                class="gb-slider-value"
-              >
-                2.0s
-              </span>
+      <button
+        id="micRecognizeQuickButton"
+        class="gb-compact-toggle"
+        type="button"
+      >
+        RECOGNIZE
+      </button>
 
-            </div>
+      <button
+        id="micExitButton"
+        class="gb-compact-toggle"
+        type="button"
+      >
+        EXIT
+      </button>
+    </div>
 
-            <div class="gb-one-action">
+    <div class="gb-two-actions">
+      <button
+        id="conversationComputerStart"
+        class="gb-compact-toggle"
+        type="button"
+      >
+        COMPUTER
+      </button>
 
-              <button
-                id="micAutoToggle"
-                class="gb-compact-toggle"
-                type="button"
-                aria-pressed="false"
-              >
-                AUTO
-              </button>
-
-            </div>
-          </div>
-
-          <button
-            id="micRecognizeQuickButton"
-            class="gb-tool-button gb-mic-recognize-quick"
-            type="button"
-            hidden
-          >
-            RECOGNIZE
-          </button>
-        </div>
+      <button
+        id="conversationUserStart"
+        class="gb-compact-toggle"
+        type="button"
+      >
+        I START
+      </button>
+    </div>
+  </div>
+</div>
 
 
         <!-- SUBBLOCK 2700 : PSG / QUIZ -->
@@ -705,8 +745,8 @@
   
 <!-- SUBBLOCK 4500 : SCRIPT LOAD / PAGE CLOSE -->
 
-<script src="./gongboo-ui.js?v=template2-12"></script>
-<script src="./conversation-main.js?v=template2-12"></script>
+<script src="./gongboo-ui.js?v=template2-14"></script>
+<script src="./conversation-main.js?v=template2-17"></script>
 
 </body>
 </html>

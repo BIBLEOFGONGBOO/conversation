@@ -248,18 +248,8 @@ button{
 
 
 /* Frequent manual scoring sits directly below the active MIC control. */
-.gb-mic-recognize-quick{
-  position:absolute;
-  top:calc(100% + 6px);
-  left:0;
-  width:100%;
-  min-width:0;
-  z-index:2001;
-}
-
-/* Keep the settings card below the quick action when both are open. */
 #micControlWrap.is-mic-active #micCard{
-  top:calc(100% + 52px);
+  top:calc(100% + 7px);
 }
 
 /* SUBBLOCK 1500 : COMMON CARD */

@@ -136,7 +136,10 @@ const SUPABASE_CONFIG = Object.freeze({
     'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation',
 
   peopleRestUrl:
-    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation-240',
+    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation_name_bible_links',
+
+  bibleLinksRestUrl:
+    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation_name_bible_links',
 
   publishableKey:
     'sb_publishable_9Kg6bvsSqZzOGMavBG3_1w_WO6WGbGB',
@@ -145,7 +148,10 @@ const SUPABASE_CONFIG = Object.freeze({
     'conversation',
 
   peopleTable:
-    'conversation-240'
+    'conversation_name_bible_links',
+
+  bibleLinksTable:
+    'conversation_name_bible_links'
 });
 
 
@@ -748,6 +754,175 @@ async function loadConversationPeople() {
 
     return {};
   }
+}
+
+
+// ============================================================
+// CONVERSATION NAME → BIBLE PERSON
+// BIBLE_ORIGIN is the authoritative fallback link.
+// ============================================================
+
+var CONVERSATION_BIBLE_LINKS = {};
+
+window.CONVERSATION_BIBLE_LINKS =
+  CONVERSATION_BIBLE_LINKS;
+
+
+async function loadConversationBibleLinks() {
+
+  try {
+
+    var response =
+      await fetch(
+        SUPABASE_CONFIG.bibleLinksRestUrl +
+        '?select=NAME,BIBLE_ORIGIN,BIBLE_PERSON_ID,BIBLE_CANONICAL_NAME',
+        {
+          method: 'GET',
+          headers: {
+            'apikey': SUPABASE_CONFIG.publishableKey,
+            'Authorization': 'Bearer ' + SUPABASE_CONFIG.publishableKey,
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+    var text =
+      await response.text();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        'Bible links API Error ' +
+        response.status +
+        ': ' +
+        text
+      );
+    }
+
+
+    var rows =
+      text
+        ? JSON.parse(text)
+        : [];
+
+
+    CONVERSATION_BIBLE_LINKS = {};
+
+
+    rows.forEach(
+      function(row) {
+
+        var name =
+          String(
+            row.NAME || ''
+          ).trim();
+
+        var bibleOrigin =
+          String(
+            row.BIBLE_ORIGIN || ''
+          ).trim();
+
+        var personId =
+          String(
+            row.BIBLE_PERSON_ID ||
+            bibleOrigin ||
+            ''
+          ).trim();
+
+        var canonicalName =
+          String(
+            row.BIBLE_CANONICAL_NAME ||
+            bibleOrigin ||
+            ''
+          ).trim();
+
+
+        if (
+          !name ||
+          !bibleOrigin
+        ) {
+          return;
+        }
+
+
+        CONVERSATION_BIBLE_LINKS[
+          name.toLowerCase()
+        ] = {
+
+          personId:
+            personId,
+
+          bibleOrigin:
+            bibleOrigin,
+
+          canonicalName:
+            canonicalName
+        };
+      }
+    );
+
+
+    window.CONVERSATION_BIBLE_LINKS =
+      CONVERSATION_BIBLE_LINKS;
+
+
+    console.log(
+      '[CONVERSATION BIBLE LINKS] loaded:',
+      Object.keys(
+        CONVERSATION_BIBLE_LINKS
+      ).length
+    );
+
+
+    return CONVERSATION_BIBLE_LINKS;
+
+
+  } catch (error) {
+
+    console.error(
+      '[CONVERSATION BIBLE LINKS] load failed:',
+      error
+    );
+
+    return {};
+  }
+}
+
+
+function getConversationBiblePersonId(speaker) {
+
+  var link = CONVERSATION_BIBLE_LINKS[
+    String(speaker || '').trim().toLowerCase()
+  ];
+
+  return link ? link.personId : '';
+}
+
+
+function getConversationBiblePersonUrl(speaker) {
+
+  var personId = getConversationBiblePersonId(speaker);
+
+  if (!personId) {
+    return '#';
+  }
+
+  var isLocalPreview =
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === 'localhost';
+
+  var isUiTest =
+    window.location.pathname.indexOf('/ui-test/') !== -1;
+
+  var bibleBaseUrl =
+    isLocalPreview || isUiTest
+      ? 'https://bibleofgongboo.github.io/biblenew/ui-test/'
+      : 'https://bibleofgongboo.github.io/biblenew/';
+
+  return bibleBaseUrl +
+    '?personId=' +
+    encodeURIComponent(personId);
 }
 
 
@@ -4974,42 +5149,149 @@ function positionAnneMicPanel() {
 
 // SUBBLOCK 1109
 // ============================================================
-// MIC 결과 표시
-// 실제 값은 hidden score에 기록
-// 1107이 STOP 버튼 오른쪽에 % 표시
+// MIC SCORE DISPLAY
+// Keeps the latest finalized score visible after DOM updates.
 // ============================================================
+
+var GONGBOO_MIC_SCORE_STATE = {
+  hasScore: false,
+  score: 0,
+  passed: false
+};
+
+
+function syncMicRoleScore() {
+
+  var roleScoreEl =
+    document.getElementById(
+      'micRoleScore'
+    );
+
+  if (!roleScoreEl) {
+    return;
+  }
+
+  roleScoreEl.hidden = false;
+
+  if (
+    !GONGBOO_MIC_SCORE_STATE.hasScore
+  ) {
+    if (
+      roleScoreEl.textContent.trim() !==
+      '--%'
+    ) {
+      roleScoreEl.textContent =
+        '--%';
+    }
+
+    roleScoreEl.style.color =
+      '#64748b';
+
+    return;
+  }
+
+  var scoreText =
+    GONGBOO_MIC_SCORE_STATE.score +
+    '%';
+
+  if (
+    roleScoreEl.textContent.trim() !==
+    scoreText
+  ) {
+    roleScoreEl.textContent =
+      scoreText;
+  }
+
+  roleScoreEl.style.color =
+    GONGBOO_MIC_SCORE_STATE.passed
+      ? '#15803d'
+      : '#b45309';
+}
+
+
+function installMicRoleScorePersistence() {
+
+  if (
+    document.documentElement.dataset
+      .micScoreObserverInstalled === '1'
+  ) {
+    return;
+  }
+
+  document.documentElement.dataset
+    .micScoreObserverInstalled = '1';
+
+  var observer =
+    new MutationObserver(
+      function() {
+        syncMicRoleScore();
+      }
+    );
+
+  observer.observe(
+    document.body,
+    {
+      childList: true,
+      characterData: true,
+      subtree: true
+    }
+  );
+
+  syncMicRoleScore();
+}
+
 
 function showAnneMicScore(
   score,
   passed
 ) {
 
+  var normalizedScore =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(
+          Number(score) || 0
+        )
+      )
+    );
+
+  GONGBOO_MIC_SCORE_STATE.hasScore =
+    true;
+
+  GONGBOO_MIC_SCORE_STATE.score =
+    normalizedScore;
+
+  GONGBOO_MIC_SCORE_STATE.passed =
+    !!passed;
+
   var scoreEl =
     document.getElementById(
       'anneMicScore'
     );
 
+  if (scoreEl) {
+    scoreEl.textContent =
+      normalizedScore +
+      '% ' +
+      (
+        passed
+          ? '✓ PASS'
+          : '↻ AGAIN'
+      );
 
-  if (!scoreEl) {
-    return;
+    scoreEl.style.color =
+      passed
+        ? '#15803d'
+        : '#b45309';
   }
 
-
-  scoreEl.textContent =
-    score +
-    '% ' +
-    (
-      passed
-        ? '✓ PASS'
-        : '↻ AGAIN'
-    );
-
-
-  scoreEl.style.color =
-    passed
-      ? '#15803d'
-      : '#b45309';
+  syncMicRoleScore();
 }
+
+
+installMicRoleScorePersistence();
 
 // SUBBLOCK 1110
 // ============================================================
@@ -5309,19 +5591,43 @@ function startAnneRecognition() {
 
 
       var scoreEl =
-        document.getElementById(
-          'anneMicScore'
-        );
+  document.getElementById(
+    'anneMicScore'
+  );
 
+var roleScoreEl =
+  document.getElementById(
+    'micRoleScore'
+  );
 
-      if (scoreEl) {
+if (scoreEl) {
+  scoreEl.textContent =
+    'Listening...';
 
-        scoreEl.textContent =
-          'Listening...';
+  scoreEl.style.color =
+    '#2563eb';
+}
 
-        scoreEl.style.color =
-          '#2563eb';
-      }
+// ============================================================
+// MIC SCORE SLOT
+// Keep the latest finalized score during AUTO recognition.
+// ============================================================
+
+if (roleScoreEl) {
+
+  var finalScore =
+    roleScoreEl.getAttribute(
+      'data-final-score'
+    );
+
+  if (finalScore === null) {
+    roleScoreEl.textContent =
+      '--%';
+
+    roleScoreEl.style.color =
+      '#64748b';
+  }
+}
     };
 
 
@@ -5602,6 +5908,18 @@ function startAnneRecognition() {
         ) {
 
           playPassSound();
+        }
+
+
+        if (
+          typeof window.__gongbooMicPassHandler ===
+          'function' &&
+          window.__gongbooMicPassHandler(
+            sentence,
+            score
+          )
+        ) {
+          return;
         }
 
 
@@ -6213,6 +6531,249 @@ function isConversationUserTurn(
 }
 
 
+function setConversationRoleTarget(turn) {
+
+  var visibleTurns = Array.from(
+    document.querySelectorAll('.conversation-turn')
+  );
+
+  var visibleIndex = visibleTurns.findIndex(
+    function(element) {
+      return Number(element.dataset.turn) === Number(turn.turn);
+    }
+  );
+
+  if (visibleIndex >= 0) {
+    _anneMicPassageIndex = visibleIndex;
+  }
+
+  visibleTurns.forEach(
+    function(element) {
+      var active =
+        Number(element.dataset.turn) ===
+        Number(turn.turn);
+
+      element.style.removeProperty('outline');
+      element.style.removeProperty('outline-offset');
+      element.style.removeProperty('background');
+
+      if (active) {
+        element.style.setProperty(
+          'outline',
+          '3px solid #facc15',
+          'important'
+        );
+
+        element.style.setProperty(
+          'outline-offset',
+          '2px',
+          'important'
+        );
+
+        element.style.setProperty(
+          'background',
+          '#fffdf2',
+          'important'
+        );
+      }
+    }
+  );
+
+  var targetElement =
+    visibleTurns[visibleIndex];
+
+  if (!targetElement) {
+    return;
+  }
+
+  window.requestAnimationFrame(
+    function() {
+      var rect =
+        targetElement.getBoundingClientRect();
+
+      var topSafeArea = 110;
+      var bottomSafeArea =
+        window.innerHeight - 70;
+
+      if (
+        rect.top < topSafeArea ||
+        rect.bottom > bottomSafeArea
+      ) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        });
+      }
+    }
+  );
+}
+
+
+// ============================================================
+// STOP CONVERSATION ROLE PLAY
+// One STOP click ends MIC, TTS and automatic role progression.
+// ============================================================
+
+function finishConversationRolePlay() {
+
+  CONVERSATION_STATE.rolePlay =
+    false;
+
+  _anneMicMoving =
+    true;
+
+  if (_anneMicRecognizeTimer) {
+    clearTimeout(
+      _anneMicRecognizeTimer
+    );
+
+    _anneMicRecognizeTimer =
+      null;
+  }
+
+  stopAnneRecognition();
+
+  if (ANNE_STATE.micMode) {
+    turnAnneMicOff();
+  }
+
+  stopSpeech();
+
+  _anneMicMoving =
+    false;
+
+  if (
+    typeof window.gongbooSetMicActive ===
+    'function'
+  ) {
+    window.gongbooSetMicActive(
+      false
+    );
+  }
+
+  if (
+    typeof window.gongbooSetPlayActive ===
+    'function'
+  ) {
+    window.gongbooSetPlayActive(
+      false
+    );
+  }
+
+  console.log(
+    '[ROLE] STOPPED'
+  );
+}
+
+
+function startConversationRolePractice(startMode) {
+
+  if (!ensureConversationRoleState()) {
+    return;
+  }
+
+  var turns =
+    CONVERSATION_STATE.turns || [];
+
+  if (!turns.length) {
+    return;
+  }
+
+  // 사용자가 노란 테두리로 지정한 문장부터 시작한다.
+  var selectedIndex =
+    Number(_anneMicPassageIndex);
+
+  if (
+    !Number.isInteger(selectedIndex) ||
+    selectedIndex < 0 ||
+    selectedIndex >= turns.length
+  ) {
+    selectedIndex = 0;
+  }
+
+  var selectedTurn =
+    turns[selectedIndex];
+
+  if (!selectedTurn) {
+    return;
+  }
+
+  // COMPUTER: 지정 문장을 컴퓨터가 먼저 읽는다.
+  // I START: 지정 문장을 내가 먼저 읽고 MIC 인식한다.
+  var otherSpeakerTurn =
+    turns.find(
+      function(turn, index) {
+        return (
+          index !== selectedIndex &&
+          String(turn.speaker) !==
+            String(selectedTurn.speaker)
+        );
+      }
+    );
+
+  if (!otherSpeakerTurn) {
+    console.warn(
+      '[ROLE] Two different speakers are required.'
+    );
+    return;
+  }
+
+  stopSpeech();
+
+  if (ANNE_STATE.micMode) {
+    turnAnneMicOff();
+  }
+
+  CONVERSATION_STATE.rolePlay = true;
+
+  // 핵심: 항상 0번이 아니라 지정 문장 번호부터 시작
+  CONVERSATION_STATE.roleTurnIndex =
+    selectedIndex;
+
+  CONVERSATION_STATE.userSpeaker =
+    startMode === 'USER'
+      ? selectedTurn.speaker
+      : otherSpeakerTurn.speaker;
+
+  CONVERSATION_STATE.fullPassage = true;
+  CONVERSATION_STATE.pairIndex = 0;
+
+  renderConversationLesson();
+
+  // 다시 그린 뒤에도 지정 문장 노란 테두리를 유지
+  window.setTimeout(
+    function() {
+      setConversationRoleTarget(selectedTurn);
+      refreshConversationRoleUI();
+      startConversationRolePlay();
+    },
+    120
+  );
+}
+
+
+function installConversationRolePracticeControls() {
+
+  var computerButton = document.getElementById('conversationComputerStart');
+  var userButton = document.getElementById('conversationUserStart');
+
+  if (computerButton && computerButton.dataset.roleBound !== '1') {
+    computerButton.dataset.roleBound = '1';
+    computerButton.addEventListener('click', function() {
+      startConversationRolePractice('COMPUTER');
+    });
+  }
+
+  if (userButton && userButton.dataset.roleBound !== '1') {
+    userButton.dataset.roleBound = '1';
+    userButton.addEventListener('click', function() {
+      startConversationRolePractice('USER');
+    });
+  }
+}
+
+
 // SUBBLOCK 1165
 function installConversationRoleSelection() {
 
@@ -6236,56 +6797,45 @@ function installConversationRoleSelection() {
     '1';
 
   root.addEventListener(
-    'click',
-    function(event) {
+  'click',
+  function(event) {
 
-      var button =
-        event.target.closest(
-          '.conversation-speaker'
-        );
+    var button = event.target.closest(
+      '.conversation-speaker'
+    );
 
-      if (!button) {
-        return;
-      }
+    if (!button) {
+      return;
+    }
 
-      if (
-        !ensureConversationRoleState()
-      ) {
-        return;
-      }
+    var speaker = String(
+      button.dataset.speaker ||
+      button.textContent ||
+      ''
+    )
+    .replace(/:$/, '')
+    .trim();
 
-      var speaker =
-        String(
-          button.dataset.speaker ||
-          button.textContent ||
-          ''
-        )
-        .replace(/:$/, '')
-        .trim();
+    if (!speaker) {
+      return;
+    }
 
-      if (!speaker) {
-        return;
-      }
+    event.preventDefault();
 
-      CONVERSATION_STATE.userSpeaker =
-        speaker;
+    var targetUrl =
+      getConversationBiblePersonUrl(speaker);
 
-      CONVERSATION_STATE.rolePlay =
-        true;
-
-      CONVERSATION_STATE.roleTurnIndex =
-        0;
-
-      console.log(
-        '[ROLE] MY ROLE:',
+    if (targetUrl === '#') {
+      console.error(
+        '[CONVERSATION BIBLE LINKS] No person ID for:',
         speaker
       );
-
-      refreshConversationRoleUI();
-
-      startConversationRolePlay();
+      return;
     }
-  );
+
+    window.location.href = targetUrl;
+  }
+);
 }
 
 
@@ -6359,11 +6909,7 @@ function startConversationRolePlay() {
     getConversationRoleTurn();
 
   if (!turn) {
-
-    console.log(
-      '[ROLE] COMPLETE'
-    );
-
+    finishConversationRolePlay();
     return;
   }
 
@@ -6392,35 +6938,7 @@ function startConversationUserTurn() {
     return;
   }
 
-  var visibleTurns =
-    Array.from(
-      document.querySelectorAll(
-        '.conversation-turn'
-      )
-    );
-
-  var visibleIndex =
-    visibleTurns.findIndex(
-      function(el) {
-
-        return (
-          Number(
-            el.dataset.turn
-          ) ===
-          Number(
-            turn.turn
-          )
-        );
-      }
-    );
-
-  if (
-    visibleIndex >= 0
-  ) {
-
-    _anneMicPassageIndex =
-      visibleIndex;
-  }
+  setConversationRoleTarget(turn);
 
   console.log(
     '[ROLE] USER TURN:',
@@ -6476,24 +6994,25 @@ window.__gongbooMicPassHandler =
       score + '%'
     );
 
-    if (
-      typeof playPassSound ===
-      'function'
-    ) {
-      playPassSound();
-    }
+    // 점수를 먼저 보여 준다.
+    // 이 동안에는 MIC가 다시 시작되어 …로 덮어쓰지 못하게 한다.
+    _anneMicMoving = true;
 
     stopAnneRecognition();
-
-    CONVERSATION_STATE.roleTurnIndex++;
 
     window.setTimeout(
       function() {
 
+        // 다음 문장으로 이동
+        CONVERSATION_STATE.roleTurnIndex++;
+
+        // 다음 역할을 시작할 수 있도록 해제
+        _anneMicMoving = false;
+
         startConversationRolePlay();
 
       },
-      250
+      3000
     );
 
     return true;
@@ -6510,10 +7029,16 @@ function startConversationComputerTurn() {
     return;
   }
 
+  setConversationRoleTarget(turn);
+
   console.log(
     '[ROLE] COMPUTER TURN:',
     turn.speaker
   );
+
+  // 컴퓨터가 읽는 동안에는 기존 MIC의 onend 자동 재시작을 막는다.
+  // 그래야 방금 받은 84% 같은 점수가 …로 덮어써지지 않는다.
+  _anneMicMoving = true;
 
   stopAnneRecognition();
 
@@ -6532,6 +7057,8 @@ function startConversationComputerTurn() {
       : null;
 
   if (!textEl) {
+
+    _anneMicMoving = false;
 
     CONVERSATION_STATE.roleTurnIndex++;
 
@@ -6610,6 +7137,8 @@ function waitConversationComputerSpeechEnd(
             timer
           );
 
+          _anneMicMoving = false;
+
           return;
         }
 
@@ -6623,6 +7152,10 @@ function waitConversationComputerSpeechEnd(
           clearInterval(
             timer
           );
+
+          // 컴퓨터 발화 종료.
+          // 이제 다음 내 문장에서만 MIC를 다시 시작할 수 있다.
+          _anneMicMoving = false;
 
           CONVERSATION_STATE.roleTurnIndex++;
 
@@ -7747,6 +8280,13 @@ function readTextsWithHighlight(
     // CONVERSATION AUTO
     // 현재 2-Turn / PSG 읽기 완료 → 다음 단위
     // ========================================================
+
+    if (
+      window.CONVERSATION_STATE &&
+      CONVERSATION_STATE.rolePlay
+    ) {
+      return;
+    }
 
     if (
       window.CONVERSATION_STATE &&
@@ -8900,8 +9440,7 @@ function getCurrentConversationPair() {
 // SUBBLOCK 1425
 // ============================================================
 // TURN HTML
-// PSG 전체보기에서도 MIC 노란 테두리는 미리 표시하지 않음
-// 노란 테두리는 오직 MIC 현재 Target 1문장만 표시
+// Speaker name → BIBLE person information
 // ============================================================
 
 function renderConversationTurn(
@@ -8913,7 +9452,6 @@ function renderConversationTurn(
     return '';
   }
 
-
   var languageCode =
     String(
       CONVERSATION_STATE.row?.LNG ||
@@ -8921,14 +9459,12 @@ function renderConversationTurn(
     )
     .toUpperCase();
 
-
   var anneLanguageCode =
     languageCode === 'KO'
       ? 'KOR'
       : languageCode === 'JP'
         ? 'JPN'
         : 'ENG';
-
 
   return `
     <div
@@ -8944,10 +9480,10 @@ function renderConversationTurn(
       "
     >
 
-      <button
-        type="button"
+      <a
         class="conversation-speaker"
         data-speaker="${esc(turn.speaker)}"
+        href="${esc(getConversationBiblePersonUrl(turn.speaker))}"
         style="
           display:inline;
           margin:0 5px 0 0;
@@ -8958,10 +9494,11 @@ function renderConversationTurn(
           font-size:15px;
           font-weight:900;
           cursor:pointer;
+          text-decoration:none;
         "
       >
         ${esc(turn.speaker)}:
-      </button>
+      </a>
 
       <span
         class="
@@ -9676,6 +10213,8 @@ function startConversationLesson(
 
 
   installConversationLessonControls();
+
+  installConversationRolePracticeControls();
 
   renderConversationLesson();
 
@@ -10527,14 +11066,34 @@ async function openConversationFromList(
 
   try {
 
+    var pendingLoads = [];
+
     if (
       !window.CONVERSATION_PEOPLE ||
       !Object.keys(
         window.CONVERSATION_PEOPLE
       ).length
     ) {
+      pendingLoads.push(
+        loadConversationPeople()
+      );
+    }
 
-      await loadConversationPeople();
+    if (
+      !window.CONVERSATION_BIBLE_LINKS ||
+      !Object.keys(
+        window.CONVERSATION_BIBLE_LINKS
+      ).length
+    ) {
+      pendingLoads.push(
+        loadConversationBibleLinks()
+      );
+    }
+
+    if (pendingLoads.length) {
+      await Promise.all(
+        pendingLoads
+      );
     }
 
 
@@ -10700,6 +11259,7 @@ window.GongbooTemplateAdapter = {
   stopPlay: stopSpeech,
   startMic: turnAnneMicOn,
   stopMic: turnAnneMicOff,
+  exitMic: finishConversationRolePlay,
   finalizeMic: finalizeAnneMicRecognition
 };
 
