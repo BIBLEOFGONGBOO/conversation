@@ -6666,6 +6666,56 @@ function finishConversationRolePlay() {
   );
 }
 
+// ============================================================
+// NATURAL PSG COMPLETION
+// Keeps MIC mode active until the user presses EXIT or STOP.
+// ============================================================
+
+function completeConversationRolePassage() {
+
+  CONVERSATION_STATE.rolePlay =
+    false;
+
+  _anneMicMoving =
+    true;
+
+  if (_anneMicRecognizeTimer) {
+    clearTimeout(
+      _anneMicRecognizeTimer
+    );
+
+    _anneMicRecognizeTimer =
+      null;
+  }
+
+  if (_anneMicRestartTimer) {
+    clearTimeout(
+      _anneMicRestartTimer
+    );
+
+    _anneMicRestartTimer =
+      null;
+  }
+
+  stopAnneRecognition();
+  stopSpeech();
+
+  ANNE_STATE.micMode =
+    true;
+
+  if (
+    typeof window.gongbooSetMicActive ===
+    'function'
+  ) {
+    window.gongbooSetMicActive(
+      true
+    );
+  }
+
+  console.log(
+    '[ROLE] PSG COMPLETE — MIC REMAINS ON'
+  );
+}
 
 function startConversationRolePractice(startMode) {
 
@@ -6895,6 +6945,10 @@ function refreshConversationRoleUI() {
 
 
 // SUBBLOCK 1175
+// ============================================================
+// ROLE PLAY TURN ROUTER
+// ============================================================
+
 function startConversationRolePlay() {
 
   if (
@@ -6909,7 +6963,9 @@ function startConversationRolePlay() {
     getConversationRoleTurn();
 
   if (!turn) {
-    finishConversationRolePlay();
+
+    completeConversationRolePassage();
+
     return;
   }
 
@@ -9844,16 +9900,15 @@ function renderConversationLesson() {
 }
 
 
-// SUBBLOCK 1440
+// // SUBBLOCK 1440
 // ============================================================
 // BUTTON SYNC
 //
 // PSG ON
-//   PREV / NEXT = Scenario 이동
+//   PREV / NEXT = PSG movement
 //
 // PSG OFF
-//   일반 Pair = PREV / NEXT
-//   마지막 Pair = NEXT SCENARIO
+//   PREV / NEXT = pair movement
 // ============================================================
 
 function syncConversationButtons() {
@@ -9888,23 +9943,19 @@ function syncConversationButtons() {
       'submitBtn'
     );
 
-
   var totalPairs =
     Math.ceil(
       CONVERSATION_STATE.turns.length /
       2
     );
 
-
   var lastPair =
     CONVERSATION_STATE.pairIndex >=
     totalPairs - 1;
 
-
   var firstPair =
     CONVERSATION_STATE.pairIndex <=
     0;
-
 
   if (psg) {
 
@@ -9924,7 +9975,6 @@ function syncConversationButtons() {
     );
   }
 
-
   if (help) {
 
     help.textContent =
@@ -9939,7 +9989,6 @@ function syncConversationButtons() {
     );
   }
 
-
   if (prev) {
 
     prev.style.display =
@@ -9948,18 +9997,17 @@ function syncConversationButtons() {
     prev.disabled =
       false;
 
-
     if (
       CONVERSATION_STATE.fullPassage
     ) {
 
       prev.textContent =
-        '◀ PREV SCENARIO';
+        '◀ PREV PSG';
 
     } else if (firstPair) {
 
       prev.textContent =
-        '◀ PREV SCENARIO';
+        '◀ PREV PSG';
 
     } else {
 
@@ -9967,7 +10015,6 @@ function syncConversationButtons() {
         '◀ PREV';
     }
   }
-
 
   if (next) {
 
@@ -9977,18 +10024,17 @@ function syncConversationButtons() {
     next.disabled =
       false;
 
-
     if (
       CONVERSATION_STATE.fullPassage
     ) {
 
       next.textContent =
-        'NEXT SCENARIO ▶';
+        'NEXT PSG ▶';
 
     } else if (lastPair) {
 
       next.textContent =
-        'NEXT SCENARIO ▶';
+        'NEXT PSG ▶';
 
     } else {
 
@@ -9997,18 +10043,17 @@ function syncConversationButtons() {
     }
   }
 
-
   if (skip) {
     skip.style.display =
       'none';
   }
-
 
   if (submit) {
     submit.style.display =
       'none';
   }
 }
+
 
 
 // SUBBLOCK 1445
@@ -10590,54 +10635,42 @@ function renderConversationDirectory() {
       'setupSection'
     );
 
-
   var quizMain =
     document.getElementById(
       'quizMain'
     );
-
 
   var progress =
     document.querySelector(
       '.progress-area'
     );
 
-
   if (setup) {
-
     setup.style.display =
       'block';
   }
 
-
   if (quizMain) {
-
     quizMain.style.display =
       'none';
   }
 
-
   if (progress) {
-
     progress.style.display =
       'none';
   }
-
 
   var card =
     document.querySelector(
       '.card-new'
     );
 
-
   if (!card) {
     return;
   }
 
-
   var level =
     CONVERSATION_LIST_STATE.level;
-
 
   var heading =
     level === 'GROUP'
@@ -10646,8 +10679,13 @@ function renderConversationDirectory() {
         ? 'Choose Category'
         : level === 'SUBCATEGORY'
           ? 'Choose Subcategory'
-          : CONVERSATION_LIST_STATE.subcategory;
-
+          : (
+              CONVERSATION_LIST_STATE
+                .subcategory ||
+              CONVERSATION_LIST_STATE
+                .category ||
+              'Choose Conversation'
+            );
 
   card.innerHTML = `
 
@@ -10667,7 +10705,6 @@ function renderConversationDirectory() {
         ${esc(heading)}
       </div>
 
-
       <div
         id="conversationDirectoryContent"
       >
@@ -10676,9 +10713,7 @@ function renderConversationDirectory() {
     </div>
   `;
 
-
   installConversationBreadcrumb();
-
 
   if (
     level === 'TITLE'
@@ -10799,7 +10834,8 @@ function renderConversationFolderItems() {
 
 // SUBBLOCK 1540
 // ============================================================
-// FOLDER CLICK → 다음 단계만 API LOAD
+// FOLDER CLICK → NEXT AVAILABLE DIRECTORY LEVEL
+// Skips SUBCATEGORY when the selected category has none.
 // ============================================================
 
 async function openConversationDirectoryFolder(
@@ -10807,7 +10843,6 @@ async function openConversationDirectoryFolder(
 ) {
 
   showConversationDirectoryLoading();
-
 
   try {
 
@@ -10823,8 +10858,13 @@ async function openConversationDirectoryFolder(
       CONVERSATION_LIST_STATE.group =
         value;
 
+      CONVERSATION_LIST_STATE.category =
+        '';
 
-      var rows =
+      CONVERSATION_LIST_STATE.subcategory =
+        '';
+
+      var categoryRows =
         await loadConversationDirectoryRows(
           'CATEGORY',
           'GROUP=eq.' +
@@ -10833,26 +10873,22 @@ async function openConversationDirectoryFolder(
           )
         );
 
-
       CONVERSATION_LIST_STATE.items =
         makeConversationDirectoryValues(
-          rows,
+          categoryRows,
           'CATEGORY'
         );
 
-
       CONVERSATION_LIST_STATE.level =
         'CATEGORY';
-
 
       renderConversationDirectory();
 
       return;
     }
 
-
     // ========================================================
-    // CATEGORY → SUBCATEGORY
+    // CATEGORY → SUBCATEGORY OR TITLE
     // ========================================================
 
     if (
@@ -10863,40 +10899,66 @@ async function openConversationDirectoryFolder(
       CONVERSATION_LIST_STATE.category =
         value;
 
+      CONVERSATION_LIST_STATE.subcategory =
+        '';
 
-      var rows =
-        await loadConversationDirectoryRows(
-          'SUBCATEGORY',
-          'GROUP=eq.' +
-          encodeURIComponent(
-            CONVERSATION_LIST_STATE.group
-          ) +
-          '&CATEGORY=eq.' +
-          encodeURIComponent(
-            value
-          )
+      var baseFilters =
+        'GROUP=eq.' +
+        encodeURIComponent(
+          CONVERSATION_LIST_STATE.group
+        ) +
+        '&CATEGORY=eq.' +
+        encodeURIComponent(
+          value
         );
 
+      var subcategoryRows =
+        await loadConversationDirectoryRows(
+          'SUBCATEGORY',
+          baseFilters
+        );
 
-      CONVERSATION_LIST_STATE.items =
+      var subcategoryItems =
         makeConversationDirectoryValues(
-          rows,
+          subcategoryRows,
           'SUBCATEGORY'
         );
 
+      if (
+        subcategoryItems.length
+      ) {
+
+        CONVERSATION_LIST_STATE.items =
+          subcategoryItems;
+
+        CONVERSATION_LIST_STATE.level =
+          'SUBCATEGORY';
+
+        renderConversationDirectory();
+
+        return;
+      }
+
+      var directTitleRows =
+        await loadConversationDirectoryRows(
+          'ID,DIALOGUE_TITLE',
+          baseFilters +
+          '&order=ID.asc'
+        );
+
+      CONVERSATION_LIST_STATE.items =
+        directTitleRows;
 
       CONVERSATION_LIST_STATE.level =
-        'SUBCATEGORY';
-
+        'TITLE';
 
       renderConversationDirectory();
 
       return;
     }
 
-
     // ========================================================
-    // SUBCATEGORY → TITLES
+    // SUBCATEGORY → TITLE
     // ========================================================
 
     if (
@@ -10907,8 +10969,7 @@ async function openConversationDirectoryFolder(
       CONVERSATION_LIST_STATE.subcategory =
         value;
 
-
-      var rows =
+      var titleRows =
         await loadConversationDirectoryRows(
           'ID,DIALOGUE_TITLE',
           'GROUP=eq.' +
@@ -10926,18 +10987,16 @@ async function openConversationDirectoryFolder(
           '&order=ID.asc'
         );
 
-
       CONVERSATION_LIST_STATE.items =
-        rows;
-
+        titleRows;
 
       CONVERSATION_LIST_STATE.level =
         'TITLE';
 
-
       renderConversationDirectory();
-    }
 
+      return;
+    }
 
   } catch (error) {
 
@@ -10945,7 +11004,6 @@ async function openConversationDirectoryFolder(
       '[CONVERSATION] DIRECTORY OPEN FAILED:',
       error
     );
-
 
     showConversationDirectoryError(
       error.message
@@ -11136,7 +11194,6 @@ function installConversationBreadcrumb() {
       '[data-dir-home]'
     );
 
-
   if (home) {
 
     home.onclick =
@@ -11146,12 +11203,10 @@ function installConversationBreadcrumb() {
       };
   }
 
-
   var group =
     document.querySelector(
       '[data-dir-group]'
     );
-
 
   if (group) {
 
@@ -11159,7 +11214,6 @@ function installConversationBreadcrumb() {
       async function() {
 
         showConversationDirectoryLoading();
-
 
         var rows =
           await loadConversationDirectoryRows(
@@ -11169,7 +11223,6 @@ function installConversationBreadcrumb() {
               CONVERSATION_LIST_STATE.group
             )
           );
-
 
         CONVERSATION_LIST_STATE.category =
           '';
@@ -11186,54 +11239,32 @@ function installConversationBreadcrumb() {
         CONVERSATION_LIST_STATE.level =
           'CATEGORY';
 
-
         renderConversationDirectory();
       };
   }
-
 
   var category =
     document.querySelector(
       '[data-dir-category]'
     );
 
-
   if (category) {
 
     category.onclick =
-      async function() {
+      function() {
 
-        showConversationDirectoryLoading();
-
-
-        var rows =
-          await loadConversationDirectoryRows(
-            'SUBCATEGORY',
-            'GROUP=eq.' +
-            encodeURIComponent(
-              CONVERSATION_LIST_STATE.group
-            ) +
-            '&CATEGORY=eq.' +
-            encodeURIComponent(
-              CONVERSATION_LIST_STATE.category
-            )
-          );
-
+        var selectedCategory =
+          CONVERSATION_LIST_STATE.category;
 
         CONVERSATION_LIST_STATE.subcategory =
           '';
 
-        CONVERSATION_LIST_STATE.items =
-          makeConversationDirectoryValues(
-            rows,
-            'SUBCATEGORY'
-          );
-
         CONVERSATION_LIST_STATE.level =
-          'SUBCATEGORY';
+          'CATEGORY';
 
-
-        renderConversationDirectory();
+        openConversationDirectoryFolder(
+          selectedCategory
+        );
       };
   }
 }
