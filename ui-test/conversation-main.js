@@ -136,7 +136,7 @@ const SUPABASE_CONFIG = Object.freeze({
     'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation',
 
   peopleRestUrl:
-    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation',
+    'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation_name_bible_links',
 
   bibleLinksRestUrl:
     'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/conversation_name_bible_links',
@@ -148,7 +148,7 @@ const SUPABASE_CONFIG = Object.freeze({
     'conversation',
 
   peopleTable:
-    'conversation',
+    'conversation_name_bible_links',
 
   bibleLinksTable:
     'conversation_name_bible_links'
@@ -758,8 +758,8 @@ async function loadConversationPeople() {
 
 
 // ============================================================
-// CONVERSATION NAME → BIBLE PERSON ID
-// The database link is authoritative. Never guess by gender or name.
+// CONVERSATION NAME → BIBLE PERSON
+// BIBLE_ORIGIN is the authoritative fallback link.
 // ============================================================
 
 var CONVERSATION_BIBLE_LINKS = {};
@@ -775,7 +775,7 @@ async function loadConversationBibleLinks() {
     var response =
       await fetch(
         SUPABASE_CONFIG.bibleLinksRestUrl +
-        '?select=NAME,BIBLE_PERSON_ID,BIBLE_CANONICAL_NAME',
+        '?select=NAME,BIBLE_ORIGIN,BIBLE_PERSON_ID,BIBLE_CANONICAL_NAME',
         {
           method: 'GET',
           headers: {
@@ -786,43 +786,97 @@ async function loadConversationBibleLinks() {
         }
       );
 
-    var text = await response.text();
+    var text =
+      await response.text();
+
 
     if (!response.ok) {
+
       throw new Error(
-        'Bible links API Error ' + response.status + ': ' + text
+        'Bible links API Error ' +
+        response.status +
+        ': ' +
+        text
       );
     }
 
-    var rows = text ? JSON.parse(text) : [];
+
+    var rows =
+      text
+        ? JSON.parse(text)
+        : [];
+
 
     CONVERSATION_BIBLE_LINKS = {};
+
 
     rows.forEach(
       function(row) {
 
-        var name = String(row.NAME || '').trim();
-        var personId = String(row.BIBLE_PERSON_ID || '').trim();
+        var name =
+          String(
+            row.NAME || ''
+          ).trim();
 
-        if (!name || !personId) {
+        var bibleOrigin =
+          String(
+            row.BIBLE_ORIGIN || ''
+          ).trim();
+
+        var personId =
+          String(
+            row.BIBLE_PERSON_ID ||
+            bibleOrigin ||
+            ''
+          ).trim();
+
+        var canonicalName =
+          String(
+            row.BIBLE_CANONICAL_NAME ||
+            bibleOrigin ||
+            ''
+          ).trim();
+
+
+        if (
+          !name ||
+          !bibleOrigin
+        ) {
           return;
         }
 
-        CONVERSATION_BIBLE_LINKS[name.toLowerCase()] = {
-          personId: personId,
-          canonicalName: String(row.BIBLE_CANONICAL_NAME || '').trim()
+
+        CONVERSATION_BIBLE_LINKS[
+          name.toLowerCase()
+        ] = {
+
+          personId:
+            personId,
+
+          bibleOrigin:
+            bibleOrigin,
+
+          canonicalName:
+            canonicalName
         };
       }
     );
 
-    window.CONVERSATION_BIBLE_LINKS = CONVERSATION_BIBLE_LINKS;
+
+    window.CONVERSATION_BIBLE_LINKS =
+      CONVERSATION_BIBLE_LINKS;
+
 
     console.log(
       '[CONVERSATION BIBLE LINKS] loaded:',
-      Object.keys(CONVERSATION_BIBLE_LINKS).length
+      Object.keys(
+        CONVERSATION_BIBLE_LINKS
+      ).length
     );
 
+
     return CONVERSATION_BIBLE_LINKS;
+
 
   } catch (error) {
 
