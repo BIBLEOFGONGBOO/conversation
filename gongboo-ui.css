@@ -1,1556 +1,995 @@
-/* SUBBLOCK 0000 : ROOT / BASE */
+/* ==========================================================================
+   🟥 BLOCK 2000: MOBILE CONVERSATION STYLE
+   ========================================================================== */
 
-:root{
-  --gb-bg:#eef3f7;
-  --gb-surface:#ffffff;
-  --gb-soft:#f7f9fb;
+/* ==========================================================================
+   🟩 BLOCK 2100: FOUNDATION
+   ========================================================================== */
 
-  --gb-border:#cfd7e1;
-  --gb-text:#111111;
-  --gb-muted:#5e6875;
+/* ==========================================================================
+   🟦 BLOCK 2110: GLOBAL MOBILE RESET
+   ========================================================================== */
 
-  --gb-accent:#1769d2;
-  --gb-accent-strong:#1659b8;
-  --gb-accent-soft:#e7f1ff;
-
-  --gb-stop:#e3262e;
-  --gb-stop-dark:#c81f26;
-
-  --gb-current:#f2c744;
-
-  --gb-radius:11px;
-  --gb-card-radius:14px;
-
-  --gb-button-height:40px;
-
-  --gb-shadow:
-    0 10px 28px rgba(27,45,66,.18);
-
-  --gb-content-width:960px;
-}
-
-*{
-  box-sizing:border-box;
+* {
+  box-sizing: border-box;
 }
 
 html,
-body{
-  margin:0;
-  min-height:100%;
+body {
+  min-height: 100%;
+  margin: 0;
 }
 
-body{
-  background:var(--gb-bg);
-  color:var(--gb-text);
-
+body {
+  background: #f5f7fb;
+  color: #172033;
   font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
     Arial,
     sans-serif;
 }
 
-button,
-select,
-input{
-  font:inherit;
+
+/* ==========================================================================
+   🟩 BLOCK 2200: APPLICATION SHELL
+   ========================================================================== */
+
+/* ==========================================================================
+   🟦 BLOCK 2210: CONVERSATION APP FRAME
+   ========================================================================== */
+
+.conversation-app {
+  width: min(100%, 720px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 12px;
 }
 
-button{
-  -webkit-tap-highlight-color:transparent;
+
+/* ==========================================================================
+   🟦 BLOCK 2222: TOP SYSTEM, PLAY, STOP, AND SETTINGS BUTTONS
+   ========================================================================== */
+
+.conversation-header {
+  display: grid;
+  grid-template-columns:
+    42px
+    minmax(0, 1fr)
+    62px
+    42px;
+  gap: 7px;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 0 10px;
+}
+
+.conversation-header button {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.conversation-system-split {
+  position: relative;
+  min-width: 0;
+}
+
+.conversation-system-split #systemMenuButton {
+  padding: 0;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.conversation-play-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  min-width: 0;
+}
+
+.conversation-play-split #playButton {
+  min-width: 0;
+  border-radius: 10px 0 0 10px;
+}
+
+.conversation-play-split #playMenuButton {
+  min-width: 0;
+  margin-left: -1px;
+  padding: 0;
+  border-radius: 0 10px 10px 0;
+  font-size: 16px;
+}
+
+.conversation-header #stopButton {
+  border-color: #efb7b7;
+  background: #fff7f7;
+  color: #b42318;
+}
+
+.conversation-header #stopButton:active {
+  background: #fee2e2;
+}
+
+.conversation-header #settingsButton {
+  padding: 0;
+  font-size: 20px;
+}
+
+.conversation-header button[aria-expanded="true"] {
+  position: relative;
+  z-index: 1;
+  border-color: #075ea8;
+  background: #eaf5ff;
+  color: #075ea8;
 }
 
 
-/* SUBBLOCK 0500 : TOP BAR */
+/* ==========================================================================
+   🟦 BLOCK 2223: SYSTEM MENU FIXED INDEX
+   Purpose: Keep header controls fixed and show the system menu full width.
+   ========================================================================== */
 
-.gb-topbar{
-  position:sticky;
-  top:0;
-  z-index:3000;
+#systemMenuPanel {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  z-index: 60;
 
-  background:
-    rgba(238,243,247,.96);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
 
-  border-bottom:
-    1px solid var(--gb-border);
-
-  backdrop-filter:
-    blur(10px);
-}
-
-.gb-topbar-row{
-  width:min(
-    calc(100% - 16px),
-    var(--gb-content-width)
+  width: min(
+    calc(100vw - 24px),
+    696px
   );
 
-  margin:0 auto;
+  max-height: calc(100dvh - 96px);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
 
-  padding:7px 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 0;
+  background: #ffffff;
+
+  transform: translateX(-50%);
+
+  box-shadow:
+    0 10px 24px
+    rgb(23 32 51 / 18%);
 }
 
-/* Deliberately non-sticky: it introduces the site, then yields space to study. */
-.gb-brand-strip{
-  width:min(
-    calc(100% - 24px),
-    var(--gb-content-width)
+#systemMenuPanel button {
+  min-height: 0;
+  padding: 9px 10px;
+  border: 0;
+  border-bottom: 1px solid #dbe3ee;
+  border-radius: 0;
+  background: transparent;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: left;
+}
+
+#systemMenuPanel button:last-child {
+  border-bottom: 0;
+}
+
+#systemMenuPanel button:first-child {
+  background: #eaf5ff;
+  color: #075ea8;
+  font-weight: 900;
+}
+
+/* ==========================================================================
+   END: SYSTEM MENU FIXED INDEX
+   ========================================================================== */
+
+
+
+/* ==========================================================================
+   END: TOP SYSTEM, PLAY, STOP, AND SETTINGS BUTTONS
+   ========================================================================== */
+
+/* ==========================================================================
+   🟦 BLOCK 2224: DROPDOWN AND PLAY MENUS
+   ========================================================================== */
+
+.conversation-menu {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.conversation-menu[hidden],
+.play-more-panel[hidden] {
+  display: none !important;
+}
+
+.conversation-menu button,
+.play-more-panel button {
+  min-height: 40px;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.conversation-menu button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.conversation-system-split {
+  position: relative;
+}
+
+#playMenuPanel {
+  grid-template-columns:
+    minmax(0, 1.35fr)
+    minmax(52px, 0.85fr)
+    minmax(0, 1.10fr)
+    44px;
+}
+
+#playMenuPanel .play-mode-toggle,
+#playMenuPanel .practice-start-stop-toggle,
+#playMenuPanel .play-practice-toggle,
+#playMenuPanel .play-more-button {
+  min-height: 58px;
+  line-height: 1.05;
+}
+
+#playMenuPanel .play-more-button {
+  padding: 0;
+  font-size: 22px;
+}
+
+.play-more-panel {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 7px;
+  padding-top: 3px;
+}
+
+/* ==========================================================================
+   END: DROPDOWN AND PLAY MENUS
+   ========================================================================== */
+
+
+
+
+  /* ==========================================================================
+   🟦 BLOCK 2225: FIXED DROPDOWN LAYERS
+   Purpose: Keep menus fixed and prevent them from covering lesson content.
+   ========================================================================== */
+
+.conversation-app {
+  position: relative;
+}
+
+#playMenuPanel,
+#settingsPanel {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  z-index: 60;
+
+  width: min(
+    calc(100vw - 24px),
+    696px
   );
 
-  margin:10px auto 0;
+  max-height: calc(100dvh - 96px);
+  margin: 0;
+  overflow-y: auto;
 
-  color:#556273;
-
-  font-size:18px;
-  font-weight:850;
-  letter-spacing:.09em;
-  text-align:center;
-}
-
-.gb-toolbar{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  gap:7px;
-}
-
-.gb-card-wrap{
-  position:relative;
-}
-
-.gb-split-control{
-  display:grid;
-  grid-template-columns:minmax(58px,1fr) 28px;
-}
-
-.gb-split-primary{
-  min-width:0;
-  border-radius:var(--gb-radius) 0 0 var(--gb-radius);
-  border-right:0;
-  padding:0 9px;
-}
-
-.gb-split-menu{
-  min-width:28px;
-  width:28px;
-  padding:0;
-  border-radius:0 var(--gb-radius) var(--gb-radius) 0;
-  color:var(--gb-muted);
-  font-size:8px;
-}
-
-#playButton[aria-pressed="true"],
-#micButton[aria-pressed="true"]{
-  color:#ffffff;
-  border-color:var(--gb-stop-dark);
-  background:linear-gradient(180deg,#ef3038,var(--gb-stop));
-}
-
-
-/* SUBBLOCK 1000 : MAIN TOOL BUTTONS */
-
-.gb-tool-button{
-  min-width:68px;
-  height:var(--gb-button-height);
-
-  padding:0 13px;
-
-  border:
-    1px solid var(--gb-border);
-
-  border-radius:
-    var(--gb-radius);
-
-  background:
-    var(--gb-surface);
-
-  color:
-    #20252c;
-
-  font-size:12px;
-  font-weight:900;
-
-  cursor:pointer;
+  transform: translateX(-50%);
 
   box-shadow:
-    0 2px 6px rgba(0,0,0,.04);
+    0 10px 24px
+    rgb(23 32 51 / 18%);
 }
 
-.gb-system-button{
-  min-width:64px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  gap:5px;
-}
-
-.gb-chevron{
-  font-size:8px;
-  color:var(--gb-muted);
-}
-
-.gb-tool-button-square{
-  min-width:40px;
-  width:40px;
-
-  padding:0;
-}
-
-.gb-tool-button:hover{
-  background:
-    var(--gb-soft);
-}
-
-.gb-tool-button.is-active,
-.gb-tool-button[aria-pressed="true"]{
-  color:
-    var(--gb-accent-strong);
-
-  border-color:
-    var(--gb-accent);
-
-  background:
-    var(--gb-accent-soft);
-
-  box-shadow:
-    0 0 0 1px rgba(23,105,210,.08);
-}
-
-/* Split action overrides must follow the common button rule. */
-.gb-split-control .gb-tool-button.gb-split-primary{
-  min-width:58px;
-  width:auto;
-  padding:0 8px;
-  border-radius:var(--gb-radius) 0 0 var(--gb-radius);
-  border-right:0;
-}
-
-.gb-split-control .gb-tool-button.gb-split-menu{
-  min-width:28px;
-  width:28px;
-  padding:0;
-  border-radius:0 var(--gb-radius) var(--gb-radius) 0;
-  color:var(--gb-muted);
-  font-size:8px;
-}
-
-.gb-split-control #playButton.gb-split-primary[aria-pressed="true"],
-.gb-split-control #micButton.gb-split-primary[aria-pressed="true"]{
-  color:#ffffff;
-  border-color:var(--gb-stop-dark);
-  background:linear-gradient(180deg,#ef3038,var(--gb-stop));
-}
-
-
-/* Frequent manual scoring sits directly below the active MIC control. */
-#micControlWrap.is-mic-active #micCard{
-  top:calc(100% + 7px);
-}
-
-/* SUBBLOCK 1500 : COMMON CARD */
-
-.gb-card{
-  position:absolute;
-
-  top:calc(100% + 7px);
-  right:0;
-
-  z-index:4000;
-
-  width:300px;
-
-  padding:10px;
-
-  border:
-    1px solid #d4dbe4;
-
-  border-radius:
-    var(--gb-card-radius);
-
-  background:
-    var(--gb-surface);
-
-  box-shadow:
-    var(--gb-shadow);
-}
-
-.gb-card[hidden]{
-  display:none;
-}
-
-.gb-card-title{
-  padding:
-    2px 4px 7px;
-
-  color:
-    #1c1c1c;
-
-  font-size:12px;
-  font-weight:950;
-
-  letter-spacing:.04em;
-}
-
-
-/* SUBBLOCK 2000 : SYSTEM CARD */
-
-.gb-system-card{
-  left:0;
-  right:auto;
-
-  width:285px;
-
-  padding:8px;
-}
-
-.gb-system-option{
-  width:100%;
-  min-height:38px;
-
-  display:grid;
-
+#playMenuPanel {
+  display: grid;
   grid-template-columns:
-    42px 1fr 16px;
+    minmax(0, 1.35fr)
+    minmax(52px, 0.85fr)
+    minmax(0, 1.10fr);
 
-  align-items:center;
-
-  column-gap:16px;
-
-  padding:
-    0 9px;
-
-  border:0;
-  border-radius:8px;
-
-  background:
-    transparent;
-
-  color:
-    var(--gb-text);
-
-  text-align:left;
-
-  cursor:pointer;
+  gap: 7px;
+  padding: 8px;
 }
 
-.gb-system-option:hover,
-.gb-system-option.is-active{
-  background:
-    var(--gb-accent-soft);
+#settingsPanel {
+  padding: 10px;
 }
 
-.gb-system-code{
-  color:
-    var(--gb-accent-strong);
-
-  font-size:12px;
-  font-weight:950;
+.conversation-app:has(
+  #playMenuPanel:not([hidden])
+) #conversationLesson {
+  padding-top: 98px;
 }
 
-.gb-system-name{
-  font-size:13px;
-  font-weight:800;
+.conversation-app:has(
+  #settingsPanel:not([hidden])
+) #conversationLesson {
+  padding-top: 278px;
 }
 
-.gb-submenu-arrow{
-  color:
-    var(--gb-muted);
-
-  font-size:18px;
-
-  text-align:right;
+#playMenuPanel[hidden],
+#settingsPanel[hidden] {
+  display: none !important;
 }
 
+/* ==========================================================================
+   END: FIXED DROPDOWN LAYERS
+   ========================================================================== */
 
-/* SUBBLOCK 2500 : GENERAL CARD ROW */
 
-.gb-card-row{
-  min-height:42px;
+/* ==========================================================================
+   🟦 BLOCK 2226: SETTINGS, STATUS, AND BOTTOM NAVIGATION
+   ========================================================================== */
 
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-
-  gap:8px;
-
-  border-top:
-    1px solid #edf0f3;
+#settingsPanel {
+  grid-template-columns: 1fr;
+  gap: 7px;
 }
 
-.gb-card-label{
-  color:
-    #111111;
-
-  font-size:12px;
-  font-weight:950;
+.conversation-settings-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
 }
 
-.gb-select{
-  height:31px;
-
-  padding:
-    0 8px;
-
-  border:
-    1px solid #c8d0da;
-
-  border-radius:8px;
-
-  background:
-    #ffffff;
-
-  color:
-    #1a1a1a;
-
-  font-weight:700;
+.conversation-settings-actions button {
+  min-height: 40px;
 }
 
+.conversation-setting-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 800;
+}
 
-/* SUBBLOCK 3000 : SLIDER ROW */
+.conversation-setting-row select {
+  grid-column: 2 / -1;
+}
 
-.gb-slider-row{
-  min-height:48px;
+.conversation-setting-row input {
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 700;
+}
 
-  display:grid;
+.conversation-setting-row input[type="range"] {
+  min-height: auto;
+  padding: 0;
+}
 
+.conversation-setting-row output {
+  min-width: 40px;
+  color: #172033;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.conversation-speed-loop-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  align-items: center;
+  gap: 8px;
+}
+
+.conversation-speed-loop-row .conversation-setting-row {
+  grid-template-columns: 58px minmax(0, 1fr);
+  min-width: 0;
+}
+
+#playLoopToggle {
+  min-height: 34px;
+  padding: 5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#playLoopToggle[aria-pressed="true"] {
+  border-color: #075ea8;
+  background: #eaf5ff;
+  color: #075ea8;
+}
+
+.conversation-language-row {
+  display: grid;
   grid-template-columns:
-    58px 1fr 52px;
-
-  align-items:center;
-
-  gap:10px;
-
-  border-top:
-    1px solid #edf0f3;
+    42px
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 900;
 }
 
-.gb-slider-label{
-  color:
-    #111111;
-
-  font-size:12px;
-  font-weight:950;
+.conversation-language-label {
+  font-size: 13px;
 }
 
-.gb-slider-value{
-  text-align:right;
-
-  color:
-    #111111;
-
-  font-size:12px;
-  font-weight:950;
+.conversation-language-choice {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
 }
 
-.gb-range{
-  width:100%;
-
-  accent-color:
-    #1477f2;
-
-  cursor:pointer;
+.conversation-language-choice span {
+  color: #64748b;
+  font-size: 10px;
+  text-align: center;
 }
 
-
-/* SUBBLOCK 3500 : PLAY / MIC ACTIONS */
-
-.gb-four-actions{
-  display:grid;
-
-  grid-template-columns:
-    repeat(4,1fr);
-
-  gap:6px;
-
-  margin-top:8px;
+.conversation-language-choice select {
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 700;
 }
 
-.gb-psg-card{
-  width:180px;
+.conversation-status {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid #dbe3ee;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 13px;
 }
 
-.gb-card-toggle{
-  width:100%;
-  min-height:40px;
-  border:1px solid var(--gb-border);
-  border-radius:8px;
-  background:#ffffff;
-  color:#222222;
-  font-size:12px;
-  font-weight:900;
-  cursor:pointer;
+.conversation-bottom-navigation {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-.gb-card-toggle[aria-pressed="true"]{
-  color:var(--gb-accent-strong);
-  border-color:var(--gb-accent);
-  background:var(--gb-accent-soft);
+.conversation-bottom-navigation button {
+  min-height: 44px;
+  border: 1px solid #075ea8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #075ea8;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
 }
 
-.gb-two-actions,
-.gb-one-action{
-  display:grid;
-  gap:6px;
-  margin-top:8px;
+.conversation-bottom-navigation button:last-child {
+  background: #075ea8;
+  color: #ffffff;
 }
 
-.gb-two-actions{
-  grid-template-columns:repeat(2,1fr);
+.conversation-footer {
+  padding: 12px 0 4px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-align: center;
 }
 
-.gb-one-action{
-  grid-template-columns:1fr;
+/* ==========================================================================
+   END: SETTINGS, STATUS, AND BOTTOM NAVIGATION
+   ========================================================================== */
+
+
+/* ==========================================================================
+   🟦 BLOCK 2227: PHONE SAFE TOP AND COMPACT TEXT
+   ========================================================================== */
+
+.conversation-app {
+  padding: 28px 12px 12px;
 }
 
-
-/* MIC ROW */
-
-.gb-three-actions{
-  display:grid;
-
-  grid-template-columns:
-    repeat(3,1fr);
-
-  gap:6px;
-
-  margin-top:8px;
+.conversation-header button {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
-
-/* COMPACT BUTTONS */
-
-.gb-compact-toggle,
-.gb-compact-action{
-  min-width:0;
-  height:36px;
-
-  padding:
-    0 6px;
-
-  border:
-    1px solid #cfd7e1;
-
-  border-radius:8px;
-
-  background:
-    #ffffff;
-
-  color:
-    #222222;
-
-  font-size:10.5px;
-  font-weight:950;
-
-  white-space:nowrap;
-
-  cursor:pointer;
+#playMenuPanel {
+  top: 80px;
 }
 
-.gb-compact-toggle:hover,
-.gb-compact-action:hover{
-  background:
-    #f4f7fa;
+.conversation-turn-speaker,
+.conversation-secondary-speaker {
+  font-size: 14px;
 }
 
+.conversation-turn-text,
+.conversation-secondary-text {
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
 
-/* TOGGLE ACTIVE */
+/* ==========================================================================
+   END: PHONE SAFE TOP AND COMPACT TEXT
+   ========================================================================== */
 
-.gb-compact-toggle[aria-pressed="true"]{
-  color:#ffffff;
+/* ==========================================================================
+   🟦 BLOCK 2228: STICKY TOP CONTROLS
+   Purpose: Keep the top controls available while lesson rows scroll.
+   ========================================================================== */
 
-  border-color:
-    var(--gb-accent);
+.conversation-app {
+  padding: 0 12px 12px;
+}
 
-  background:
-    linear-gradient(
-      180deg,
-      #2c7fe7,
-      var(--gb-accent-strong)
-    );
+.conversation-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  padding: 28px 0 10px;
+  background: #f5f7fb;
 
   box-shadow:
-    0 2px 6px rgba(23,105,210,.25);
+    0 5px 10px
+    rgb(245 247 251 / 92%);
 }
 
-
-/* START ACTIVE */
-
-#playStartButton[aria-pressed="true"],
-#micStartButton[aria-pressed="true"]{
-  color:#ffffff;
-
-  border-color:
-    #165ab7;
-
-  background:
-    linear-gradient(
-      180deg,
-      #2d72d8,
-      #164fa6
-    );
-
-  box-shadow:
-    0 2px 7px rgba(22,79,166,.28);
-}
-
-
-/* STOP ACTIVE */
-
-#playStopButton[aria-pressed="true"]{
-  color:#ffffff;
-
-  border-color:
-    var(--gb-stop-dark);
-
-  background:
-    linear-gradient(
-      180deg,
-      #ef3038,
-      var(--gb-stop)
-    );
-
-  box-shadow:
-    0 2px 7px rgba(227,38,46,.28);
-}
-
-
-/* SUBBLOCK 4000 : MODE */
-
-.gb-mode-row{
-  display:grid;
-
-  grid-template-columns:
-    repeat(3,1fr);
-
-  gap:6px;
-}
-
-.gb-mode-button{
-  height:34px;
-
-  border:
-    1px solid var(--gb-border);
-
-  border-radius:8px;
-
-  background:
-    #ffffff;
-
-  color:
-    #222222;
-
-  font-size:11px;
-  font-weight:900;
-
-  cursor:pointer;
-}
-
-.gb-mode-button.is-active{
-  color:
-    var(--gb-accent-strong);
-
-  border-color:
-    var(--gb-accent);
-
-  background:
-    var(--gb-accent-soft);
-}
-
-.gb-mode-button:disabled{
-  color:#a8adb5;
-
-  background:
-    #f0f1f3;
-
-  opacity:.65;
-
-  cursor:not-allowed;
-}
-
-.gb-card-separator{
-  height:1px;
-
-  margin:
-    8px 0;
-
-  background:
-    #e8ecf0;
-}
-
-
-/* SUBBLOCK 4500 : MORE CARD BUTTON GRID */
-
-.gb-more-grid{
-  display:grid;
-
-  grid-template-columns:
-    repeat(3, minmax(0,1fr));
-
-  gap:6px;
-}
-
-
-.gb-more-grid-button{
-  width:100%;
-  min-width:0;
-  height:34px;
-
-  padding:0 4px;
-
-  border:
-    1px solid var(--gb-border);
-
-  border-radius:8px;
-
-  background:
-    #ffffff;
-
-  color:
-    #222222;
-
-  font-size:11px;
-  font-weight:900;
-
-  cursor:pointer;
-}
-
-
-/* STD와 같은 깨끗한 HOVER */
-
-.gb-more-grid-button:hover:not(:disabled){
-  background:#eef6ff;
-  border-color:var(--gb-accent);
-  transform:translateY(-1px);
-  box-shadow:0 3px 8px rgba(23,105,210,.16);
-}
-
-.gb-mode-button:hover:not(:disabled){
-  background:#eef6ff;
-  border-color:var(--gb-accent);
-  transform:translateY(-1px);
-  box-shadow:0 3px 8px rgba(23,105,210,.16);
-}
-
-
-/* CHUNK ON = LRN과 같은 ACTIVE */
-
-.gb-more-grid-button[aria-pressed="true"]{
-  color:#ffffff;
-
-  border-color:
-    var(--gb-accent);
-
-  background:
-    linear-gradient(
-      180deg,
-      #2d7fe7 0%,
-      #1769d2 100%
-    );
-
-  box-shadow:
-    0 3px 8px rgba(23,105,210,.28);
-}
-
-
-/* PEOPLE / MAP / OPTION = QZ와 같은 DISABLED */
-
-.gb-more-grid-button:disabled{
-  color:#a8adb5;
-
-  background:
-    #f0f1f3;
-
-  opacity:.65;
-
-  cursor:not-allowed;
-}
-
-
-/* SUBBLOCK 5000 : LOGIN */
-
-.gb-login-button{
-  width:100%;
-  height:34px;
-
-  border:
-    1px solid #dde1e6;
-
-  border-radius:8px;
-
-  background:
-    #f0f1f3;
-
-  color:
-    #a4aab2;
-
-  font-size:12px;
-  font-weight:900;
-
-  cursor:not-allowed;
-
-  opacity:.75;
-}
-
-
-/* SUBBLOCK 5500 : CONTENT */
-
-.gb-content{
-  width:min(
-    calc(100% - 24px),
-    var(--gb-content-width)
+#playMenuPanel {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  right: auto;
+
+  width: min(
+    calc(100vw - 24px),
+    696px
   );
 
-  margin:
-    16px auto 90px;
+  transform: translateX(-50%);
+  z-index: 60;
 }
 
-.gb-demo-card{
-  padding:16px;
+/* ==========================================================================
+   END: STICKY TOP CONTROLS
+   ========================================================================== */
 
-  border:
-    1px solid var(--gb-border);
 
-  border-radius:14px;
+/* ==========================================================================
+   🟦 BLOCK 2229: CURRENT SPEAKING BOX
+   ========================================================================== */
 
-  background:
-    var(--gb-surface);
+.conversation-turn-card.is-speaking {
+  outline: 3px solid #facc15;
+  outline-offset: -3px;
+  background: #ffffff;
 }
 
-.gb-demo-label{
-  margin-bottom:10px;
+/* ==========================================================================
+   END: CURRENT SPEAKING BOX
+   ========================================================================== */
 
-  color:
-    #9198a2;
 
-  font-size:11px;
-  font-weight:900;
 
-  letter-spacing:.08em;
+/* ==========================================================================
+   🟦 BLOCK 2230: MIC PASS / RETRY RESULT
+   ========================================================================== */
+
+.conversation-turn-card.is-mic-pass {
+  outline: 3px solid #16a34a;
+  outline-offset: -3px;
+  background: #ffffff;
 }
 
-.gb-conversation-turn{
-  padding:
-    12px 14px;
-
-  border:
-    1px solid transparent;
-
-  border-radius:10px;
-
-  cursor:pointer;
+.conversation-turn-card.is-mic-retry {
+  outline: 3px solid #ef4444;
+  outline-offset: -3px;
+  background: #ffffff;
 }
 
-.gb-conversation-turn +
-.gb-conversation-turn{
-  margin-top:7px;
+.conversation-mic-word-match {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: inherit;
 }
 
-.gb-conversation-turn.is-current{
-  border-color:
-    var(--gb-current);
-
-  background:
-    #fffdf6;
+.is-mic-pass .conversation-mic-word-match,
+.is-mic-retry .conversation-mic-word-match {
+  padding: 1px 2px;
+  border-radius: 3px;
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 900;
 }
 
-.gb-speaker{
-  margin-bottom:4px;
-
-  font-size:12px;
-  font-weight:900;
+.conversation-mic-result {
+  width: 100%;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: right;
 }
 
-.gb-text{
-  font-size:16px;
-  line-height:1.5;
+.is-mic-pass .conversation-mic-result {
+  color: #15803d;
 }
 
-
-/* SUBBLOCK 6000 : PREV / NEXT */
-
-.gb-bottom-nav{
-  position:fixed;
-
-  left:50%;
-  bottom:0;
-
-  z-index:2500;
-
-  width:min(
-    calc(100% - 24px),
-    var(--gb-content-width)
-  );
-
-  transform:
-    translateX(-50%);
-
-  display:grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:8px;
-
-  padding:
-    8px 0 10px;
-
-  background:
-    linear-gradient(
-      to top,
-      var(--gb-bg) 72%,
-      transparent
-    );
+.is-mic-retry .conversation-mic-result {
+  color: #dc2626;
 }
 
-.gb-nav-button{
-  height:40px;
+/* ==========================================================================
+   END: MIC PASS / RETRY RESULT
+   ========================================================================== */
 
-  border:
-    1px solid var(--gb-border);
 
-  border-radius:10px;
 
-  background:
-    #ffffff;
 
-  color:
-    #20252c;
 
-  font-size:12px;
-  font-weight:900;
+/* ==========================================================================
+   🟦 BLOCK 2231: ROLE PLAY TARGET SENTENCE
+   Purpose: Yellow outline only marks the sentence selected as the start.
+   ========================================================================== */
 
-  cursor:pointer;
+.conversation-turn-card {
+  cursor: pointer;
 }
 
-
-/* SUBBLOCK 6500 : ACTIVE STATES / BIBLE TOOLS / TOOLTIP */
-/* ACTIVE STATE / BIBLE TOOLS / TOOLTIP */
-
-
-/* =========================================================
-   COMMON ACTIVE STATE
-   선택된 버튼은 모두 진한 파랑 + 흰 글씨
-========================================================= */
-
-.gb-tool-button.is-active,
-.gb-tool-button[aria-pressed="true"],
-.gb-compact-toggle[aria-pressed="true"],
-.gb-compact-action[aria-pressed="true"],
-.gb-chunk-button[aria-pressed="true"],
-.gb-mode-button.is-active{
-
-  color:#ffffff;
-
-  border-color:#1769d2;
-
-  background:
-    linear-gradient(
-      180deg,
-      #2d7fe7 0%,
-      #1769d2 100%
-    );
-
-  box-shadow:
-    0 3px 8px rgba(23,105,210,.28);
+.conversation-turn-card.is-role-target:not(
+  .is-mic-pass
+):not(
+  .is-mic-retry
+) {
+  outline: 3px solid #facc15;
+  outline-offset: -3px;
+  background: #ffffff;
 }
 
-/* PSG has one visual contract: the same clear blue as the other selected tools. */
-#biblePassageToggle,
-#biblePassageToggle.active,
-#biblePassageToggle[aria-pressed="true"]{
-  filter:none !important;
+/* ==========================================================================
+   END: ROLE PLAY TARGET SENTENCE
+   ========================================================================== */
+
+
+
+   /* ==========================================================================
+   🟦 BLOCK 2232: NO PLAY MENU PAGE FLOW
+   Purpose: The PLAY menu must never push, move, or scroll with lesson text.
+   ========================================================================== */
+
+/* PLAY menu positioning is fully owned by BLOCK 2225. */
+
+/* ==========================================================================
+   END: NO PLAY MENU PAGE FLOW
+   ========================================================================== */
+
+
+/* ==========================================================================
+   🟦 BLOCK 2233: BIBLE PERSON SPEAKER LINK
+   Purpose: Show only mapped speaker names as Bible detail links.
+   ========================================================================== */
+
+.conversation-turn-speaker.is-bible-person-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
-
-/* STOP은 위험 동작이므로 RED 유지 */
-
-#playStopButton[aria-pressed="true"]{
-
-  color:#ffffff;
-
-  border-color:#c81f26;
-
-  background:
-    linear-gradient(
-      180deg,
-      #ef3038 0%,
-      #df2029 100%
-    );
-
-  box-shadow:
-    0 3px 8px rgba(223,32,41,.26);
+.conversation-turn-speaker.is-bible-person-link:active {
+  color: #064b87;
 }
 
+/* ==========================================================================
+   END: BIBLE PERSON SPEAKER LINK
+   ========================================================================== */
 
-/* =========================================================
-   BIBLE TOOLS
-========================================================= */
 
-.gb-bible-tools{
 
-  display:grid;
+/* ==========================================================================
+   🟦 BLOCK 2234: CURRENT TTS WORD HIGHLIGHT
+   Purpose: Highlight only the word currently spoken by Android TTS.
+   ========================================================================== */
 
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:6px;
+.conversation-tts-word {
+  padding: 1px 2px;
+  border-radius: 3px;
+  transition: background-color 0.08s ease;
 }
 
-
-.gb-secondary-tool{
-
-  height:34px;
-
-  border:
-    1px solid var(--gb-border);
-
-  border-radius:8px;
-
-  background:#ffffff;
-
-  color:#222222;
-
-  font-size:11px;
-  font-weight:900;
-
-  cursor:pointer;
+.conversation-tts-word.is-tts-current-word {
+  background: #fde68a;
+  color: #172033;
+  font-weight: 900;
 }
 
+/* ==========================================================================
+   END: CURRENT TTS WORD HIGHLIGHT
+   ========================================================================== */
 
-.gb-secondary-tool:not(:disabled):hover{
 
-  background:
-    var(--gb-soft);
+
+/* ==========================================================================
+   🟦 BLOCK 2290: CONVERSATION DIRECTORY
+   Purpose: Hide directory completely after TITLE selection.
+   ========================================================================== */
+
+.conversation-directory {
+  display: grid;
+  gap: 8px;
 }
 
-
-.gb-secondary-tool:disabled{
-
-  color:#a8adb5;
-
-  border-color:#e0e3e7;
-
-  background:#f0f1f3;
-
-  opacity:.60;
-
-  cursor:not-allowed;
+.conversation-directory[hidden] {
+  display: none !important;
 }
 
-
-/* =========================================================
-   COMMON HOVER TOOLTIP
-========================================================= */
-
-[data-tooltip]{
-
-  position:relative;
+.conversation-directory-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
 }
 
-
-[data-tooltip]::after{
-
-  content:
-    attr(data-tooltip);
-
-  position:absolute;
-
-  left:50%;
-  bottom:
-    calc(100% + 8px);
-
-  transform:
-    translateX(-50%);
-
-  z-index:9999;
-
-  padding:
-    5px 8px;
-
-  border-radius:6px;
-
-  background:
-    rgba(23,28,35,.94);
-
-  color:#ffffff;
-
-  font-size:10px;
-  font-weight:700;
-
-  line-height:1.2;
-
-  white-space:nowrap;
-
-  pointer-events:none;
-
-  opacity:0;
-
-  visibility:hidden;
-
-  transition:
-    opacity .14s ease,
-    visibility .14s ease;
+.conversation-directory-breadcrumb button {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #075ea8;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
 }
 
-
-[data-tooltip]::before{
-
-  content:"";
-
-  position:absolute;
-
-  left:50%;
-  bottom:
-    calc(100% + 3px);
-
-  transform:
-    translateX(-50%);
-
-  z-index:9999;
-
-  border-left:
-    5px solid transparent;
-
-  border-right:
-    5px solid transparent;
-
-  border-top:
-    5px solid rgba(23,28,35,.94);
-
-  pointer-events:none;
-
-  opacity:0;
-
-  visibility:hidden;
-
-  transition:
-    opacity .14s ease,
-    visibility .14s ease;
+.conversation-directory-breadcrumb span {
+  color: #94a3b8;
 }
 
-
-[data-tooltip]:hover::after,
-[data-tooltip]:hover::before{
-
-  opacity:1;
-
-  visibility:visible;
+.conversation-directory-list {
+  display: grid;
+  border-top: 1px solid #cbd5e1;
 }
 
-
-/* Card 안쪽 버튼 Tooltip은 아래쪽으로 표시 */
-
-.gb-card [data-tooltip]::after{
-
-  top:
-    calc(100% + 7px);
-
-  bottom:auto;
+.conversation-directory-item {
+  display: block;
+  width: 100%;
+  padding: 9px 2px;
+  border: 0;
+  border-bottom: 1px solid #dbe3ee;
+  border-radius: 0;
+  background: transparent;
+  color: #172033;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
 }
 
-
-.gb-card [data-tooltip]::before{
-
-  top:
-    calc(100% + 2px);
-
-  bottom:auto;
-
-  border-top:0;
-
-  border-bottom:
-    5px solid rgba(23,28,35,.94);
+.conversation-directory-item:active {
+  background: #eaf5ff;
+  color: #075ea8;
 }
 
-
-/* TOUCH 장치에서는 Hover Tooltip 숨김 */
-/* SUBBLOCK 7000 : TOP TOOLBAR TOOLTIP */
-
-/* TOP TOOLBAR TOOLTIP — show below button */
-
-.gb-toolbar > [data-tooltip]::after,
-.gb-toolbar > .gb-card-wrap > [data-tooltip]::after{
-  top:calc(100% + 8px);
-  bottom:auto;
+.conversation-directory-item.is-directory-title {
+  color: #075ea8;
+  font-weight: 900;
 }
 
-.gb-toolbar > [data-tooltip]::before,
-.gb-toolbar > .gb-card-wrap > [data-tooltip]::before{
-  top:calc(100% + 3px);
-  bottom:auto;
-
-  border-top:0;
-  border-bottom:
-    5px solid rgba(23,28,35,.94);
-}
-/* SUBBLOCK 7250 : TOUCH TOOLTIP */
-@media (hover:none){
-
-  [data-tooltip]::after,
-  [data-tooltip]::before{
-
-    display:none;
-  }
-}
-/* SUBBLOCK 7500 : MOBILE */
-@media (max-width:600px){
-
-  .gb-topbar-row{
-    width:100%;
-
-    padding:6px;
-  }
-
-  .gb-toolbar{
-    width:100%;
-
-    display:grid;
-
-    grid-template-columns:
-      .9fr .82fr 1.18fr 1.05fr 1fr .52fr;
-
-    gap:4px;
-  }
-
-  .gb-tool-button{
-    width:100%;
-    min-width:0;
-
-    height:40px;
-
-    padding:
-      0 4px;
-
-    font-size:11px;
-  }
-
-  .gb-split-wrap,
-  .gb-split-control{
-    width:100%;
-  }
-
-  .gb-split-control{
-    grid-template-columns:minmax(0,1fr) 24px;
-  }
-
-  .gb-split-primary,
-  .gb-split-menu{
-    min-width:0;
-  }
-
-  .gb-split-control .gb-tool-button.gb-split-primary{
-    min-width:0;
-    width:auto;
-    padding:0 3px;
-  }
-
-  .gb-split-control .gb-tool-button.gb-split-menu{
-    min-width:24px;
-    width:24px;
-    padding:0;
-  }
-
-  .gb-tool-button-square{
-    width:100%;
-  }
-
-  .gb-card-wrap{
-    position:static;
-  }
-
-  .gb-card{
-    position:fixed;
-
-    top:53px;
-    left:7px;
-    right:7px;
-
-    width:auto;
-
-    max-width:355px;
-
-    margin:
-      0 auto;
-  }
-
-  .gb-system-card{
-    max-width:310px;
-
-    margin-left:0;
-  }
-
-  .gb-content{
-    width:
-      calc(100% - 14px);
-
-    margin-top:10px;
-  }
-
-  .gb-demo-card{
-    padding:11px;
-  }
-
-  .gb-conversation-turn{
-    padding:11px;
-  }
-
-  .gb-text{
-    font-size:15px;
-  }
-
-  .gb-bottom-nav{
-    width:
-      calc(100% - 14px);
-  }
+.conversation-directory-empty {
+  padding: 10px 2px;
+  color: #64748b;
+  font-size: 14px;
 }
 
-
-/* SUBBLOCK 8000 : SMALL MOBILE */
-@media (max-width:340px){
-
-  .gb-toolbar{
-    grid-template-columns:
-      .88fr .78fr 1.18fr 1.02fr .96fr .5fr;
-
-    gap:3px;
-  }
-
-  .gb-tool-button{
-    padding:
-      0 2px;
-
-    font-size:10px;
-  }
-
-  .gb-four-actions{
-    gap:3px;
-  }
-
-  .gb-compact-toggle,
-  .gb-compact-action{
-    padding:
-      0 2px;
-
-    font-size:9.5px;
-  }
-
-  .gb-slider-row{
-    grid-template-columns:
-      50px 1fr 46px;
-
-    gap:6px;
-  }
+.conversation-app.conversation-directory-open
+  .conversation-bottom-navigation,
+.conversation-app.conversation-directory-open
+  .conversation-lesson {
+  display: none;
 }
 
+/* ==========================================================================
+   END: CONVERSATION DIRECTORY
+   ========================================================================== */
 
 
-/* SUBBLOCK 8250 : MIC CARD COMPACT SIZE */
 
-#micCard{
-  width:218px;
-  max-width:calc(100vw - 12px);
+/* ==========================================================================
+   🟦 BLOCK 2291: DIRECTORY LOADING TEXT
+   Purpose: Show one loading line before the LEVEL index is ready.
+   ========================================================================== */
 
-  padding:5px 7px;
-
-  font-size:11px;
+.conversation-directory-loading {
+  margin: 18px 0 0;
+  padding: 10px 2px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
 }
 
+/* ==========================================================================
+   END: DIRECTORY LOADING TEXT
+   ========================================================================== */
 
-#micCard > .gb-card-title{
-  display:none;
+
+
+/* ==========================================================================
+   🟩 BLOCK 2300: LESSON DISPLAY
+   ========================================================================== */
+
+/* ==========================================================================
+   🟦 BLOCK 2310: TURN CONTAINER
+   ========================================================================== */
+
+#conversationTurns {
+  display: grid;
+  gap: 0;
 }
 
-
-#micCard .gb-setting-row{
-  min-height:30px;
-  padding-top:2px;
-  padding-bottom:2px;
-  gap:4px;
+.conversation-turn-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  line-height: 1.45;
 }
 
-
-#micCard button{
-  min-height:28px;
-  height:28px;
-
-  padding:2px 4px;
-
-  font-size:10px;
+.conversation-turn-speaker {
+  flex: 0 0 auto;
+  color: #075ea8;
+  font-size: 15px;
+  font-weight: 900;
 }
 
-
-#micCard input[type="range"]{
-  min-width:0;
-  height:20px;
+.conversation-turn-text {
+  min-width: 0;
+  flex: 1 1 0;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
 }
 
-
-#micCard .gb-card-divider{
-  margin-top:2px;
-  margin-bottom:2px;
+.conversation-secondary-line {
+  display: flex;
+  flex: 0 0 100%;
+  align-items: flex-start;
+  gap: 7px;
+  padding-top: 3px;
 }
 
-
-
-/* SUBBLOCK 8500 : MIC SCORE / SPEECH HIGHLIGHT */
-
-.speech-correct{
-  background:#fef08a;
-  color:#111827;
-  box-shadow:
-    inset 0 -3px 0 #facc15;
-  border-radius:3px;
-  padding:1px 1px;
+.conversation-secondary-speaker {
+  flex: 0 0 auto;
+  color: #075ea8;
+  font-size: 15px;
+  font-weight: 900;
 }
 
-
-#micStopButton{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:6px;
+.conversation-secondary-text {
+  min-width: 0;
+  flex: 1 1 0;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
 }
 
+/* ==========================================================================
+   🟦 BLOCK 2320: COMPACT LESSON TITLE
+   ========================================================================== */
 
-.gb-mic-score{
-  font-weight:900;
-  white-space:nowrap;
-}
-/* SUBBLOCK 8275 : PLAY CARD TITLE HIDE / COMPACT */
-
-#playCard > .gb-card-title{
-  display:none;
+#conversationStatus,
+.conversation-group {
+  display: none;
 }
 
-#playCard{
-  padding-top:6px;
+.conversation-title {
+  margin: 0 0 10px;
+  overflow: hidden;
+  color: #172033;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* ==========================================================================
+   END: COMPACT LESSON TITLE
+   ========================================================================== */
 
-/* =========================================================
-   SUBBLOCK 9900 : ANNE HOME
-   ========================================================= */
 
-#setupSection{
-  width:100%;
-  display:flex;
-  justify-content:center;
-  padding:24px 16px 90px;
-  box-sizing:border-box;
+/* ==========================================================================
+   🟦 BLOCK 2330: SELECTED TURN CHUNK DISPLAY
+   ========================================================================== */
+
+.conversation-selected-chunks {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px dashed #93c5fd;
+  border-radius: 8px;
+  background: #f8fbff;
 }
 
-#setupSection .cards-container{
-  width:100%;
-  display:flex;
-  justify-content:center;
+.conversation-selected-chunk-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
-#setupSection .card-new{
-  width:min(100%, 760px);
-  min-height:520px;
-
-  margin:0 auto;
-  padding:52px 44px 60px;
-
-  box-sizing:border-box;
-
-  background:#fff;
-  border-radius:22px;
-
-  box-shadow:
-    0 8px 28px rgba(15,23,42,.08);
-
-  text-align:center;
+.conversation-selected-chunk-line strong {
+  color: #075ea8;
+  font-weight: 900;
 }
 
-#setupSection .card-icon{
-  margin:0 0 8px;
-
-  font-size:34px;
-  line-height:1;
+#chunkButton[aria-pressed="true"] {
+  border-color: #075ea8;
+  background: #eaf5ff;
+  color: #075ea8;
 }
 
-#setupSection .card-title-new{
-  margin:0 0 10px;
-
-  font-size:24px;
-  line-height:1.25;
-  font-weight:800;
-
-  color:#263b55;
-}
-
-#licenseSetArea{
-  width:100%;
-  max-width:390px;
-
-  margin:0 auto;
-
-  text-align:left;
-}
-
-#licenseSetArea > div{
-  width:100% !important;
-}
-
-#licenseSetArea .date-item{
-  min-height:32px;
-
-  padding:6px 8px !important;
-
-  box-sizing:border-box;
-
-  font-size:15px !important;
-  line-height:20px;
-
-  color:#2c3e50 !important;
-}
-
-#licenseSetArea .date-item:hover{
-  background:#f5f9ff !important;
-}
-
-#setupSection .bottom-hint{
-  display:none;
-}
-
-
-/* MOBILE */
-
-@media (max-width:640px){
-
-  #setupSection{
-    padding:18px 10px 80px;
-  }
-
-  #setupSection .card-new{
-    width:100%;
-    min-height:500px;
-
-    padding:34px 18px 46px;
-
-    border-radius:18px;
-  }
-
-  #setupSection .card-icon{
-    font-size:30px;
-  }
-
-  #setupSection .card-title-new{
-    font-size:21px;
-  }
-
-  #licenseSetArea{
-    max-width:100%;
-  }
-
-  #licenseSetArea .date-item{
-    font-size:14px !important;
-  }
-
-}
+/* ==========================================================================
+   END: SELECTED TURN CHUNK DISPLAY
+   ========================================================================== */  
