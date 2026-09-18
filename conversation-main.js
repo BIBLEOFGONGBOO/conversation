@@ -2469,7 +2469,7 @@ window.inspectCurrentPsgPlaySequence =
 
 // ============================================================================
 // 🟦 BLOCK 3320: SHARED PLAY ADAPTER STATE
-// Purpose: Android native TTS plus browser TTS with word highlighting.
+// Purpose: Android native TTS plus browser TTS with sentence-reset highlighting.
 // ============================================================================
 
 function getCurrentPsgPlayState() {
@@ -2665,6 +2665,13 @@ function createCurrentPsgWebPlayAdapter() {
         utterance.rate =
           getCurrentPsgPlayRate();
 
+        utterance.onstart = function() {
+          if (!boundaryReceived) {
+            fallbackTimer =
+              startCurrentPsgWebWordFallback();
+          }
+        };
+
         utterance.onboundary = function(event) {
           var charIndex =
             Number(event.charIndex);
@@ -2690,9 +2697,6 @@ function createCurrentPsgWebPlayAdapter() {
         };
 
         try {
-          fallbackTimer =
-            startCurrentPsgWebWordFallback();
-
           window.speechSynthesis.speak(
             utterance
           );
@@ -2700,10 +2704,6 @@ function createCurrentPsgWebPlayAdapter() {
           window.setTimeout(function() {
             window.speechSynthesis.resume();
           }, 100);
-
-          if (boundaryReceived) {
-            clearFallback();
-          }
         } catch (error) {
           finish(reject, error);
         }
@@ -2791,7 +2791,6 @@ function stopCurrentPsgPlay() {
   renderCurrentPsgPlayButton();
 }
 
-
 window.stopCurrentPsgPlay =
   stopCurrentPsgPlay;
 
@@ -2801,7 +2800,6 @@ window.stopCurrentPsgWebPlay =
 // ============================================================================
 // END: SHARED PLAY ADAPTER STATE
 // ============================================================================
-
 
 
 // ============================================================================
