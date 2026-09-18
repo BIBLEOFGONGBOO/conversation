@@ -3118,9 +3118,17 @@ function renderCurrentPsgPlayButton() {
 
 
 // ============================================================================
-// 🟦 BLOCK 3325: MIC CONNECTION
-// Purpose: Start Android speech recognition and store the spoken text.
+// 🟦 BLOCK 3325: MIC CONNECTION (NATIVE + WEB ADAPTER)
+// Purpose: APK uses GongbooSpeech. Web uses the V2 webkitSpeechRecognition
+//          engine (continuous + interim + delay finalize). Both paths write
+//          the final transcript into getCurrentMicState().transcript so that
+//          BLOCK 3326 and BLOCK 3328 need no changes.
 // ============================================================================
+
+
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-1: MIC STATE (unchanged public shape)
+// ---------------------------------------------------------------------------
 
 function getCurrentMicState() {
   if (!window.CONVERSATION_V2_MIC) {
@@ -3136,49 +3144,299 @@ function getCurrentMicState() {
 }
 
 
-function startCurrentMicRecognition(options) {
-  var config =
-    options || {};
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-2: WEB SPEECH CLASS
+// ---------------------------------------------------------------------------
 
+var CurrentMicSpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-3: WEB ENGINE STATE (V2 PORT)
+// ---------------------------------------------------------------------------
+
+var _currentMicWebRecognition = null;
+var _currentMicWebFinalizeTimer = null;
+var _currentMicWebLastTranscript = '';
+var _currentMicWebResolve = null;
+var _currentMicWebReject = null;
+
+
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-4: NATIVE ADAPTER (APK, unchanged behavior)
+// ---------------------------------------------------------------------------
+
+function createCurrentMicNativeAdapter() {
   var nativeSpeech =
     getCurrentPsgNativeSpeech();
 
-  var state =
-    getCurrentMicState();
-
   if (
     !nativeSpeech ||
-    typeof nativeSpeech.start !==
-      'function'
+    typeof nativeSpeech.start !== 'function' ||
+    typeof nativeSpeech.stop !== 'function'
   ) {
+    return null;
+  }
+
+  return {
+    type: 'android-native',
+
+    start: function(options) {
+      return nativeSpeech.start({
+        language: options.language,
+        onDevice: true,
+        maxResults: options.maxResults || 3
+      }).then(function(result) {
+        return {
+          matches:
+            Array.isArray(result.matches)
+              ? result.matches
+              : []
+        };
+      });
+    },
+
+    stop: function() {
+      return nativeSpeech.stop();
+    }
+  };
+}
+
+
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-5: WEB ADAPTER (V2 ENGINE)
+// continuous + interimResults + delay finalize.
+// ---------------------------------------------------------------------------
+
+function getCurrentMicWebDelayMs() {
+  var input =
+    document.getElementById(
+      'delayRange'
+    );
+
+  var seconds =
+    Number(input ? input.value : 0.5);
+
+  if (
+    !Number.isFinite(seconds) ||
+    seconds <= 0
+  ) {
+    seconds = 0.5;
+  }
+
+  return Math.max(
+    500,
+    seconds * 1000
+  );
+}
+
+
+function createCurrentMicWebAdapter() {
+  if (!CurrentMicSpeechRecognition) {
+    return null;
+  }
+
+  return {
+    type: 'web-speech',
+
+    start: function(options) {
+      return new Promise(function(resolve, reject) {
+        var recognition =
+          new CurrentMicSpeechRecognition();
+
+        _currentMicWebRecognition = recognition;
+        _currentMicWebResolve = resolve;
+        _currentMicWebReject = reject;
+        _currentMicWebLastTranscript = '';
+
+        function cleanup() {
+          if (_currentMicWebFinalizeTimer) {
+            clearTimeout(_currentMicWebFinalizeTimer);
+            _currentMicWebFinalizeTimer = null;
+          }
+
+          try {
+            recognition.onresult = null;
+            recognition.onerror = null;
+            recognition.onend = null;
+            recognition.abort();
+          } catch (error) {
+            // Ignore.
+          }
+
+          _currentMicWebRecognition = null;
+          _currentMicWebResolve = null;
+          _currentMicWebReject = null;
+        }
+
+        function finish() {
+          var resolveFn = _currentMicWebResolve;
+
+          var transcript =
+            String(_currentMicWebLastTranscript || '').trim();
+
+          cleanup();
+
+          if (resolveFn) {
+            resolveFn({
+              matches: transcript ? [transcript] : []
+            });
+          }
+        }
+
+        function fail(error) {
+          var rejectFn = _currentMicWebReject;
+
+          cleanup();
+
+          if (rejectFn) {
+            rejectFn(error);
+          }
+        }
+
+        recognition.lang =
+          options.language || 'en-US';
+
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives =
+          options.maxResults || 3;
+
+        recognition.onresult = function(event) {
+          var transcript = '';
+
+          for (var i = 0; i < event.results.length; i++) {
+            if (event.results[i] && event.results[i][0]) {
+              transcript +=
+                event.results[i][0].transcript + ' ';
+            }
+          }
+
+          transcript = transcript.trim();
+
+          if (!transcript) {
+            return;
+          }
+
+          _currentMicWebLastTranscript = transcript;
+
+          if (_currentMicWebFinalizeTimer) {
+            clearTimeout(_currentMicWebFinalizeTimer);
+          }
+
+          _currentMicWebFinalizeTimer = setTimeout(
+            function() {
+              if (_currentMicWebRecognition === recognition) {
+                try {
+                  recognition.stop();
+                } catch (error) {
+                  // Ignore.
+                }
+              }
+            },
+            getCurrentMicWebDelayMs()
+          );
+        };
+
+        recognition.onerror = function(event) {
+          if (
+            event.error === 'no-speech' ||
+            event.error === 'aborted'
+          ) {
+            finish();
+            return;
+          }
+
+          if (
+            event.error === 'not-allowed' ||
+            event.error === 'service-not-allowed'
+          ) {
+            fail(new Error('Microphone permission denied.'));
+            return;
+          }
+
+          fail(new Error('Web speech error: ' + event.error));
+        };
+
+        recognition.onend = function() {
+          finish();
+        };
+
+        try {
+          recognition.start();
+        } catch (error) {
+          fail(error);
+        }
+      });
+    },
+
+    stop: function() {
+      if (_currentMicWebRecognition) {
+        try {
+          _currentMicWebRecognition.stop();
+        } catch (error) {
+          // Ignore.
+        }
+      }
+
+      return Promise.resolve();
+    }
+  };
+}
+
+
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-6: ADAPTER SELECTOR
+// Native first (APK), then web.
+// ---------------------------------------------------------------------------
+
+function getCurrentMicAdapter() {
+  var nativeAdapter = createCurrentMicNativeAdapter();
+
+  if (nativeAdapter) {
+    return nativeAdapter;
+  }
+
+  return createCurrentMicWebAdapter();
+}
+
+
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-7: PUBLIC API (same signatures, same state contract)
+// ---------------------------------------------------------------------------
+
+function startCurrentMicRecognition(options) {
+  var config = options || {};
+
+  var adapter = getCurrentMicAdapter();
+  var state = getCurrentMicState();
+
+  if (!adapter) {
     return Promise.reject(
-      new Error(
-        'Android microphone is unavailable'
-      )
+      new Error('Microphone is unavailable on this device.')
     );
   }
 
-  var row =
-    window.CONVERSATION_V2_ROW || {};
+  var row = window.CONVERSATION_V2_ROW || {};
 
   var language =
     config.language ||
-    getCurrentPsgPlayLocale(
-      row.LNG || 'EN'
-    );
+    getCurrentPsgPlayLocale(row.LNG || 'EN');
 
   state.runId += 1;
 
-  var runId =
-    state.runId;
+  var runId = state.runId;
 
   state.running = true;
   state.transcript = '';
   state.matches = [];
 
-  return nativeSpeech.start({
+  console.log('[MIC] Adapter:', adapter.type, language);
+
+  return adapter.start({
     language: language,
-    onDevice: true,
     maxResults: 3
   }).then(
     function(result) {
@@ -3189,19 +3447,12 @@ function startCurrentMicRecognition(options) {
       state.running = false;
 
       state.matches =
-        Array.isArray(result.matches)
-          ? result.matches
-          : [];
+        Array.isArray(result.matches) ? result.matches : [];
 
       state.transcript =
-        String(
-          state.matches[0] || ''
-        ).trim();
+        String(state.matches[0] || '').trim();
 
-      console.log(
-        '[MIC] recognized:',
-        state.transcript
-      );
+      console.log('[MIC] recognized:', state.transcript);
 
       return state;
     },
@@ -3210,10 +3461,7 @@ function startCurrentMicRecognition(options) {
         state.running = false;
       }
 
-      console.error(
-        '[MIC] recognition failed:',
-        error
-      );
+      console.error('[MIC] recognition failed:', error);
 
       throw error;
     }
@@ -3222,24 +3470,17 @@ function startCurrentMicRecognition(options) {
 
 
 function stopCurrentMicRecognition() {
-  var nativeSpeech =
-    getCurrentPsgNativeSpeech();
-
-  var state =
-    getCurrentMicState();
+  var adapter = getCurrentMicAdapter();
+  var state = getCurrentMicState();
 
   state.runId += 1;
   state.running = false;
 
-  if (
-    !nativeSpeech ||
-    typeof nativeSpeech.stop !==
-      'function'
-  ) {
+  if (!adapter || typeof adapter.stop !== 'function') {
     return Promise.resolve();
   }
 
-  return nativeSpeech.stop();
+  return adapter.stop();
 }
 
 
@@ -3250,9 +3491,8 @@ window.stopCurrentMicRecognition =
   stopCurrentMicRecognition;
 
 // ============================================================================
-// END: MIC CONNECTION
+// END: MIC CONNECTION (NATIVE + WEB ADAPTER)
 // ============================================================================
-
 
 
 // ============================================================================
