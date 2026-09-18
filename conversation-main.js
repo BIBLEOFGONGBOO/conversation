@@ -2469,7 +2469,7 @@ window.inspectCurrentPsgPlaySequence =
 
 // ============================================================================
 // 🟦 BLOCK 3320: SHARED PLAY ADAPTER STATE
-// Purpose: One PLAY state for Android native TTS and web TTS.
+// Purpose: Android native TTS plus browser TTS with word highlighting.
 // ============================================================================
 
 function getCurrentPsgPlayState() {
@@ -2575,13 +2575,15 @@ function getCurrentPsgNativeSpeech() {
 }
 
 
-function startCurrentPsgWebWordFallback(
-  onHighlight
-) {
+function startCurrentPsgWebWordFallback() {
   var data =
     window.CONVERSATION_V2_TTS_WORD_DATA;
 
-  if (!data || !data.words || !data.words.length) {
+  if (
+    !data ||
+    !data.words ||
+    !data.words.length
+  ) {
     return null;
   }
 
@@ -2594,7 +2596,7 @@ function startCurrentPsgWebWordFallback(
     )
   );
 
-  onHighlight(
+  highlightCurrentTtsWordAt(
     Number(data.words[0].start)
   );
 
@@ -2605,7 +2607,7 @@ function startCurrentPsgWebWordFallback(
       return;
     }
 
-    onHighlight(
+    highlightCurrentTtsWordAt(
       Number(data.words[index].start)
     );
   }, delay);
@@ -2627,12 +2629,10 @@ function createCurrentPsgWebPlayAdapter() {
     speak: function(item) {
       return new Promise(function(resolve, reject) {
         var settled = false;
-
         var fallbackTimer = null;
-
         var boundaryReceived = false;
 
-        function stopFallback() {
+        function clearFallback() {
           if (fallbackTimer !== null) {
             window.clearInterval(
               fallbackTimer
@@ -2648,21 +2648,8 @@ function createCurrentPsgWebPlayAdapter() {
           }
 
           settled = true;
-
-          stopFallback();
-
+          clearFallback();
           callback(value);
-        }
-
-        function highlight(charIndex) {
-          if (
-            typeof highlightCurrentTtsWordAt ===
-            'function'
-          ) {
-            highlightCurrentTtsWordAt(
-              Number(charIndex)
-            );
-          }
         }
 
         var utterance =
@@ -2679,20 +2666,18 @@ function createCurrentPsgWebPlayAdapter() {
           getCurrentPsgPlayRate();
 
         utterance.onboundary = function(event) {
-          if (
-            !Number.isInteger(
-              Number(event.charIndex)
-            )
-          ) {
+          var charIndex =
+            Number(event.charIndex);
+
+          if (!Number.isInteger(charIndex)) {
             return;
           }
 
           boundaryReceived = true;
+          clearFallback();
 
-          stopFallback();
-
-          highlight(
-            Number(event.charIndex)
+          highlightCurrentTtsWordAt(
+            charIndex
           );
         };
 
@@ -2701,17 +2686,13 @@ function createCurrentPsgWebPlayAdapter() {
         };
 
         utterance.onerror = function(error) {
-          finish(
-            reject,
-            error || new Error(
-              'Browser TTS failed'
-            )
-          );
+          finish(reject, error);
         };
 
         try {
-          window.speechSynthesis.cancel();
-          window.speechSynthesis.resume();
+          fallbackTimer =
+            startCurrentPsgWebWordFallback();
+
           window.speechSynthesis.speak(
             utterance
           );
@@ -2720,20 +2701,9 @@ function createCurrentPsgWebPlayAdapter() {
             window.speechSynthesis.resume();
           }, 100);
 
-          window.setTimeout(function() {
-            if (
-              settled ||
-              boundaryReceived ||
-              fallbackTimer !== null
-            ) {
-              return;
-            }
-
-            fallbackTimer =
-              startCurrentPsgWebWordFallback(
-                highlight
-              );
-          }, 500);
+          if (boundaryReceived) {
+            clearFallback();
+          }
         } catch (error) {
           finish(reject, error);
         }
@@ -2831,6 +2801,8 @@ window.stopCurrentPsgWebPlay =
 // ============================================================================
 // END: SHARED PLAY ADAPTER STATE
 // ============================================================================
+
+
 
 // ============================================================================
 // 🟦 BLOCK 3322: SHARED TTS SENTENCE SEQUENCE
