@@ -2575,6 +2575,43 @@ function getCurrentPsgNativeSpeech() {
 }
 
 
+function startCurrentPsgWebWordFallback(
+  onHighlight
+) {
+  var data =
+    window.CONVERSATION_V2_TTS_WORD_DATA;
+
+  if (!data || !data.words || !data.words.length) {
+    return null;
+  }
+
+  var index = 0;
+
+  var delay = Math.max(
+    160,
+    Math.round(
+      340 / getCurrentPsgPlayRate()
+    )
+  );
+
+  onHighlight(
+    Number(data.words[0].start)
+  );
+
+  return window.setInterval(function() {
+    index += 1;
+
+    if (index >= data.words.length) {
+      return;
+    }
+
+    onHighlight(
+      Number(data.words[index].start)
+    );
+  }, delay);
+}
+
+
 function createCurrentPsgWebPlayAdapter() {
   if (
     !window.speechSynthesis ||
@@ -2589,6 +2626,45 @@ function createCurrentPsgWebPlayAdapter() {
 
     speak: function(item) {
       return new Promise(function(resolve, reject) {
+        var settled = false;
+
+        var fallbackTimer = null;
+
+        var boundaryReceived = false;
+
+        function stopFallback() {
+          if (fallbackTimer !== null) {
+            window.clearInterval(
+              fallbackTimer
+            );
+
+            fallbackTimer = null;
+          }
+        }
+
+        function finish(callback, value) {
+          if (settled) {
+            return;
+          }
+
+          settled = true;
+
+          stopFallback();
+
+          callback(value);
+        }
+
+        function highlight(charIndex) {
+          if (
+            typeof highlightCurrentTtsWordAt ===
+            'function'
+          ) {
+            highlightCurrentTtsWordAt(
+              Number(charIndex)
+            );
+          }
+        }
+
         var utterance =
           new SpeechSynthesisUtterance(
             item.speechText
@@ -2602,15 +2678,65 @@ function createCurrentPsgWebPlayAdapter() {
         utterance.rate =
           getCurrentPsgPlayRate();
 
+        utterance.onboundary = function(event) {
+          if (
+            !Number.isInteger(
+              Number(event.charIndex)
+            )
+          ) {
+            return;
+          }
+
+          boundaryReceived = true;
+
+          stopFallback();
+
+          highlight(
+            Number(event.charIndex)
+          );
+        };
+
         utterance.onend = function() {
-          resolve();
+          finish(resolve);
         };
 
         utterance.onerror = function(error) {
-          reject(error);
+          finish(
+            reject,
+            error || new Error(
+              'Browser TTS failed'
+            )
+          );
         };
 
-        window.speechSynthesis.speak(utterance);
+        try {
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.resume();
+          window.speechSynthesis.speak(
+            utterance
+          );
+
+          window.setTimeout(function() {
+            window.speechSynthesis.resume();
+          }, 100);
+
+          window.setTimeout(function() {
+            if (
+              settled ||
+              boundaryReceived ||
+              fallbackTimer !== null
+            ) {
+              return;
+            }
+
+            fallbackTimer =
+              startCurrentPsgWebWordFallback(
+                highlight
+              );
+          }, 500);
+        } catch (error) {
+          finish(reject, error);
+        }
       });
     },
 
@@ -2705,8 +2831,6 @@ window.stopCurrentPsgWebPlay =
 // ============================================================================
 // END: SHARED PLAY ADAPTER STATE
 // ============================================================================
-
-
 
 // ============================================================================
 // 🟦 BLOCK 3322: SHARED TTS SENTENCE SEQUENCE
