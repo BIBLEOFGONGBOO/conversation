@@ -5516,3 +5516,46 @@ if (document.readyState === 'loading') {
 // ============================================================================
 // END: ANDROID TTS WORD BOUNDARY LISTENER
 // ============================================================================
+
+
+
+// ============================================================================
+// 🟦 BLOCK 3393: SYSTEM EXTERNAL URL LINKS
+// Purpose: Open Gongboo systems in the device browser.
+// ============================================================================
+
+function installConversationSystemExternalLinks() {
+  document
+    .querySelectorAll(
+      '[data-system-url]'
+    )
+    .forEach(function(button) {
+      button.onclick = function() {
+        var url =
+          String(
+            button.dataset.systemUrl || ''
+          ).trim();
+
+        if (!url) {
+          return;
+        }
+
+        window.open(
+          url,
+          '_blank',
+          'noopener,noreferrer'
+        );
+      };
+    });
+}
+
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    installConversationSystemExternalLinks,
+    { once: true }
+  );
+} else {
+  installConversationSystemExternalLinks();
+}
