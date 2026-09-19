@@ -1093,6 +1093,31 @@ function closePlayMorePanel() {
   }
 }
 
+function syncPlayButtonWithPlayMenu() {
+  var playButton =
+    document.getElementById(
+      'playButton'
+    );
+
+  var playMenuPanel =
+    document.getElementById(
+      'playMenuPanel'
+    );
+
+  if (!playButton || !playMenuPanel) {
+    return;
+  }
+
+  var menuOpen =
+    !playMenuPanel.hidden;
+
+  playButton.disabled = menuOpen;
+
+  playButton.setAttribute(
+    'aria-disabled',
+    String(menuOpen)
+  );
+}
 
 function closeConversationMenus() {
   getConversationMenus().forEach(
@@ -1121,10 +1146,26 @@ function closeConversationMenus() {
   );
 
   closePlayMorePanel();
+
+  var playButton =
+    document.getElementById(
+      'playButton'
+    );
+
+  if (playButton) {
+    playButton.disabled = false;
+
+    playButton.setAttribute(
+      'aria-disabled',
+      'false'
+    );
+  }
 }
 
 
-function toggleConversationMenu(targetButtonId) {
+function toggleConversationMenu(
+  targetButtonId
+) {
   var targetMenu =
     getConversationMenus().find(
       function(menu) {
@@ -1151,7 +1192,8 @@ function toggleConversationMenu(targetButtonId) {
     return;
   }
 
-  var opening = targetPanel.hidden;
+  var opening =
+    targetPanel.hidden;
 
   closeConversationMenus();
 
@@ -1161,6 +1203,26 @@ function toggleConversationMenu(targetButtonId) {
     targetButton.setAttribute(
       'aria-expanded',
       'true'
+    );
+  }
+
+  var playButton =
+    document.getElementById(
+      'playButton'
+    );
+
+  var playMenuOpen =
+    targetMenu.panelId ===
+    'playMenuPanel' &&
+    opening;
+
+  if (playButton) {
+    playButton.disabled =
+      playMenuOpen;
+
+    playButton.setAttribute(
+      'aria-disabled',
+      String(playMenuOpen)
     );
   }
 }
@@ -1234,7 +1296,7 @@ function installPlayModeToggle() {
   button.textContent =
     window.CONVERSATION_V2_PLAY_MODE ===
     'i-start'
-      ? 'I START'
+      ? 'I FIRST'
       : 'COMPUTER';
 
   button.setAttribute(
@@ -1255,7 +1317,7 @@ function installPlayModeToggle() {
     button.textContent =
       window.CONVERSATION_V2_PLAY_MODE ===
       'i-start'
-        ? 'I START'
+        ? 'I FIRST'
         : 'COMPUTER';
 
     button.setAttribute(
@@ -1880,8 +1942,8 @@ installV2LanguageRowLoader();
 
 // ============================================================================
 // 🟦 BLOCK 3255: CATEGORY PREVIOUS / NEXT NAVIGATION
-// Purpose: Move only inside the selected CATEGORY.
-//          At either end, return to that CATEGORY's title list.
+// Purpose: Move inside the selected CATEGORY.
+//          Resume only when CONTINUE: NEXT is selected.
 // ============================================================================
 
 function getCurrentCategoryNavigationRows() {
@@ -1905,16 +1967,59 @@ function getCurrentCategoryNavigationRows() {
   return directoryRows
     .filter(function(row) {
       return (
-        String(row.GROUP || '').trim() ===
-        group
+        String(row.GROUP || '').trim() === group
       ) && (
-        String(row.CATEGORY || '').trim() ===
-        category
+        String(row.CATEGORY || '').trim() === category
       );
     })
     .sort(function(left, right) {
       return Number(left.ID) - Number(right.ID);
     });
+}
+
+
+function getCurrentNavigationResumeState() {
+  var playState =
+    getCurrentPsgPlayState();
+
+  var roleState =
+    getCurrentRolePlayState();
+
+  return {
+    play: playState.running === true,
+    rolePlay: roleState.running === true,
+    playMode:
+      window.CONVERSATION_V2_PLAY_MODE ||
+      'computer',
+    practiceType:
+      getCurrentPracticeType()
+  };
+}
+
+
+function resumeCurrentNavigationActivity(
+  resumeState
+) {
+  if (!resumeState) {
+    return;
+  }
+
+  window.CONVERSATION_V2_PLAY_MODE =
+    resumeState.playMode;
+
+  window.CONVERSATION_V2_PRACTICE_TYPE =
+    resumeState.practiceType;
+
+  renderCurrentPracticeControls();
+
+  if (resumeState.rolePlay) {
+    startCurrentRolePlay();
+    return;
+  }
+
+  if (resumeState.play) {
+    startCurrentPsgPlay();
+  }
 }
 
 
@@ -2043,8 +2148,11 @@ function renderConversationNavigation() {
 
 
 async function loadConversationById(
-  targetId
+  targetId,
+  options
 ) {
+  options = options || {};
+
   var currentRow =
     window.CONVERSATION_V2_ROW;
 
@@ -2052,15 +2160,37 @@ async function loadConversationById(
     Number(targetId);
 
   if (!Number.isInteger(target) || target < 1) {
-    return;
+    return false;
   }
 
   if (
     currentRow &&
     Number(currentRow.ID) === target
   ) {
-    return;
+    return false;
   }
+
+  var currentContinueMode =
+  typeof getCurrentContinueMode === 'function'
+    ? getCurrentContinueMode()
+    : 'off';
+
+var currentContinueMode =
+  typeof getCurrentContinueMode === 'function'
+    ? getCurrentContinueMode()
+    : 'off';
+
+var shouldResume =
+  options.resume === true ||
+  (
+    options.resume !== false &&
+    currentContinueMode === 'next'
+  );
+
+  var resumeState =
+    shouldResume
+      ? getCurrentNavigationResumeState()
+      : null;
 
   setConversationNavigationDisabled(true);
 
@@ -2087,6 +2217,12 @@ async function loadConversationById(
       'Conversation loaded'
     );
 
+    resumeCurrentNavigationActivity(
+      resumeState
+    );
+
+    return true;
+
   } catch (error) {
     console.error(
       '[CONVERSATION V2] Navigation failed:',
@@ -2099,6 +2235,8 @@ async function loadConversationById(
     setConversationStatus(
       'No conversation found'
     );
+
+    return false;
 
   } finally {
     renderConversationNavigation();
@@ -2128,7 +2266,6 @@ window.loadConversationById =
 // ============================================================================
 // END: CATEGORY PREVIOUS / NEXT NAVIGATION
 // ============================================================================
-
 // ============================================================================
 // 🟦 BLOCK 3260: PRIMARY / SECONDARY TURN RENDER
 // ============================================================================
@@ -2339,6 +2476,8 @@ function buildCurrentPsgPlaySequence() {
     primaryLanguage;
 
   var sequence = [];
+    var startTurn =
+    getCurrentRoleTargetTurn();
 
   function addItem(
     text,
@@ -2365,19 +2504,7 @@ function buildCurrentPsgPlaySequence() {
     });
   }
 
-  var title =
-    document.querySelector(
-      '.conversation-title'
-    );
-
-  if (title) {
-    addItem(
-      title.textContent,
-      primaryLanguage,
-      0,
-      'title'
-    );
-  }
+ 
 
   Array.from(
     document.querySelectorAll(
@@ -2387,6 +2514,10 @@ function buildCurrentPsgPlaySequence() {
     var turnNumber =
       Number(card.dataset.turn) ||
       index + 1;
+
+          if (turnNumber < startTurn) {
+      return;
+    }
 
     var primaryText =
       card.querySelector(
@@ -2804,8 +2935,84 @@ window.stopCurrentPsgWebPlay =
 
 // ============================================================================
 // 🟦 BLOCK 3322: SHARED TTS SENTENCE SEQUENCE
-// Purpose: Read the current PSG through native Android TTS or web TTS.
+// Purpose: Read current PSG and apply CONTINUE OFF / REPEAT / NEXT at finish.
 // ============================================================================
+
+function getCurrentContinueNextTargetId() {
+  var currentRow =
+    window.CONVERSATION_V2_ROW;
+
+  var rows =
+    getCurrentCategoryNavigationRows();
+
+  if (!currentRow || !rows.length) {
+    return null;
+  }
+
+  var currentIndex =
+    rows.findIndex(function(row) {
+      return Number(row.ID) ===
+        Number(currentRow.ID);
+    });
+
+  if (
+    currentIndex < 0 ||
+    currentIndex >= rows.length - 1
+  ) {
+    return null;
+  }
+
+  return Number(
+    rows[currentIndex + 1].ID
+  );
+}
+
+
+async function continueCurrentPsgAfterFinish(
+  completedRunId
+) {
+  var state =
+    getCurrentPsgPlayState();
+
+  if (
+    state.running ||
+    state.runId !== completedRunId
+  ) {
+    return;
+  }
+
+  var mode =
+    getCurrentContinueMode();
+
+  if (mode === 'repeat') {
+    startCurrentPsgPlay();
+    return;
+  }
+
+  if (mode !== 'next') {
+    return;
+  }
+
+  var nextId =
+    getCurrentContinueNextTargetId();
+
+  if (!nextId) {
+    return;
+  }
+
+  var loaded =
+    await loadConversationById(
+      nextId,
+      { resume: false }
+    );
+
+  if (!loaded || state.running) {
+    return;
+  }
+
+  startCurrentPsgPlay();
+}
+
 
 function speakCurrentPsgSequenceItem(
   sequence,
@@ -2822,7 +3029,11 @@ function speakCurrentPsgSequenceItem(
   }
 
   if (index >= sequence.length) {
+    var continueMode =
+      getCurrentContinueMode();
+
     if (
+      continueMode === 'off' &&
       window.CONVERSATION_V2_LOOP_PLAY ===
       true
     ) {
@@ -2839,6 +3050,8 @@ function speakCurrentPsgSequenceItem(
     state.adapter = null;
 
     renderCurrentPsgPlayButton();
+
+    continueCurrentPsgAfterFinish(runId);
 
     return;
   }
@@ -2885,10 +3098,33 @@ function speakCurrentPsgSequenceItem(
 }
 
 
-function startCurrentPsgPlay() {
-  var state = getCurrentPsgPlayState();
+function startCurrentPsgPlay(
+  skipStartSignal
+) {
+  var state =
+    getCurrentPsgPlayState();
 
   if (state.running) {
+    return;
+  }
+
+  if (!skipStartSignal) {
+    var startRunId =
+      state.runId;
+
+    playCurrentIStartSignal().then(
+      function() {
+        if (
+          state.running ||
+          state.runId !== startRunId
+        ) {
+          return;
+        }
+
+        startCurrentPsgPlay(true);
+      }
+    );
+
     return;
   }
 
@@ -2903,7 +3139,8 @@ function startCurrentPsgPlay() {
     return;
   }
 
-  var adapter = getCurrentPsgPlayAdapter();
+  var adapter =
+    getCurrentPsgPlayAdapter();
 
   if (!adapter) {
     console.error(
@@ -2941,7 +3178,6 @@ window.startCurrentPsgWebPlay =
 // ============================================================================
 // END: SHARED TTS SENTENCE SEQUENCE
 // ============================================================================
-
 
 // ============================================================================
 // 🟦 BLOCK 3323: CURRENT SPEAKING CARD CONNECTION
@@ -4012,9 +4248,9 @@ window.getCurrentRoleTargetTurn =
 // ============================================================================
 
 
-// ===// ============================================================================
+// ============================================================================
 // 🟦 BLOCK 3328: PRACTICE MODE AND START / STOP CONTROL
-// Purpose: Order, practice type, and execution state are independent.
+// Purpose: ROLE PLAY / FOLLOW UP plus CONTINUE REPEAT / NEXT.
 // ============================================================================
 
 function getCurrentRolePlayState() {
@@ -4023,7 +4259,8 @@ function getCurrentRolePlayState() {
       running: false,
       startTurn: 1,
       currentTurn: 1,
-      adapter: null
+      adapter: null,
+      continueToken: 0
     };
   }
 
@@ -4099,10 +4336,10 @@ function renderCurrentPracticeControls() {
     'follow-up';
 
   if (orderButton) {
-    orderButton.innerHTML =
+    orderButton.textContent =
       window.CONVERSATION_V2_PLAY_MODE ===
       'i-start'
-        ? 'I<br>START'
+        ? 'I FIRST'
         : 'COMPUTER';
 
     orderButton.disabled =
@@ -4132,9 +4369,9 @@ function renderCurrentPracticeControls() {
   }
 
   if (typeButton) {
-    typeButton.innerHTML = followUp
-      ? 'FOLLOW<br>UP'
-      : 'ROLE<br>PLAY';
+    typeButton.textContent = followUp
+      ? 'FOLLOW UP'
+      : 'ROLE PLAY';
 
     typeButton.disabled = state.running;
 
@@ -4163,10 +4400,41 @@ function isCurrentRolePlayUserTurn(
 }
 
 
+function getCurrentPracticeContinueNextTargetId() {
+  var currentRow =
+    window.CONVERSATION_V2_ROW;
+
+  var rows =
+    getCurrentCategoryNavigationRows();
+
+  if (!currentRow || !rows.length) {
+    return null;
+  }
+
+  var currentIndex =
+    rows.findIndex(function(row) {
+      return Number(row.ID) ===
+        Number(currentRow.ID);
+    });
+
+  if (
+    currentIndex < 0 ||
+    currentIndex >= rows.length - 1
+  ) {
+    return null;
+  }
+
+  return Number(
+    rows[currentIndex + 1].ID
+  );
+}
+
+
 function stopCurrentRolePlay() {
   var state =
     getCurrentRolePlayState();
 
+  state.continueToken += 1;
   state.running = false;
 
   if (
@@ -4186,6 +4454,9 @@ function stopCurrentRolePlay() {
 
 
 function finishCurrentRolePlay() {
+  var state =
+    getCurrentRolePlayState();
+
   stopCurrentRolePlay();
 
   document
@@ -4198,9 +4469,48 @@ function finishCurrentRolePlay() {
       );
     });
 
-  console.log(
-    '[PRACTICE] complete'
-  );
+  var continueToken =
+    state.continueToken;
+
+  var continueMode =
+    getCurrentContinueMode();
+
+  if (continueMode === 'repeat') {
+    window.setTimeout(function() {
+      if (
+        state.continueToken !== continueToken ||
+        state.running
+      ) {
+        return;
+      }
+
+      startCurrentRolePlay();
+    }, getCurrentRolePlayDelay());
+
+    return;
+  }
+
+  if (continueMode !== 'next') {
+    return;
+  }
+
+  var nextId =
+    getCurrentPracticeContinueNextTargetId();
+
+  if (!nextId) {
+    return;
+  }
+
+  loadConversationById(
+    nextId,
+    { resume: false }
+  ).then(function(loaded) {
+    if (!loaded || state.running) {
+      return;
+    }
+
+    startCurrentRolePlay();
+  });
 }
 
 
@@ -4225,7 +4535,6 @@ function listenCurrentPracticeTurn(
 
     if (result.passed) {
       state.currentTurn += 1;
-
       runCurrentPracticeTurn();
       return;
     }
@@ -4264,8 +4573,8 @@ function speakCurrentPracticeTurn(
     }
 
     state.currentTurn += 1;
-
     runCurrentPracticeTurn();
+
   }, function(error) {
     console.error(
       '[PRACTICE] TTS failed:',
@@ -4344,13 +4653,37 @@ function runCurrentPracticeTurn() {
 }
 
 
-function startCurrentRolePlay() {
+function startCurrentRolePlay(
+  skipStartSignal
+) {
   var state =
     getCurrentRolePlayState();
 
   if (state.running) {
     return;
   }
+
+  if (!skipStartSignal) {
+    var signalToken =
+      state.continueToken;
+
+    playCurrentIStartSignal().then(
+      function() {
+        if (
+          state.running ||
+          state.continueToken !== signalToken
+        ) {
+          return;
+        }
+
+        startCurrentRolePlay(true);
+      }
+    );
+
+    return;
+  }
+
+  state.continueToken += 1;
 
   state.startTurn =
     getCurrentRoleTargetTurn();
@@ -4470,6 +4803,89 @@ window.stopCurrentRolePlay =
 // ============================================================================
 
 
+
+// ============================================================================
+// 🟦 BLOCK 3329: CONTINUE MODE CONTROL
+// Purpose: CONTINUE button cycles OFF -> REPEAT -> NEXT -> OFF.
+// ============================================================================
+
+function getCurrentContinueMode() {
+  return window.CONVERSATION_V2_CONTINUE_MODE ||
+    'off';
+}
+
+
+function renderCurrentContinueMode() {
+  var button =
+    document.getElementById(
+      'continueNextButton'
+    );
+
+  if (!button) {
+    return;
+  }
+
+  var mode =
+    getCurrentContinueMode();
+
+  button.textContent =
+    mode === 'repeat'
+      ? 'CONTINUE: REPEAT'
+      : mode === 'next'
+        ? 'CONTINUE: NEXT'
+        : 'CONTINUE: OFF';
+
+  button.setAttribute(
+    'aria-pressed',
+    String(mode !== 'off')
+  );
+}
+
+
+function installCurrentContinueModeButton() {
+  var button =
+    document.getElementById(
+      'continueNextButton'
+    );
+
+  if (!button) {
+    return;
+  }
+
+  button.onclick = function() {
+    var mode =
+      getCurrentContinueMode();
+
+    window.CONVERSATION_V2_CONTINUE_MODE =
+      mode === 'off'
+        ? 'repeat'
+        : mode === 'repeat'
+          ? 'next'
+          : 'off';
+
+    renderCurrentContinueMode();
+  };
+
+  renderCurrentContinueMode();
+}
+
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    installCurrentContinueModeButton,
+    { once: true }
+  );
+} else {
+  installCurrentContinueModeButton();
+}
+
+// ============================================================================
+// END: CONTINUE MODE CONTROL
+// ============================================================================
+
+
+
 // ============================================================================
 // 🟦 BLOCK 3324: PLAY AND EXTERNAL STOP BUTTON CONNECTION
 // Purpose: PLAY begins clean playback with one moving yellow speaking box.
@@ -4554,12 +4970,10 @@ function installCurrentPsgPlayButton() {
       return;
     }
 
-    if (
+        if (
       playMenuPanel &&
       !playMenuPanel.hidden
     ) {
-      closeConversationMenus();
-
       return;
     }
 
@@ -4837,8 +5251,8 @@ if (document.readyState === 'loading') {
 
 
 // ============================================================================
-// 🟦 BLOCK 3330: I START SIGNAL CUE
-// Purpose: Play one short cue before I START begins Role Play.
+// 🟦 BLOCK 3330: I FIRST SIGNAL CUE
+// Purpose: Play one short cue before I FIRST begins Role Play.
 // ============================================================================
 
 function playCurrentIStartSignal() {
@@ -4955,12 +5369,12 @@ function installCurrentIStartSignal() {
           if (
             !getCurrentRolePlayState().running
           ) {
-            startCurrentRolePlay();
+            startCurrentRolePlay(true);
           }
         },
         function() {
           signalState.pending = false;
-          startCurrentRolePlay();
+          startCurrentRolePlay(true);
         }
       );
     },
@@ -4980,7 +5394,7 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: I START SIGNAL CUE
+// END: I FIRST SIGNAL CUE
 // ============================================================================
 
 
@@ -5614,21 +6028,41 @@ if (document.readyState === 'loading') {
 
 
 // ============================================================================
-// 🟦 BLOCK 3393: SYSTEM EXTERNAL URL LINKS
-// Purpose: Open Gongboo systems in the device browser.
+// 🟦 BLOCK 3393: SYSTEM URL SETTINGS
+// Purpose: Change every external system URL only in this one object.
 // ============================================================================
+
+const CONVERSATION_V2_SYSTEM_URLS = {
+  conversation:
+    'https://bibleofgongboo.github.io/conversation/',
+
+  bible:
+    'https://bibleofgongboo.github.io/biblenew/',
+
+  easyLearning:
+    'https://bibleofgongboo.github.io/anne/',
+
+  license:
+    'https://biblegongboo.github.io/license/app/'
+};
+
 
 function installConversationSystemExternalLinks() {
   document
     .querySelectorAll(
-      '[data-system-url]'
+      '[data-system-key]'
     )
     .forEach(function(button) {
       button.onclick = function() {
-        var url =
+        var systemKey =
           String(
-            button.dataset.systemUrl || ''
+            button.dataset.systemKey || ''
           ).trim();
+
+        var url =
+          CONVERSATION_V2_SYSTEM_URLS[
+            systemKey
+          ];
 
         if (!url) {
           return;
@@ -5653,3 +6087,205 @@ if (document.readyState === 'loading') {
 } else {
   installConversationSystemExternalLinks();
 }
+
+// ============================================================================
+// END: SYSTEM URL SETTINGS
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 3400: SPACE PLAY / STOP TOGGLE
+// Purpose: SPACE toggles normal PLAY and STOP outside input controls.
+// ============================================================================
+
+function isCurrentSpaceShortcutBlocked(
+  target
+) {
+  if (!target || !target.closest) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      'input, textarea, select, button, [contenteditable="true"]'
+    )
+  );
+}
+
+
+function installCurrentSpacePlayToggle() {
+  document.addEventListener(
+    'keydown',
+    function(event) {
+            var playButtonFocused =
+        event.target &&
+        event.target.id === 'playButton';
+
+            var playButtonFocused =
+        event.target &&
+        event.target.id === 'playButton';
+
+      if (
+        event.code !== 'Space' ||
+        event.repeat ||
+        (
+          isCurrentSpaceShortcutBlocked(
+            event.target
+          ) &&
+          !playButtonFocused
+        )
+      ) {
+      }
+
+      var playMenuPanel =
+        document.getElementById(
+          'playMenuPanel'
+        );
+
+      if (
+        playMenuPanel &&
+        !playMenuPanel.hidden
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+
+      var playState =
+        getCurrentPsgPlayState();
+
+      if (playState.running) {
+        stopCurrentPsgPlay();
+        return;
+      }
+
+      resetCurrentPlayVisualState();
+      startCurrentPsgPlay();
+    }
+  );
+}
+
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    installCurrentSpacePlayToggle,
+    { once: true }
+  );
+} else {
+  installCurrentSpacePlayToggle();
+}
+
+// ============================================================================
+// END: SPACE PLAY / STOP TOGGLE
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 3401: LEFT / RIGHT CONVERSATION NAVIGATION
+// Purpose: ArrowLeft = PREV, ArrowRight = NEXT outside input controls.
+// ============================================================================
+
+function installCurrentArrowNavigation() {
+  document.addEventListener(
+    'keydown',
+    function(event) {
+      if (
+        event.repeat ||
+        isCurrentSpaceShortcutBlocked(
+          event.target
+        )
+      ) {
+        return;
+      }
+
+      var buttonId =
+        event.code === 'ArrowLeft'
+          ? 'previousButton'
+          : event.code === 'ArrowRight'
+            ? 'nextButton'
+            : '';
+
+      if (!buttonId) {
+        return;
+      }
+
+      var button =
+        document.getElementById(buttonId);
+
+      if (!button || button.disabled) {
+        return;
+      }
+
+      event.preventDefault();
+      button.click();
+    }
+  );
+}
+
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    installCurrentArrowNavigation,
+    { once: true }
+  );
+} else {
+  installCurrentArrowNavigation();
+}
+
+// ============================================================================
+// END: LEFT / RIGHT CONVERSATION NAVIGATION
+// ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 3402: PRACTICE RESET
+// Purpose: Clear PASS / RETRY / MIC results and keep the selected yellow turn.
+// ============================================================================
+
+function resetCurrentPracticeSession() {
+  var targetTurn =
+    getCurrentRoleTargetTurn();
+
+  stopCurrentPsgPlay();
+  stopCurrentRolePlay();
+  stopCurrentMicRecognition();
+
+  resetCurrentRolePlayResults();
+  clearCurrentSpeakingCard();
+
+  selectCurrentRoleTurn(targetTurn);
+
+  renderCurrentPracticeControls();
+}
+
+
+function installCurrentPracticeResetButton() {
+  var button =
+    document.getElementById(
+      'practiceResetButton'
+    );
+
+  if (!button) {
+    return;
+  }
+
+  button.onclick = function() {
+    resetCurrentPracticeSession();
+  };
+}
+
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    installCurrentPracticeResetButton,
+    { once: true }
+  );
+} else {
+  installCurrentPracticeResetButton();
+}
+
+// ============================================================================
+// END: PRACTICE RESET
+// ============================================================================
