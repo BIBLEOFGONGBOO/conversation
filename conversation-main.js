@@ -4500,6 +4500,7 @@ function finishCurrentRolePlay() {
   if (!nextId) {
     return;
   }
+  window.CONVERSATION_V2_ROLE_TARGET_TURN = 1;
 
   loadConversationById(
     nextId,
