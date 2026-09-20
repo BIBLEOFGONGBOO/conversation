@@ -1,15 +1,15 @@
 // ============================================================================
-// 🟥 BLOCK 3000: CONVERSATION APPLICATION LOGIC
+// 🟥 BLOCK 1000: APPLICATION RUNTIME (W=1 RUNTIME, X=0 ROOT, Y=0 APPLICATION, Z=0 BASE)
 // ============================================================================
 
 
 // ============================================================================
-// 🟩 BLOCK 3100: SUPABASE DATA ACCESS
+// 🟩 BLOCK 2000: DATA ACCESS (W=2 DATA, X=0 ROOT, Y=0 ACCESS, Z=0 BASE)
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3110: PRIVATE LOCAL CONFIGURATION
+// 🟦 BLOCK 2100: PRIVATE LOCAL CONFIGURATION (W=2 DATA, X=1 CONFIGURATION, Y=0 PRIVATE, Z=0 BASE)
 // ============================================================================
 
 const SUPABASE_CONFIG = {
@@ -20,13 +20,17 @@ const SUPABASE_CONFIG = {
 
 
 // ============================================================================
-// 🟦 BLOCK 3120: LOCAL CONVERSATION CACHE AND ROW LOADER
+// 🟦 BLOCK 2200: CONVERSATION CACHE AND ROW LOADER (W=2 DATA, X=2 CONVERSATION, Y=0 CACHE/LOAD, Z=0 BASE)
 // Purpose: Cache 20 conversations from the selected position by language.
 // ============================================================================
 
 const CONVERSATION_V2_CACHE_KEY =
   'gongbooConversationV2CacheV1';
 
+
+// ============================================================================
+// 🟦 BLOCK 2210: CONVERSATION CACHE STATE
+// ============================================================================
 
 function getConversationCache() {
   try {
@@ -89,6 +93,10 @@ function saveConversationCache(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 2230: CACHED ROW LOOKUP
+// ============================================================================
+
 function getCachedConversationRow(
   id,
   languageCode
@@ -107,6 +115,10 @@ function getCachedConversationRow(
   ) || null;
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 2250: CACHE BATCH STORAGE
+// ============================================================================
 
 function saveConversationBatch(
   languageCode,
@@ -135,6 +147,10 @@ function saveConversationBatch(
   saveConversationCache(cache);
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 2270: BATCH ID RESOLUTION
+// ============================================================================
 
 function getConversationBatchIds(
   targetId
@@ -195,6 +211,10 @@ function getConversationBatchIds(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 2290: SERVER ROW REQUEST AND SINGLE ROW LOAD
+// ============================================================================
+
 async function requestConversationRows(
   ids,
   languageCode
@@ -245,6 +265,13 @@ async function requestConversationRows(
     : [];
 }
 
+
+
+
+
+
+
+// SUB BLOCK 2310: SINGLE ROW LOAD
 
 async function loadConversationRow(
   id,
@@ -321,21 +348,16 @@ async function loadConversationRow(
 }
 
 // ============================================================================
-// END: LOCAL CONVERSATION CACHE AND ROW LOADER
+// END BLOCK 2200: CONVERSATION CACHE AND ROW LOADER
 // ============================================================================
 
 // ============================================================================
-// END: LOCAL CONVERSATION CACHE AND ROW LOADER
-// ============================================================================
-
-
-// ============================================================================
-// 🟩 BLOCK 3200: APPLICATION START
+// 🟩 BLOCK 3000: DIRECTORY AND LESSON VIEW (W=3 VIEW, X=0 ROOT, Y=0 DIRECTORY/LESSON, Z=0 BASE)
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3210: STATUS VIEW
+// 🟦 BLOCK 3100: STATUS AND TURN VIEW (W=3 VIEW, X=1 STATUS/TURNS, Y=0 RENDER, Z=0 BASE)
 // ============================================================================
 
 function setConversationStatus(
@@ -353,7 +375,7 @@ function setConversationStatus(
 
 
 // ============================================================================
-// 🟦 BLOCK 3220: CONVERSATION DIRECTORY AND APPLICATION START
+// 🟦 BLOCK 3200: DIRECTORY DATA AND STARTUP (W=3 VIEW, X=2 DIRECTORY, Y=0 DATA/START, Z=0 BASE)
 // Purpose: Show LEVEL → CATEGORY → TITLE before loading a conversation.
 // ============================================================================
 
@@ -457,6 +479,13 @@ function renderConversationTurns(
 }
 
 
+
+
+
+
+
+// SUB BLOCK 3205: FIRST ROW RENDER
+
 function renderFirstConversationRow(
   row
 ) {
@@ -528,6 +557,10 @@ function renderFirstConversationRow(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 3210: DIRECTORY TEXT AND UNIQUE VALUES
+// ============================================================================
+
 function getConversationDirectoryText(
   value
 ) {
@@ -554,6 +587,10 @@ function getConversationDirectoryUniqueValues(
   });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 3230: DIRECTORY ROW LOADING
+// ============================================================================
 
 async function loadConversationDirectoryRows() {
   var allRows = [];
@@ -634,6 +671,10 @@ async function loadConversationDirectoryRows() {
   });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 3250: DIRECTORY BREADCRUMB AND ITEM VIEW
+// ============================================================================
 
 function renderConversationDirectoryBreadcrumb(
   state
@@ -737,6 +778,10 @@ function renderConversationDirectoryItem(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 3270: DIRECTORY LIST RENDERING
+// ============================================================================
+
 function renderConversationDirectory(
   requestedState
 ) {
@@ -786,6 +831,13 @@ function renderConversationDirectory(
 
   list.innerHTML = '';
 
+
+
+
+
+
+// SUB BLOCK 3275: LEVEL LIST
+
   if (!state.level) {
     getConversationDirectoryUniqueValues(
       rows,
@@ -806,6 +858,13 @@ function renderConversationDirectory(
 
     return;
   }
+
+
+
+
+
+
+// SUB BLOCK 3280: CATEGORY LIST
 
   var levelRows =
     rows.filter(function(row) {
@@ -836,6 +895,13 @@ function renderConversationDirectory(
 
     return;
   }
+
+
+
+
+
+
+// SUB BLOCK 3285: TITLE LIST AND CONVERSATION OPEN
 
   var titleRows =
     levelRows
@@ -885,6 +951,10 @@ function renderConversationDirectory(
   }
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 3290: APPLICATION STARTUP AND BOOT
+// ============================================================================
 
 async function startConversationApp() {
   if (
@@ -963,12 +1033,12 @@ function bootConversationApp() {
 bootConversationApp();
 
 // ============================================================================
-// END: CONVERSATION DIRECTORY AND APPLICATION START
+// END BLOCK 3200: DIRECTORY DATA AND STARTUP
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3221: DIRECTORY LOADING VIEW
+// 🟦 BLOCK 3300: DIRECTORY LOADING VIEW (W=3 VIEW, X=3 DIRECTORY, Y=0 LOADING, Z=0 BASE)
 // Purpose: Hide lesson navigation and show one loading line at startup.
 // ============================================================================
 
@@ -1043,13 +1113,17 @@ function bootConversationDirectoryLoading() {
 bootConversationDirectoryLoading();
 
 // ============================================================================
-// END: DIRECTORY LOADING VIEW
+// END BLOCK 3300: DIRECTORY LOADING VIEW
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3230: TOP, PLAY, AND DETAIL MENU CONTROL
+// 🟦 BLOCK 4000: TOP, PLAY, AND DETAIL MENU CONTROL (W=4 CONTROL, X=0 MENU, Y=0 TOP/DETAIL, Z=0 BASE)
+// ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 4010: MENU STATE AND CLOSE HELPERS
 // ============================================================================
 
 function getConversationMenus() {
@@ -1162,6 +1236,10 @@ function closeConversationMenus() {
   }
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 4030: MENU TOGGLE ACTIONS
+// ============================================================================
 
 function toggleConversationMenu(
   targetButtonId
@@ -1278,6 +1356,10 @@ function updatePlayRangeValue(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 4050: PLAY DETAIL CONTROL INSTALLATION
+// ============================================================================
+
 function installPlayModeToggle() {
   var button =
     document.getElementById(
@@ -1330,6 +1412,13 @@ function installPlayModeToggle() {
   };
 }
 
+
+
+
+
+
+
+// SUB BLOCK 4060: PLAY DETAIL INSTALL
 
 function installPlayDetails() {
   var moreButton =
@@ -1431,6 +1520,17 @@ function installPlayDetails() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 4070: MENU EVENT INSTALLATION AND BOOT
+// ============================================================================
+
+
+
+
+
+
+// SUB BLOCK 4080: MENU INSTALL AND BOOT
+
 function installConversationMenus() {
   var menus = getConversationMenus();
 
@@ -1518,14 +1618,14 @@ function bootConversationMenus() {
 bootConversationMenus();
 
 // ============================================================================
-// END: TOP, PLAY, AND DETAIL MENU CONTROL
+// END BLOCK 4000: TOP, PLAY, AND DETAIL MENU CONTROL
 // ============================================================================
 
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3236: CURRENT PSG LOOP TOGGLE
+// 🟦 BLOCK 4100: PSG LOOP CONTROL (W=4 CONTROL, X=1 PSG, Y=0 LOOP, Z=0 BASE)
 // ============================================================================
 
 function renderPlayLoopToggle() {
@@ -1606,14 +1706,14 @@ function bootPlayLoopToggle() {
 bootPlayLoopToggle();
 
 // ============================================================================
-// END: CURRENT PSG LOOP TOGGLE
+// END BLOCK 4100: PSG LOOP CONTROL
 // ============================================================================
 
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3240: LEVEL0 LANGUAGE OPTIONS
+// 🟦 BLOCK 4200: LANGUAGE OPTIONS (W=4 CONTROL, X=2 LANGUAGE, Y=0 OPTIONS, Z=0 BASE)
 // ============================================================================
 
 async function loadV2LanguageCodes() {
@@ -1685,6 +1785,13 @@ async function loadV2LanguageCodes() {
   ).sort();
 }
 
+
+
+
+
+
+
+// SUB BLOCK 4250: LANGUAGE SELECT RENDERING
 
 function fillV2LanguageSelect(
   selectId,
@@ -1781,8 +1888,15 @@ async function installV2LanguageOptions() {
 installV2LanguageOptions();
 
 // ============================================================================
-// 🟦 BLOCK 3250: SELECTED LANGUAGE ROW LOADER
+// 🟦 BLOCK 4300: SELECTED LANGUAGE ROW LOADER (W=4 CONTROL, X=3 LANGUAGE, Y=0 ROW LOAD, Z=0 BASE)
 // ============================================================================
+
+
+
+
+
+
+// SUB BLOCK 4350: SELECTED LANGUAGE LOOKUP
 
 function getV2SelectedLanguage(
   selectId,
@@ -1831,6 +1945,13 @@ async function loadV2PrimaryRow(
   }
 }
 
+
+
+
+
+
+
+// SUB BLOCK 4360: SELECTED LANGUAGE RELOAD
 
 async function reloadV2SelectedLanguages() {
   var currentId =
@@ -1941,9 +2062,13 @@ installV2LanguageRowLoader();
 
 
 // ============================================================================
-// 🟦 BLOCK 3255: CATEGORY PREVIOUS / NEXT NAVIGATION
+// 🟦 BLOCK 4400: CATEGORY NAVIGATION (W=4 CONTROL, X=4 NAVIGATION, Y=0 CATEGORY, Z=0 BASE)
 // Purpose: Move inside the selected CATEGORY.
 //          Resume only when CONTINUE: NEXT is selected.
+// ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 4410: NAVIGATION ROWS AND RESUME STATE
 // ============================================================================
 
 function getCurrentCategoryNavigationRows() {
@@ -2023,6 +2148,10 @@ function resumeCurrentNavigationActivity(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 4430: DIRECTORY RETURN AND NAVIGATION VIEW
+// ============================================================================
+
 function openCurrentCategoryDirectory() {
   var currentRow =
     window.CONVERSATION_V2_ROW;
@@ -2067,6 +2196,13 @@ function setConversationNavigationDisabled(
   });
 }
 
+
+
+
+
+
+
+// SUB BLOCK 4440: NAVIGATION BUTTON RENDERING
 
 function renderConversationNavigation() {
   var previousButton =
@@ -2146,6 +2282,17 @@ function renderConversationNavigation() {
   };
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 4470: CONVERSATION LOAD BY ID
+// ============================================================================
+
+
+
+
+
+
+// SUB BLOCK 4450: NAVIGATION LOAD EXECUTION
 
 async function loadConversationById(
   targetId,
@@ -2244,6 +2391,10 @@ var shouldResume =
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 4490: NAVIGATION EVENT INSTALLATION
+// ============================================================================
+
 function installConversationNavigation() {
   renderConversationNavigation();
 }
@@ -2264,10 +2415,10 @@ window.loadConversationById =
   loadConversationById;
 
 // ============================================================================
-// END: CATEGORY PREVIOUS / NEXT NAVIGATION
+// END BLOCK 4400: CATEGORY NAVIGATION
 // ============================================================================
 // ============================================================================
-// 🟦 BLOCK 3260: PRIMARY / SECONDARY TURN RENDER
+// 🟦 BLOCK 4500: PRIMARY / SECONDARY TURN RENDER (W=4 CONTROL, X=5 RENDER, Y=0 TURN, Z=0 BASE)
 // ============================================================================
 
 function renderV2SecondaryTurns() {
@@ -2351,12 +2502,19 @@ window.renderV2SecondaryTurns =
 
 
   // ============================================================================
-// 🟩 BLOCK 3300: PLAYBACK
+// 🟩 BLOCK 5000: PLAYBACK AND TTS (W=5 PLAYBACK, X=0 ROOT, Y=0 TTS, Z=0 BASE)
 // ============================================================================
 
 // ============================================================================
-// 🟦 BLOCK 3310: CURRENT PSG PLAY SEQUENCE
+// 🟦 BLOCK 5100: PSG PLAY SEQUENCE (W=5 PLAYBACK, X=1 PSG, Y=0 SEQUENCE, Z=0 BASE)
 // ============================================================================
+
+
+
+
+
+
+// SUB BLOCK 5230: CURRENT SCREEN SEQUENCE
 
 function buildCurrentPsgPlaySequence() {
   var row =
@@ -2381,6 +2539,20 @@ function buildCurrentPsgPlaySequence() {
   });
 }
 
+
+
+
+
+
+
+// SUB BLOCK 5210: LEGACY SCREEN SEQUENCE REFRESH
+
+
+
+
+
+
+// SUB BLOCK 5250: VISIBLE SCREEN SEQUENCE REFRESH
 
 function refreshCurrentPsgPlaySequence() {
   var sequence =
@@ -2419,12 +2591,12 @@ window.inspectCurrentPsgPlaySequence =
   inspectCurrentPsgPlaySequence;
 
 // ============================================================================
-// END: CURRENT PSG PLAY SEQUENCE
+// END BLOCK 5100: PSG PLAY SEQUENCE
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3315: VISIBLE SCREEN PLAY SEQUENCE
+// 🟦 BLOCK 5200: VISIBLE SCREEN PLAY SEQUENCE (W=5 PLAYBACK, X=2 SCREEN, Y=0 SEQUENCE, Z=0 BASE)
 // Purpose: Play visible primary and secondary sentences in reading order.
 //          Japanese TTS reads furigana only: 私(わたし) -> わたし.
 // ============================================================================
@@ -2460,6 +2632,8 @@ function getCurrentPsgSpeechText(
   );
 }
 
+
+// SUB BLOCK 5260: VISIBLE SEQUENCE BUILD AND REFRESH
 
 function buildCurrentPsgPlaySequence() {
   var primaryRow =
@@ -2505,6 +2679,13 @@ function buildCurrentPsgPlaySequence() {
   }
 
  
+
+
+
+
+
+
+// SUB BLOCK 5270: VISIBLE TURN COLLECTION
 
   Array.from(
     document.querySelectorAll(
@@ -2593,14 +2774,18 @@ window.inspectCurrentPsgPlaySequence =
   inspectCurrentPsgPlaySequence;
 
 // ============================================================================
-// END: VISIBLE SCREEN PLAY SEQUENCE
+// END BLOCK 5200: VISIBLE SCREEN PLAY SEQUENCE
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3320: SHARED PLAY ADAPTER STATE
+// 🟦 BLOCK 5300: PLAY ADAPTER STATE (W=5 PLAYBACK, X=3 ADAPTER, Y=0 STATE, Z=0 BASE)
 // Purpose: Android native TTS plus browser TTS with sentence-reset highlighting.
+// ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 5310: PLAY STATE, RATE, AND LOCALE
 // ============================================================================
 
 function getCurrentPsgPlayState() {
@@ -2706,6 +2891,10 @@ function getCurrentPsgNativeSpeech() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 5330: WEB WORD FALLBACK AND WEB ADAPTER
+// ============================================================================
+
 function startCurrentPsgWebWordFallback() {
   var data =
     window.CONVERSATION_V2_TTS_WORD_DATA;
@@ -2744,6 +2933,13 @@ function startCurrentPsgWebWordFallback() {
   }, delay);
 }
 
+
+
+
+
+
+
+// SUB BLOCK 5335: WEB PLAY ADAPTER
 
 function createCurrentPsgWebPlayAdapter() {
   if (
@@ -2850,6 +3046,12 @@ function createCurrentPsgWebPlayAdapter() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 5350: NATIVE ADAPTER
+// ============================================================================
+
+// SUB BLOCK 5350: NATIVE ADAPTER IMPLEMENTATION
+
 function createCurrentPsgNativePlayAdapter() {
   var nativeSpeech =
     getCurrentPsgNativeSpeech();
@@ -2882,6 +3084,10 @@ function createCurrentPsgNativePlayAdapter() {
   };
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5370: ADAPTER SELECTOR AND STOP
+// ============================================================================
 
 function getCurrentPsgPlayAdapter() {
   var nativeAdapter =
@@ -2929,13 +3135,17 @@ window.stopCurrentPsgWebPlay =
   stopCurrentPsgPlay;
 
 // ============================================================================
-// END: SHARED PLAY ADAPTER STATE
+// END BLOCK 5300: PLAY ADAPTER STATE
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3322: SHARED TTS SENTENCE SEQUENCE
+// 🟦 BLOCK 5400: TTS SENTENCE SEQUENCE (W=5 PLAYBACK, X=4 TTS, Y=0 SENTENCE, Z=0 BASE)
 // Purpose: Read current PSG and apply CONTINUE OFF / REPEAT / NEXT at finish.
+// ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 5410: PLAY CONTINUATION
 // ============================================================================
 
 function getCurrentContinueNextTargetId() {
@@ -3015,6 +3225,10 @@ async function continueCurrentPsgAfterFinish(
   startCurrentPsgPlay();
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5430: TTS SEQUENCE ITEM SPEAKING
+// ============================================================================
 
 function speakCurrentPsgSequenceItem(
   sequence,
@@ -3100,6 +3314,10 @@ function speakCurrentPsgSequenceItem(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 5450: PLAY START AND FINISH
+// ============================================================================
+
 function startCurrentPsgPlay(
   skipStartSignal
 ) {
@@ -3107,6 +3325,71 @@ function startCurrentPsgPlay(
     getCurrentPsgPlayState();
 
   if (state.running) {
+    return;
+  }
+
+  if (
+    !window.CONVERSATION_V2_ROW ||
+    !window.CONVERSATION_V2_ROW.DIALOGUE
+  ) {
+    var directoryRows =
+      window.CONVERSATION_V2_DIRECTORY_ROWS ||
+      [];
+
+    var firstRow =
+      directoryRows[0];
+
+    if (
+      !firstRow ||
+      typeof loadConversationById !==
+      'function'
+    ) {
+      setConversationStatus(
+        'Select a conversation first'
+      );
+      return;
+    }
+
+    if (state.loadingConversation) {
+      return;
+    }
+
+    state.loadingConversation = true;
+
+    window.CONVERSATION_V2_ROLE_TARGET_TURN =
+      1;
+
+    setConversationStatus(
+      'Loading first conversation...'
+    );
+
+    loadConversationById(
+      Number(firstRow.ID),
+      { resume: false }
+    ).then(
+      function(loaded) {
+        state.loadingConversation = false;
+
+        if (loaded && !state.running) {
+          startCurrentPsgPlay(
+            skipStartSignal
+          );
+        }
+      },
+      function(error) {
+        state.loadingConversation = false;
+
+        console.error(
+          '[PLAY] Conversation load failed:',
+          error
+        );
+
+        setConversationStatus(
+          'Conversation load failed'
+        );
+      }
+    );
+
     return;
   }
 
@@ -3178,12 +3461,20 @@ window.startCurrentPsgWebPlay =
   startCurrentPsgPlay;
 
 // ============================================================================
-// END: SHARED TTS SENTENCE SEQUENCE
+// END BLOCK 5400: TTS SENTENCE SEQUENCE
 // ============================================================================
 
 // ============================================================================
-// 🟦 BLOCK 3323: CURRENT SPEAKING CARD CONNECTION
+// END BLOCK 5400: TTS SENTENCE SEQUENCE
+// ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 5500: SPEAKING CARD AND WORD HIGHLIGHT (W=5 PLAYBACK, X=5 VISUAL, Y=0 CARD/WORD, Z=0 BASE)
 // Purpose: Highlight the active sentence and prepare its word highlights.
+// ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 5510: TTS WORD HIGHLIGHT
 // ============================================================================
 
 function clearCurrentTtsWordHighlight() {
@@ -3201,6 +3492,13 @@ function clearCurrentTtsWordHighlight() {
     null;
 }
 
+
+
+
+
+
+
+// SUB BLOCK 5515: TTS WORD PREPARATION
 
 function prepareCurrentTtsWordHighlight(
   item,
@@ -3309,6 +3607,13 @@ function prepareCurrentTtsWordHighlight(
 }
 
 
+
+
+
+
+
+// SUB BLOCK 5520: WORD RANGE HIGHLIGHT
+
 function highlightCurrentTtsWordAt(
   charIndex
 ) {
@@ -3334,6 +3639,10 @@ function highlightCurrentTtsWordAt(
   });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5530: CURRENT SPEAKING CARD
+// ============================================================================
 
 function clearCurrentSpeakingCard() {
   document
@@ -3387,6 +3696,10 @@ function setCurrentSpeakingCard(item) {
   });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5550: PLAY ADAPTER AND BUTTON CONNECTION
+// ============================================================================
 
 function getCurrentPsgPlayAdapter() {
   var baseAdapter =
@@ -3444,22 +3757,24 @@ function renderCurrentPsgPlayButton() {
 }
 
 // ============================================================================
-// END: CURRENT SPEAKING CARD CONNECTION
+// END BLOCK 5500: SPEAKING CARD AND WORD HIGHLIGHT
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3325: MIC CONNECTION (NATIVE + WEB ADAPTER)
+// 🟩 BLOCK 6000: MICROPHONE RECOGNITION (W=6 MICROPHONE, X=0 ROOT, Y=0 RECOGNITION, Z=0 BASE)
+
+// 🟦 BLOCK 6100: MIC STATE AND NATIVE ADAPTER (W=6 MICROPHONE, X=1 ADAPTER, Y=0 STATE/NATIVE, Z=0 BASE)
 // Purpose: APK uses GongbooSpeech. Web uses the V2 webkitSpeechRecognition
 //          engine (continuous + interim + delay finalize). Both paths write
 //          the final transcript into getCurrentMicState().transcript so that
-//          BLOCK 3326 and BLOCK 3328 need no changes.
+//          PASS/RETRY and practice blocks need no changes.
 // ============================================================================
 
 
 // ---------------------------------------------------------------------------
-// SUBBLOCK 3325-1: MIC STATE (unchanged public shape)
+// SUB BLOCK 6100: MIC STATE
 // ---------------------------------------------------------------------------
 
 function getCurrentMicState() {
@@ -3477,7 +3792,7 @@ function getCurrentMicState() {
 
 
 // ---------------------------------------------------------------------------
-// SUBBLOCK 3325-2: WEB SPEECH CLASS
+// 🟦 BLOCK 6300: WEB SPEECH ENGINE (W=6 MICROPHONE, X=3 WEB, Y=0 ENGINE, Z=0 BASE)
 // ---------------------------------------------------------------------------
 
 var CurrentMicSpeechRecognition =
@@ -3486,7 +3801,7 @@ var CurrentMicSpeechRecognition =
 
 
 // ---------------------------------------------------------------------------
-// SUBBLOCK 3325-3: WEB ENGINE STATE (V2 PORT)
+// SUB BLOCK 6300: WEB ENGINE STATE
 // ---------------------------------------------------------------------------
 
 var _currentMicWebRecognition = null;
@@ -3497,7 +3812,7 @@ var _currentMicWebReject = null;
 
 
 // ---------------------------------------------------------------------------
-// SUBBLOCK 3325-4: NATIVE ADAPTER (APK, unchanged behavior)
+// SUB BLOCK 6100: NATIVE ADAPTER
 // ---------------------------------------------------------------------------
 
 function createCurrentMicNativeAdapter() {
@@ -3538,7 +3853,7 @@ function createCurrentMicNativeAdapter() {
 
 
 // ---------------------------------------------------------------------------
-// SUBBLOCK 3325-5: WEB ADAPTER (V2 ENGINE)
+// 🟦 BLOCK 6500: WEB MIC ADAPTER (W=6 MICROPHONE, X=5 WEB, Y=0 ADAPTER, Z=0 BASE)
 // continuous + interimResults + delay finalize.
 // ---------------------------------------------------------------------------
 
@@ -3565,6 +3880,8 @@ function getCurrentMicWebDelayMs() {
 }
 
 
+// SUB BLOCK 6550: WEB MIC ADAPTER IMPLEMENTATION
+
 function createCurrentMicWebAdapter() {
   if (!CurrentMicSpeechRecognition) {
     return null;
@@ -3582,6 +3899,13 @@ function createCurrentMicWebAdapter() {
         _currentMicWebResolve = resolve;
         _currentMicWebReject = reject;
         _currentMicWebLastTranscript = '';
+
+
+
+
+
+
+// SUB BLOCK 6555: WEB MIC CLEANUP AND COMPLETION
 
         function cleanup() {
           if (_currentMicWebFinalizeTimer) {
@@ -3635,6 +3959,13 @@ function createCurrentMicWebAdapter() {
         recognition.interimResults = true;
         recognition.maxAlternatives =
           options.maxResults || 3;
+
+
+
+
+
+
+// SUB BLOCK 6565: WEB MIC RESULT AND ERROR EVENTS
 
         recognition.onresult = function(event) {
           var transcript = '';
@@ -3720,9 +4051,16 @@ function createCurrentMicWebAdapter() {
 
 
 // ---------------------------------------------------------------------------
-// SUBBLOCK 3325-6: ADAPTER SELECTOR
+// 🟦 BLOCK 6700: MIC ADAPTER LIFECYCLE (W=6 MICROPHONE, X=7 LIFECYCLE, Y=0 START/STOP, Z=0 BASE)
 // Native first (APK), then web.
 // ---------------------------------------------------------------------------
+
+
+
+
+
+
+// SUB BLOCK 6700: MIC ADAPTER SELECTOR AND LIFECYCLE
 
 function getCurrentMicAdapter() {
   var nativeAdapter = createCurrentMicNativeAdapter();
@@ -3736,7 +4074,7 @@ function getCurrentMicAdapter() {
 
 
 // ---------------------------------------------------------------------------
-// SUBBLOCK 3325-7: PUBLIC API (same signatures, same state contract)
+// SUB BLOCK 6750: PUBLIC API
 // ---------------------------------------------------------------------------
 
 function startCurrentMicRecognition(options) {
@@ -3823,13 +4161,17 @@ window.stopCurrentMicRecognition =
   stopCurrentMicRecognition;
 
 // ============================================================================
-// END: MIC CONNECTION (NATIVE + WEB ADAPTER)
+// END BLOCK 6700: MIC ADAPTER LIFECYCLE
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3326: MIC PASS / RETRY CHECK
+// 🟦 BLOCK 6900: MIC PASS / RETRY CHECK (W=6 MICROPHONE, X=9 EVALUATION, Y=0 PASS/RETRY, Z=0 BASE)
 // Purpose: Compare spoken English with one turn using the PASS slider value.
+// ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 6910: MIC TEXT NORMALIZATION
 // ============================================================================
 
 function normalizeCurrentMicText(value) {
@@ -3854,6 +4196,10 @@ function normalizeCurrentMicText(value) {
     .trim();
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6930: MIC TARGET AND PASS THRESHOLD
+// ============================================================================
 
 function getCurrentMicTargetCard(turnNumber) {
   if (turnNumber) {
@@ -3887,6 +4233,10 @@ function getCurrentMicPassThreshold() {
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6950: MIC SIMILARITY AND WORD MATCHES
+// ============================================================================
 
 function getCurrentMicSimilarity(
   expected,
@@ -3992,6 +4342,10 @@ function renderCurrentMicWordMatches(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 6970: MIC PASS / RETRY RESULT VIEW
+// ============================================================================
+
 function showCurrentMicCheckResult(
   card,
   passed,
@@ -4052,6 +4406,10 @@ function showCurrentMicCheckResult(
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6990: MIC ANSWER EVALUATION AND START
+// ============================================================================
 
 function evaluateCurrentMicAnswer(options) {
   var config =
@@ -4124,13 +4482,16 @@ window.startAndCheckCurrentMicAnswer =
   startAndCheckCurrentMicAnswer;
 
 // ============================================================================
-// END: MIC PASS / RETRY CHECK
+// END BLOCK 6900: MIC PASS / RETRY CHECK
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3327: ROLE PLAY TARGET SENTENCE
+// 🟩 BLOCK 7000: PRACTICE ENGINE (W=7 PRACTICE, X=0 ROOT, Y=0 ENGINE, Z=0 BASE)
+
+// ============================================================================
+// 🟦 BLOCK 7100: ROLE PLAY TARGET SENTENCE
 // Purpose: Yellow box selects the sentence to start role play.
 // Default: first sentence.
 // ============================================================================
@@ -4170,10 +4531,115 @@ function selectCurrentRoleTurn(turnNumber) {
 }
 
 function getCurrentRoleTargetTurn() {
-  return Number(
-    window.CONVERSATION_V2_ROLE_TARGET_TURN || 1
-  );
+  var selectedCard =
+    document.querySelector(
+      '.conversation-turn-card.is-role-target'
+    );
+
+  if (selectedCard) {
+    return Number(selectedCard.dataset.turn) || 1;
+  }
+
+  return 1;
 }
+
+
+// SUB BLOCK 7170: ROLE TARGET INSTALLATION
+
+function installCurrentRoleTurnSelection() {
+  var container =
+    document.getElementById(
+      'conversationTurns'
+    );
+
+  if (!container) {
+    return;
+  }
+
+  container.addEventListener(
+    'click',
+    function(event) {
+      var card =
+        event.target.closest(
+          '.conversation-turn-card'
+        );
+
+      if (!card || !container.contains(card)) {
+        return;
+      }
+
+      selectCurrentRoleTurn(
+        card.dataset.turn
+      );
+    }
+  );
+
+  var applyDefaultTarget = function() {
+    var cards =
+      Array.from(
+        container.querySelectorAll(
+          '.conversation-turn-card'
+        )
+      );
+
+    if (!cards.length) {
+      return;
+    }
+
+    var savedTurn =
+      Number(
+        window.CONVERSATION_V2_ROLE_TARGET_TURN
+      );
+
+    var savedCard =
+      cards.find(function(card) {
+        return Number(card.dataset.turn) ===
+          savedTurn;
+      });
+
+    selectCurrentRoleTurn(
+      savedCard
+        ? savedCard.dataset.turn
+        : cards[0].dataset.turn
+    );
+  };
+
+  new MutationObserver(
+    applyDefaultTarget
+  ).observe(
+    container,
+    { childList: true }
+  );
+
+  applyDefaultTarget();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    installCurrentRoleTurnSelection,
+    { once: true }
+  );
+} else {
+  installCurrentRoleTurnSelection();
+}
+
+window.selectCurrentRoleTurn =
+  selectCurrentRoleTurn;
+
+window.getCurrentRoleTargetTurn =
+  getCurrentRoleTargetTurn;
+
+// ============================================================================
+// END BLOCK 7100: ROLE PLAY TARGET SENTENCE
+// ============================================================================
+
+
+
+
+
+
+// SUB BLOCK 7170: ROLE TARGET INSTALLATION
 
 function installCurrentRoleTurnSelection() {
   var container =
@@ -4246,12 +4712,12 @@ window.getCurrentRoleTargetTurn =
   getCurrentRoleTargetTurn;
 
 // ============================================================================
-// END: ROLE PLAY TARGET SENTENCE
+// END BLOCK 7100: ROLE PLAY TARGET SENTENCE
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3328: PRACTICE MODE AND START / STOP CONTROL
+// 🟦 BLOCK 7300: PRACTICE MODE AND START / STOP CONTROL (W=7 PRACTICE, X=3 EXECUTION, Y=0 ROLE/FOLLOW UP, Z=0 BASE)
 // Purpose: ROLE PLAY / FOLLOW UP plus CONTINUE REPEAT / NEXT.
 // ============================================================================
 
@@ -4288,6 +4754,13 @@ function getCurrentRolePlayDelay() {
   );
 }
 
+
+
+
+
+
+
+// SUB BLOCK 7320: PRACTICE RESULT RESET AND CONTROL VIEW
 
 function resetCurrentRolePlayResults() {
   document
@@ -4385,6 +4858,13 @@ function renderCurrentPracticeControls() {
 }
 
 
+
+
+
+
+
+// SUB BLOCK 7340: PRACTICE TURN ORDER AND CONTINUE TARGET
+
 function isCurrentRolePlayUserTurn(
   turnNumber
 ) {
@@ -4433,6 +4913,9 @@ function getCurrentPracticeContinueNextTargetId() {
 
 
 function stopCurrentRolePlay() {
+// ============================================================================
+// 🟦 BLOCK 7350: PRACTICE STOP AND FINISH (W=7 PRACTICE, X=3 EXECUTION, Y=5 LIFECYCLE, Z=0 BASE)
+// ============================================================================
   var state =
     getCurrentRolePlayState();
 
@@ -4454,6 +4937,13 @@ function stopCurrentRolePlay() {
   renderCurrentPracticeControls();
 }
 
+
+
+
+
+
+
+// SUB BLOCK 7350: PRACTICE FINISH AND RETRY
 
 function finishCurrentRolePlay() {
   var state =
@@ -4518,12 +5008,22 @@ function finishCurrentRolePlay() {
 
 
 function retryCurrentPracticeTurn() {
+// ============================================================================
+// 🟦 BLOCK 7370: PRACTICE TURN EXECUTION (W=7 PRACTICE, X=3 EXECUTION, Y=7 TURNS, Z=0 BASE)
+// ============================================================================
   window.setTimeout(
     runCurrentPracticeTurn,
     getCurrentRolePlayDelay()
   );
 }
 
+
+
+
+
+
+
+// SUB BLOCK 7375: PRACTICE MIC TURN
 
 function listenCurrentPracticeTurn(
   state
@@ -4588,6 +5088,13 @@ function speakCurrentPracticeTurn(
   });
 }
 
+
+
+
+
+
+
+// SUB BLOCK 7380: PRACTICE TURN RUNNER
 
 function runCurrentPracticeTurn() {
   var state =
@@ -4656,6 +5163,17 @@ function runCurrentPracticeTurn() {
 }
 
 
+
+
+
+
+
+// ============================================================================
+// 🟦 BLOCK 7390: PRACTICE START AND BUTTON INSTALL (W=7 PRACTICE, X=3 EXECUTION, Y=9 START/INSTALL, Z=0 BASE)
+// ============================================================================
+
+// SUB BLOCK 7395: PRACTICE START
+
 function startCurrentRolePlay(
   skipStartSignal
 ) {
@@ -4711,6 +5229,13 @@ function startCurrentRolePlay(
   runCurrentPracticeTurn();
 }
 
+
+
+
+
+
+
+// SUB BLOCK 7397: PRACTICE BUTTON INSTALLATION
 
 function installCurrentRolePlayButton() {
   var orderButton =
@@ -4802,13 +5327,13 @@ window.stopCurrentRolePlay =
   stopCurrentRolePlay;
 
 // ============================================================================
-// END: PRACTICE MODE AND START / STOP CONTROL
+// END BLOCK 7300: PRACTICE MODE AND START / STOP CONTROL
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3329: CONTINUE MODE CONTROL
+// 🟦 BLOCK 7500: CONTINUE MODE CONTROL (W=7 PRACTICE, X=5 CONTINUE, Y=0 MODE, Z=0 BASE)
 // Purpose: CONTINUE button cycles OFF -> REPEAT -> NEXT -> OFF.
 // ============================================================================
 
@@ -4884,13 +5409,13 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: CONTINUE MODE CONTROL
+// END BLOCK 7500: CONTINUE MODE CONTROL
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3324: PLAY AND EXTERNAL STOP BUTTON CONNECTION
+// 🟦 BLOCK 5600: PLAY AND EXTERNAL STOP BUTTON CONNECTION (W=5 PLAYBACK, X=6 CONTROL, Y=0 PLAY/STOP, Z=0 BASE)
 // Purpose: PLAY begins clean playback with one moving yellow speaking box.
 //          STOP cancels playback, role play, and microphone recognition.
 // ============================================================================
@@ -4917,6 +5442,8 @@ function renderCurrentPsgPlayButton() {
 window.renderCurrentPsgPlayButton =
   renderCurrentPsgPlayButton;
 
+
+// SUB BLOCK 5650: PLAY VISUAL RESET AND STOP
 
 function resetCurrentPlayVisualState() {
   resetCurrentRolePlayResults();
@@ -5014,12 +5541,12 @@ function bootCurrentPsgPlayButton() {
 bootCurrentPsgPlayButton();
 
 // ============================================================================
-// END: PLAY AND EXTERNAL STOP BUTTON CONNECTION
+// END BLOCK 5600: PLAY AND EXTERNAL STOP BUTTON CONNECTION
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3256: SELECTED TURN CHUNK VIEW
+// 🟦 BLOCK 4600: SELECTED TURN CHUNK VIEW (W=4 CONTROL, X=6 CHUNK, Y=0 VIEW, Z=0 BASE)
 // Purpose: Show only the selected 2ND language chunk below the yellow turn.
 // ============================================================================
 
@@ -5033,6 +5560,13 @@ function getCurrentSelectedChunkState() {
   return window.CONVERSATION_V2_SELECTED_CHUNK;
 }
 
+
+
+
+
+
+
+// SUB BLOCK 4620: CHUNK PARSING AND CLEAR
 
 function parseCurrentTurnChunks(helpText) {
   var chunks = {};
@@ -5075,6 +5609,13 @@ function clearCurrentSelectedChunks() {
     });
 }
 
+
+
+
+
+
+
+// SUB BLOCK 4640: CHUNK RENDERING
 
 function renderCurrentSelectedChunks() {
   var state =
@@ -5141,6 +5682,15 @@ function renderCurrentSelectedChunks() {
   card.appendChild(container);
 }
 
+
+// SUB BLOCK 4650: CHUNK BUTTON AND INSTALL
+
+
+
+
+
+
+// SUB BLOCK 4660: CHUNK BUTTON AND INSTALL
 
 function renderCurrentChunkButton() {
   var button =
@@ -5248,13 +5798,13 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: SELECTED TURN CHUNK VIEW
+// END BLOCK 4600: SELECTED TURN CHUNK VIEW
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3330: I FIRST SIGNAL CUE
+// 🟦 BLOCK 7600: I FIRST SIGNAL CUE (W=7 PRACTICE, X=6 SIGNAL, Y=0 I FIRST, Z=0 BASE)
 // Purpose: Play one short cue before I FIRST begins Role Play.
 // ============================================================================
 
@@ -5311,6 +5861,8 @@ function playCurrentIStartSignal() {
   });
 }
 
+
+// SUB BLOCK 7650: I FIRST SIGNAL STATE AND INSTALL
 
 function getCurrentIStartSignalState() {
   if (!window.CONVERSATION_V2_I_START_SIGNAL) {
@@ -5397,12 +5949,14 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: I FIRST SIGNAL CUE
+// END BLOCK 7600: I FIRST SIGNAL CUE
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3390: LOCAL USER SETTINGS
+// 🟩 BLOCK 8000: INTEGRATION AND USER SUPPORT (W=8 SUPPORT, X=0 ROOT, Y=0 INTEGRATION, Z=0 BASE)
+
+// 🟦 BLOCK 8100: LOCAL USER SETTINGS (W=8 SUPPORT, X=1 SETTINGS, Y=0 LOCAL USER, Z=0 BASE)
 // Purpose: Restore all user-configurable settings on app start.
 // ============================================================================
 
@@ -5411,6 +5965,9 @@ const CONVERSATION_V2_SETTINGS_KEY =
 
 
 function getConversationSettings() {
+// ============================================================================
+// 🟦 BLOCK 8150: SETTINGS PERSISTENCE (W=8 SUPPORT, X=1 SETTINGS, Y=5 PERSISTENCE, Z=0 BASE)
+// ============================================================================
   try {
     var saved =
       localStorage.getItem(
@@ -5431,6 +5988,10 @@ function getConversationSettings() {
   }
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 8170: SETTINGS SAVE
+// ============================================================================
 
 function saveConversationSettings() {
   var settings = {
@@ -5493,6 +6054,10 @@ function saveConversationSettings() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 8190: SETTINGS RESTORE
+// ============================================================================
+
 function restoreConversationSelectValue(
   selectId,
   value
@@ -5516,6 +6081,8 @@ function restoreConversationSelectValue(
   }
 }
 
+
+// SUB BLOCK 8195: SETTINGS RESTORE AND STORAGE INSTALL
 
 function restoreConversationSettings() {
   var settings =
@@ -5631,6 +6198,10 @@ function restoreConversationSettings() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 8180: SETTINGS STORAGE INSTALL
+// ============================================================================
+
 function installConversationSettingsStorage() {
   restoreConversationSettings();
 
@@ -5716,12 +6287,12 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: LOCAL USER SETTINGS
+// END BLOCK 8100: LOCAL USER SETTINGS
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3391: SPEAKER TO BIBLE PERSON LINK
+// 🟦 BLOCK 8200: SPEAKER TO BIBLE PERSON LINK (W=8 SUPPORT, X=2 BIBLE, Y=0 SPEAKER LINK, Z=0 BASE)
 // Purpose: Open verified Bible person details without changing Role Play.
 // ============================================================================
 
@@ -5732,6 +6303,10 @@ const CONVERSATION_V2_BIBLE_LINKS_URL =
 const CONVERSATION_V2_BIBLE_BASE_URL =
   'https://bibleofgongboo.github.io/biblenew/';
 
+
+// ============================================================================
+// 🟦 BLOCK 8210: BIBLE LINK KEY AND SPEAKER NAME
+// ============================================================================
 
 function getConversationV2BibleLinkKey(
   speaker
@@ -5754,6 +6329,10 @@ function getConversationV2SpeakerName(
     .trim();
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 8250: BIBLE LINK LOADING
+// ============================================================================
 
 async function loadConversationV2BibleLinks() {
   try {
@@ -5833,6 +6412,10 @@ async function loadConversationV2BibleLinks() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 8270: BIBLE SPEAKER DECORATION
+// ============================================================================
+
 function decorateConversationV2BibleSpeakers() {
   var links =
     window.CONVERSATION_V2_BIBLE_LINKS ||
@@ -5898,6 +6481,10 @@ function decorateConversationV2BibleSpeakers() {
     });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 8290: BIBLE PERSON OPEN AND INSTALL
+// ============================================================================
 
 function openConversationV2BiblePerson(
   personId
@@ -6006,12 +6593,12 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: SPEAKER TO BIBLE PERSON LINK
+// END BLOCK 8200: SPEAKER TO BIBLE PERSON LINK
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3392: ANDROID TTS WORD BOUNDARY LISTENER
+// 🟦 BLOCK 8300: ANDROID TTS WORD BOUNDARY LISTENER (W=8 SUPPORT, X=3 ANDROID, Y=0 TTS BOUNDARY, Z=0 BASE)
 // Purpose: Receive Android native TTS word positions for the active sentence.
 // ============================================================================
 
@@ -6062,13 +6649,13 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: ANDROID TTS WORD BOUNDARY LISTENER
+// END BLOCK 8300: ANDROID TTS WORD BOUNDARY LISTENER
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3393: SYSTEM URL SETTINGS
+// 🟦 BLOCK 8400: SYSTEM URL SETTINGS (W=8 SUPPORT, X=4 EXTERNAL, Y=0 SYSTEM URL, Z=0 BASE)
 // Purpose: Change every external system URL only in this one object.
 // ============================================================================
 
@@ -6129,12 +6716,14 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: SYSTEM URL SETTINGS
+// END BLOCK 8400: SYSTEM URL SETTINGS
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3400: SPACE PLAY / STOP TOGGLE
+// 🟦 BLOCK 8500: KEYBOARD AND CONTROL SUPPORT (W=8 SUPPORT, X=5 INPUT, Y=0 KEYBOARD, Z=0 BASE)
+
+// SUB BLOCK 8500: SPACE PLAY / STOP TOGGLE
 // Purpose: SPACE toggles normal PLAY and STOP outside input controls.
 // ============================================================================
 
@@ -6217,12 +6806,12 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: SPACE PLAY / STOP TOGGLE
+// END BLOCK 8500: SPACE PLAY / STOP TOGGLE
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3401: LEFT / RIGHT CONVERSATION NAVIGATION
+// 🟦 BLOCK 8600: LEFT / RIGHT CONVERSATION NAVIGATION (W=8 SUPPORT, X=6 INPUT, Y=0 ARROW NAV, Z=0 BASE)
 // Purpose: ArrowLeft = PREV, ArrowRight = NEXT outside input controls.
 // ============================================================================
 
@@ -6275,11 +6864,11 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: LEFT / RIGHT CONVERSATION NAVIGATION
+// END BLOCK 8600: LEFT / RIGHT CONVERSATION NAVIGATION
 // ============================================================================
 
 // ============================================================================
-// 🟦 BLOCK 3402: PRACTICE RESET
+// 🟦 BLOCK 7700: PRACTICE RESET (W=7 PRACTICE, X=7 RESET, Y=0 SESSION, Z=0 BASE)
 // Purpose: Clear PASS / RETRY / MIC results and keep the selected yellow turn.
 // ============================================================================
 
@@ -6327,13 +6916,13 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: PRACTICE RESET
+// END BLOCK 7700: PRACTICE RESET
 // ============================================================================
 
 
 
 // ============================================================================
-// 🟦 BLOCK 3403: CONTROL TOOLTIP AND LEGACY LOOP DISABLE
+// 🟦 BLOCK 8700: CONTROL TOOLTIP AND LEGACY LOOP DISABLE (W=8 SUPPORT, X=7 UI, Y=0 TOOLTIP/LOOP, Z=0 BASE)
 // Purpose: Show short hover help and disable the old LOOP control.
 // ============================================================================
 
@@ -6436,5 +7025,5 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================================
-// END: CONTROL TOOLTIP AND LEGACY LOOP DISABLE
+// END BLOCK 8700: CONTROL TOOLTIP AND LEGACY LOOP DISABLE
 // ============================================================================

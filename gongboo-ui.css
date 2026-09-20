@@ -1,13 +1,13 @@
 /* ==========================================================================
-   🟥 BLOCK 2000: MOBILE CONVERSATION STYLE
+   🟥 BLOCK 2000: MOBILE CONVERSATION STYLE (W=2 CSS, X=0 ROOT, Y=0 DOCUMENT, Z=0 BASE)
    ========================================================================== */
 
 /* ==========================================================================
-   🟩 BLOCK 2100: FOUNDATION
+   🟩 BLOCK 2100: FOUNDATION (W=2 CSS, X=1 FOUNDATION, Y=0 SECTION, Z=0 BASE)
    ========================================================================== */
 
 /* ==========================================================================
-   🟦 BLOCK 2110: GLOBAL MOBILE RESET
+   🟦 BLOCK 2110: GLOBAL MOBILE RESET (W=2 CSS, X=1 FOUNDATION, Y=1 RESET, Z=0 BASE)
    ========================================================================== */
 
 * {
@@ -30,11 +30,11 @@ body {
 
 
 /* ==========================================================================
-   🟩 BLOCK 2200: APPLICATION SHELL
+   🟩 BLOCK 2200: APPLICATION SHELL (W=2 CSS, X=2 APPLICATION, Y=0 SECTION, Z=0 BASE)
    ========================================================================== */
 
 /* ==========================================================================
-   🟦 BLOCK 2210: CONVERSATION APP FRAME
+   🟦 BLOCK 2210: CONVERSATION APP FRAME (W=2 CSS, X=2 APPLICATION, Y=1 FRAME, Z=0 BASE)
    ========================================================================== */
 
 .conversation-app {
@@ -46,7 +46,7 @@ body {
 
 
 /* ==========================================================================
-   🟦 BLOCK 2222: TOP SYSTEM, PLAY, STOP, AND SETTINGS BUTTONS
+   🟦 BLOCK 2220: TOP SYSTEM, PLAY, STOP, AND SETTINGS BUTTONS (W=2 CSS, X=2 APPLICATION, Y=2 CONTROLS, Z=0 BASE)
    ========================================================================== */
 
 .conversation-header {
@@ -129,7 +129,7 @@ body {
 
 
 /* ==========================================================================
-   🟦 BLOCK 2223: SYSTEM MENU FIXED INDEX
+   🟦 BLOCK 2230: SYSTEM MENU FIXED INDEX (W=2 CSS, X=2 APPLICATION, Y=3 SYSTEM MENU, Z=0 BASE)
    Purpose: Keep header controls fixed and show the system menu full width.
    ========================================================================== */
 
@@ -189,17 +189,17 @@ body {
 }
 
 /* ==========================================================================
-   END: SYSTEM MENU FIXED INDEX
+   END BLOCK 2230: SYSTEM MENU FIXED INDEX
    ========================================================================== */
 
 
 
 /* ==========================================================================
-   END: TOP SYSTEM, PLAY, STOP, AND SETTINGS BUTTONS
+   END BLOCK 2220: TOP SYSTEM, PLAY, STOP, AND SETTINGS BUTTONS
    ========================================================================== */
 
 /* ==========================================================================
-   🟦 BLOCK 2224: DROPDOWN AND PLAY MENUS
+   🟦 BLOCK 2240: DROPDOWN AND PLAY MENUS (W=2 CSS, X=2 APPLICATION, Y=4 MENUS, Z=0 BASE)
    ========================================================================== */
 
 .conversation-menu {
@@ -292,13 +292,13 @@ body {
 }
 
 /* ==========================================================================
-   END: DROPDOWN AND PLAY MENUS
+   END BLOCK 2240: DROPDOWN AND PLAY MENUS
    ========================================================================== */
 
 
 
   /* ==========================================================================
-   🟦 BLOCK 2225: FIXED DROPDOWN LAYERS
+   🟦 BLOCK 2250: FIXED DROPDOWN LAYERS (W=2 CSS, X=2 APPLICATION, Y=5 LAYERS, Z=0 BASE)
    Purpose: Keep menus fixed and prevent them from covering lesson content.
    ========================================================================== */
 
@@ -359,11 +359,11 @@ body {
 }
 
 /* ==========================================================================
-   END: FIXED DROPDOWN LAYERS
+   END BLOCK 2250: FIXED DROPDOWN LAYERS
    ========================================================================== */
 
 /* ==========================================================================
-   🟦 BLOCK 2226: SETTINGS, STATUS, AND BOTTOM NAVIGATION
+   🟦 BLOCK 2260: SETTINGS, STATUS, AND BOTTOM NAVIGATION (W=2 CSS, X=2 APPLICATION, Y=6 SETTINGS/NAV, Z=0 BASE)
    ========================================================================== */
 
 #settingsPanel {
@@ -538,12 +538,12 @@ body {
 }
 
 /* ==========================================================================
-   END: SETTINGS, STATUS, AND BOTTOM NAVIGATION
+   END BLOCK 2260: SETTINGS, STATUS, AND BOTTOM NAVIGATION
    ========================================================================== */
 
 
 /* ==========================================================================
-   🟦 BLOCK 2227: PHONE SAFE TOP AND COMPACT TEXT
+   🟦 BLOCK 2270: PHONE SAFE TOP AND COMPACT TEXT (W=2 CSS, X=2 APPLICATION, Y=7 PHONE, Z=0 BASE)
    ========================================================================== */
 
 .conversation-app {
@@ -574,11 +574,11 @@ body {
 }
 
 /* ==========================================================================
-   END: PHONE SAFE TOP AND COMPACT TEXT
+   END BLOCK 2270: PHONE SAFE TOP AND COMPACT TEXT
    ========================================================================== */
 
 /* ==========================================================================
-   🟦 BLOCK 2228: STICKY TOP CONTROLS
+   🟦 BLOCK 2280: STICKY TOP CONTROLS (W=2 CSS, X=2 APPLICATION, Y=8 STICKY, Z=0 BASE)
    Purpose: Keep the top controls available while lesson rows scroll.
    ========================================================================== */
 
@@ -615,12 +615,12 @@ body {
 }
 
 /* ==========================================================================
-   END: STICKY TOP CONTROLS
+   END BLOCK 2280: STICKY TOP CONTROLS
    ========================================================================== */
 
 
 /* ==========================================================================
-   🟦 BLOCK 2229: CURRENT SPEAKING BOX
+   🟦 BLOCK 2290: CURRENT SPEAKING BOX (W=2 CSS, X=2 APPLICATION, Y=9 SPEAKING, Z=0 BASE)
    ========================================================================== */
 
 .conversation-turn-card.is-speaking {
@@ -630,13 +630,13 @@ body {
 }
 
 /* ==========================================================================
-   END: CURRENT SPEAKING BOX
+   END BLOCK 2290: CURRENT SPEAKING BOX
    ========================================================================== */
 
 
 
 /* ==========================================================================
-   🟦 BLOCK 2230: MIC PASS / RETRY RESULT
+   🟦 BLOCK 2300: MIC PASS / RETRY RESULT (W=2 CSS, X=3 FEEDBACK, Y=0 RESULT, Z=0 BASE)
    ========================================================================== */
 
 .conversation-turn-card.is-mic-pass {
@@ -685,7 +685,7 @@ body {
 }
 
 /* ==========================================================================
-   END: MIC PASS / RETRY RESULT
+   END BLOCK 2300: MIC PASS / RETRY RESULT
    ========================================================================== */
 
 
@@ -693,7 +693,7 @@ body {
 
 
 /* ==========================================================================
-   🟦 BLOCK 2231: ROLE PLAY TARGET SENTENCE
+   🟦 BLOCK 2310: ROLE PLAY TARGET SENTENCE (W=2 CSS, X=3 FEEDBACK, Y=1 TARGET, Z=0 BASE)
    Purpose: Yellow outline only marks the sentence selected as the start.
    ========================================================================== */
 
@@ -712,25 +712,25 @@ body {
 }
 
 /* ==========================================================================
-   END: ROLE PLAY TARGET SENTENCE
+   END BLOCK 2310: ROLE PLAY TARGET SENTENCE
    ========================================================================== */
 
 
 
    /* ==========================================================================
-   🟦 BLOCK 2232: NO PLAY MENU PAGE FLOW
+   🟦 BLOCK 2320: NO PLAY MENU PAGE FLOW (W=2 CSS, X=3 FEEDBACK, Y=2 FLOW NOTE, Z=0 BASE)
    Purpose: The PLAY menu must never push, move, or scroll with lesson text.
    ========================================================================== */
 
-/* PLAY menu positioning is fully owned by BLOCK 2225. */
+/* PLAY menu positioning is fully owned by BLOCK 2250. */
 
 /* ==========================================================================
-   END: NO PLAY MENU PAGE FLOW
+   END BLOCK 2320: NO PLAY MENU PAGE FLOW
    ========================================================================== */
 
 
 /* ==========================================================================
-   🟦 BLOCK 2233: BIBLE PERSON SPEAKER LINK
+   🟦 BLOCK 2330: BIBLE PERSON SPEAKER LINK (W=2 CSS, X=3 FEEDBACK, Y=3 BIBLE LINK, Z=0 BASE)
    Purpose: Show only mapped speaker names as Bible detail links.
    ========================================================================== */
 
@@ -746,13 +746,13 @@ body {
 }
 
 /* ==========================================================================
-   END: BIBLE PERSON SPEAKER LINK
+   END BLOCK 2330: BIBLE PERSON SPEAKER LINK
    ========================================================================== */
 
 
 
 /* ==========================================================================
-   🟦 BLOCK 2234: CURRENT TTS WORD HIGHLIGHT
+   🟦 BLOCK 2340: CURRENT TTS WORD HIGHLIGHT (W=2 CSS, X=3 FEEDBACK, Y=4 WORD TTS, Z=0 BASE)
    Purpose: Highlight only the word currently spoken by Android TTS.
    ========================================================================== */
 
@@ -769,13 +769,13 @@ body {
 }
 
 /* ==========================================================================
-   END: CURRENT TTS WORD HIGHLIGHT
+   END BLOCK 2340: CURRENT TTS WORD HIGHLIGHT
    ========================================================================== */
 
 
 
 /* ==========================================================================
-   🟦 BLOCK 2290: CONVERSATION DIRECTORY
+   🟦 BLOCK 2400: CONVERSATION DIRECTORY (W=2 CSS, X=4 DIRECTORY, Y=0 VIEW, Z=0 BASE)
    Purpose: Hide directory completely after TITLE selection.
    ========================================================================== */
 
@@ -860,13 +860,13 @@ body {
 }
 
 /* ==========================================================================
-   END: CONVERSATION DIRECTORY
+   END BLOCK 2400: CONVERSATION DIRECTORY
    ========================================================================== */
 
 
 
 /* ==========================================================================
-   🟦 BLOCK 2291: DIRECTORY LOADING TEXT
+   🟦 BLOCK 2410: DIRECTORY LOADING TEXT (W=2 CSS, X=4 DIRECTORY, Y=1 LOADING, Z=0 BASE)
    Purpose: Show one loading line before the LEVEL index is ready.
    ========================================================================== */
 
@@ -880,17 +880,17 @@ body {
 }
 
 /* ==========================================================================
-   END: DIRECTORY LOADING TEXT
+   END BLOCK 2410: DIRECTORY LOADING TEXT
    ========================================================================== */
 
 
 
 /* ==========================================================================
-   🟩 BLOCK 2300: LESSON DISPLAY
+   🟩 BLOCK 2500: LESSON DISPLAY (W=2 CSS, X=5 LESSON, Y=0 SECTION, Z=0 BASE)
    ========================================================================== */
 
 /* ==========================================================================
-   🟦 BLOCK 2310: TURN CONTAINER
+   🟦 BLOCK 2510: TURN CONTAINER (W=2 CSS, X=5 LESSON, Y=1 TURNS, Z=0 BASE)
    ========================================================================== */
 
 #conversationTurns {
@@ -951,7 +951,7 @@ body {
 }
 
 /* ==========================================================================
-   🟦 BLOCK 2320: COMPACT LESSON TITLE
+   🟦 BLOCK 2520: COMPACT LESSON TITLE (W=2 CSS, X=5 LESSON, Y=2 TITLE, Z=0 BASE)
    ========================================================================== */
 
 #conversationStatus,
@@ -971,12 +971,12 @@ body {
 }
 
 /* ==========================================================================
-   END: COMPACT LESSON TITLE
+   END BLOCK 2520: COMPACT LESSON TITLE
    ========================================================================== */
 
 
 /* ==========================================================================
-   🟦 BLOCK 2330: SELECTED TURN CHUNK DISPLAY
+   🟦 BLOCK 2530: SELECTED TURN CHUNK DISPLAY (W=2 CSS, X=5 LESSON, Y=3 CHUNKS, Z=0 BASE)
    ========================================================================== */
 
 .conversation-selected-chunks {
@@ -1010,7 +1010,7 @@ body {
 }
 
 /* ==========================================================================
-   END: SELECTED TURN CHUNK DISPLAY
+   END BLOCK 2530: SELECTED TURN CHUNK DISPLAY
    ========================================================================== */  
 
 
