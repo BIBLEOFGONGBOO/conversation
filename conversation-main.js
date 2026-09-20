@@ -3000,6 +3000,8 @@ async function continueCurrentPsgAfterFinish(
     return;
   }
 
+  window.CONVERSATION_V2_ROLE_TARGET_TURN = 1;
+
   var loaded =
     await loadConversationById(
       nextId,
@@ -3379,7 +3381,7 @@ function setCurrentSpeakingCard(item) {
   );
 
   card.scrollIntoView({
-    behavior: 'smooth',
+    behavior: 'auto',
     block: 'center',
     inline: 'nearest'
   });
@@ -5401,11 +5403,11 @@ if (document.readyState === 'loading') {
 
 // ============================================================================
 // 🟦 BLOCK 3390: LOCAL USER SETTINGS
-// Purpose: Restore the user's last conversation settings on app start.
+// Purpose: Restore all user-configurable settings on app start.
 // ============================================================================
 
 const CONVERSATION_V2_SETTINGS_KEY =
-  'gongbooConversationV2SettingsV1';
+  'gongbooConversationV2SettingsV2';
 
 
 function getConversationSettings() {
@@ -5435,7 +5437,7 @@ function saveConversationSettings() {
     pass:
       document.getElementById(
         'passRange'
-      )?.value || '1',
+      )?.value || '0',
 
     delay:
       document.getElementById(
@@ -5467,7 +5469,13 @@ function saveConversationSettings() {
 
     playMode:
       window.CONVERSATION_V2_PLAY_MODE ||
-      'computer'
+      'computer',
+
+    practiceType:
+      getCurrentPracticeType(),
+
+    continueMode:
+      getCurrentContinueMode()
   };
 
   try {
@@ -5538,7 +5546,11 @@ function restoreConversationSettings() {
         item.inputId
       );
 
-    if (!input || !item.value) {
+    if (
+      !input ||
+      item.value === undefined ||
+      item.value === null
+    ) {
       return;
     }
 
@@ -5579,6 +5591,13 @@ function restoreConversationSettings() {
       settings.chunk;
 
     renderCurrentChunkButton();
+
+    if (
+      typeof renderCurrentSelectedChunks ===
+      'function'
+    ) {
+      renderCurrentSelectedChunks();
+    }
   }
 
   if (
@@ -5587,9 +5606,28 @@ function restoreConversationSettings() {
   ) {
     window.CONVERSATION_V2_PLAY_MODE =
       settings.playMode;
-
-    installPlayModeToggle();
   }
+
+  if (
+    settings.practiceType === 'role-play' ||
+    settings.practiceType === 'follow-up'
+  ) {
+    window.CONVERSATION_V2_PRACTICE_TYPE =
+      settings.practiceType;
+  }
+
+  if (
+    settings.continueMode === 'off' ||
+    settings.continueMode === 'repeat' ||
+    settings.continueMode === 'next'
+  ) {
+    window.CONVERSATION_V2_CONTINUE_MODE =
+      settings.continueMode;
+
+    renderCurrentContinueMode();
+  }
+
+  renderCurrentPracticeControls();
 }
 
 
@@ -5624,7 +5662,9 @@ function installConversationSettingsStorage() {
   [
     'playLoopToggle',
     'chunkButton',
-    'playModeToggleButton'
+    'playModeToggleButton',
+    'practiceModeToggleButton',
+    'continueNextButton'
   ].forEach(function(id) {
     var button =
       document.getElementById(id);
@@ -5678,7 +5718,6 @@ if (document.readyState === 'loading') {
 // ============================================================================
 // END: LOCAL USER SETTINGS
 // ============================================================================
-
 
 
 // ============================================================================
@@ -6289,4 +6328,113 @@ if (document.readyState === 'loading') {
 
 // ============================================================================
 // END: PRACTICE RESET
+// ============================================================================
+
+
+
+// ============================================================================
+// 🟦 BLOCK 3403: CONTROL TOOLTIP AND LEGACY LOOP DISABLE
+// Purpose: Show short hover help and disable the old LOOP control.
+// ============================================================================
+
+function setCurrentControlTooltip(
+  id,
+  message
+) {
+  var button =
+    document.getElementById(id);
+
+  if (!button) {
+    return;
+  }
+
+  button.setAttribute(
+    'title',
+    message
+  );
+
+  button.setAttribute(
+    'aria-label',
+    message
+  );
+}
+
+
+function disableCurrentLegacyLoopControl() {
+  var button =
+    document.getElementById(
+      'playLoopToggle'
+    );
+
+  window.CONVERSATION_V2_LOOP_PLAY =
+    false;
+
+  if (!button) {
+    return;
+  }
+
+  button.disabled = true;
+
+  button.setAttribute(
+    'aria-disabled',
+    'true'
+  );
+
+  button.setAttribute(
+    'title',
+    'Use CONTINUE: REPEAT instead.'
+  );
+
+  button.textContent =
+    '↻ OFF';
+}
+
+
+function installCurrentControlTooltips() {
+  setCurrentControlTooltip(
+    'playModeToggleButton',
+    'Choose who begins Role Play: COMPUTER or I FIRST.'
+  );
+
+  setCurrentControlTooltip(
+    'practiceStartStopButton',
+    'Start or stop the selected practice.'
+  );
+
+  setCurrentControlTooltip(
+    'practiceModeToggleButton',
+    'Choose ROLE PLAY or FOLLOW UP practice.'
+  );
+
+  setCurrentControlTooltip(
+    'continueNextButton',
+    'Choose OFF, REPEAT, or NEXT after the final sentence.'
+  );
+
+  setCurrentControlTooltip(
+    'practiceResetButton',
+    'Clear PASS, RETRY, and microphone results.'
+  );
+
+  setCurrentControlTooltip(
+    'chunkButton',
+    'Show or hide the selected sentence chunk.'
+  );
+
+  disableCurrentLegacyLoopControl();
+}
+
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    installCurrentControlTooltips,
+    { once: true }
+  );
+} else {
+  installCurrentControlTooltips();
+}
+
+// ============================================================================
+// END: CONTROL TOOLTIP AND LEGACY LOOP DISABLE
 // ============================================================================
