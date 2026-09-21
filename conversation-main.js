@@ -354,41 +354,37 @@ function setConversationStatus(
 
 // ============================================================================
 // 🟦 BLOCK 3220: CONVERSATION DIRECTORY AND APPLICATION START
-// Purpose: Show LEVEL → CATEGORY → TITLE before loading a conversation.
 // ============================================================================
 
-function parseConversationTurns(
-  dialogue
-) {
-  var lines =
-    String(dialogue || '')
-      .split(
-        /<br\s*\/?>|\r?\n/gi
-      )
-      .map(function(line) {
-        return String(line || '').trim();
-      })
-      .filter(Boolean);
+// ----------------------------------------------------------------------------
+// 🟪 SUB BLOCK 3220-10: DIALOGUE NORMALIZATION AND PARSING
+// ----------------------------------------------------------------------------
+
+function normalizeConversationDialogueText(dialogue) {
+  return String(dialogue || '')
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n|\\r/g, '\n');
+}
+
+function parseConversationTurns(dialogue) {
+  var lines = normalizeConversationDialogueText(dialogue)
+    .split(/<br\s*\/?>|\r?\n/gi)
+    .map(function(line) {
+      return String(line || '').trim();
+    })
+    .filter(Boolean);
 
   var turns = [];
 
   lines.forEach(function(line) {
-    var colonIndex =
-      line.indexOf(':');
+    var colonIndex = line.indexOf(':');
 
     if (colonIndex <= 0) {
       return;
     }
 
-    var speaker =
-      line
-        .slice(0, colonIndex)
-        .trim();
-
-    var text =
-      line
-        .slice(colonIndex + 1)
-        .trim();
+    var speaker = line.slice(0, colonIndex).trim();
+    var text = line.slice(colonIndex + 1).trim();
 
     if (!speaker || !text) {
       return;
@@ -404,14 +400,19 @@ function parseConversationTurns(
   return turns;
 }
 
+// ----------------------------------------------------------------------------
+// END: DIALOGUE NORMALIZATION AND PARSING
+// ----------------------------------------------------------------------------
 
-function renderConversationTurns(
-  turns
-) {
-  var container =
-    document.getElementById(
-      'conversationTurns'
-    );
+
+// ----------------------------------------------------------------------------
+// 🟪 SUB BLOCK 3220-20: CONVERSATION TURN RENDERING
+// ----------------------------------------------------------------------------
+
+function renderConversationTurns(turns) {
+  var container = document.getElementById(
+    'conversationTurns'
+  );
 
   if (!container) {
     throw new Error(
@@ -422,8 +423,9 @@ function renderConversationTurns(
   container.innerHTML = '';
 
   turns.forEach(function(turn) {
-    var card =
-      document.createElement('article');
+    var card = document.createElement('article');
+    var speaker = document.createElement('strong');
+    var text = document.createElement('span');
 
     card.className =
       'conversation-turn-card';
@@ -431,17 +433,11 @@ function renderConversationTurns(
     card.dataset.turn =
       String(turn.number);
 
-    var speaker =
-      document.createElement('strong');
-
     speaker.className =
       'conversation-turn-speaker';
 
     speaker.textContent =
       turn.speaker + ':';
-
-    var text =
-      document.createElement('span');
 
     text.className =
       'conversation-turn-text';
@@ -451,24 +447,19 @@ function renderConversationTurns(
 
     card.appendChild(speaker);
     card.appendChild(text);
-
     container.appendChild(card);
   });
 }
 
 
-function renderFirstConversationRow(
-  row
-) {
-  var lesson =
-    document.getElementById(
-      'conversationLesson'
-    );
+function renderFirstConversationRow(row) {
+  var lesson = document.getElementById(
+    'conversationLesson'
+  );
 
-  var meta =
-    document.getElementById(
-      'conversationMeta'
-    );
+  var meta = document.getElementById(
+    'conversationMeta'
+  );
 
   if (!lesson || !meta) {
     throw new Error(
@@ -476,10 +467,9 @@ function renderFirstConversationRow(
     );
   }
 
-  var turns =
-    parseConversationTurns(
-      row.DIALOGUE
-    );
+  var turns = parseConversationTurns(
+    row.DIALOGUE
+  );
 
   if (!turns.length) {
     throw new Error(
@@ -489,26 +479,20 @@ function renderFirstConversationRow(
 
   meta.innerHTML = '';
 
-  var group =
-    document.createElement('div');
+  var group = document.createElement('div');
+  var title = document.createElement('h2');
 
-  group.className =
-    'conversation-group';
+  group.className = 'conversation-group';
 
   group.textContent =
     String(row.GROUP || '') +
     (
       row.CATEGORY
-        ? ' · ' +
-          String(row.CATEGORY)
+        ? ' · ' + String(row.CATEGORY)
         : ''
     );
 
-  var title =
-    document.createElement('h2');
-
-  title.className =
-    'conversation-title';
+  title.className = 'conversation-title';
 
   title.textContent =
     row.DIALOGUE_TITLE ||
@@ -527,10 +511,16 @@ function renderFirstConversationRow(
   );
 }
 
+// ----------------------------------------------------------------------------
+// END: CONVERSATION TURN RENDERING
+// ----------------------------------------------------------------------------
 
-function getConversationDirectoryText(
-  value
-) {
+
+// ----------------------------------------------------------------------------
+// 🟪 SUB BLOCK 3220-30: DIRECTORY VALUE HELPERS
+// ----------------------------------------------------------------------------
+
+function getConversationDirectoryText(value) {
   return String(value || '').trim();
 }
 
@@ -555,44 +545,53 @@ function getConversationDirectoryUniqueValues(
 }
 
 
+function getConversationDirectoryRows() {
+  return window.CONVERSATION_V2_DIRECTORY_ROWS ||
+    [];
+}
+
+// ----------------------------------------------------------------------------
+// END: DIRECTORY VALUE HELPERS
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// 🟪 SUB BLOCK 3220-40: DIRECTORY DATA LOADING
+// ----------------------------------------------------------------------------
+
 async function loadConversationDirectoryRows() {
   var allRows = [];
   var from = 0;
   var pageSize = 1000;
 
   while (true) {
-    var to =
-      from + pageSize - 1;
+    var to = from + pageSize - 1;
 
-    var response =
-      await fetch(
-        SUPABASE_CONFIG.restUrl +
-          '?select=' +
-          encodeURIComponent(
-            'ID,GROUP,CATEGORY,DIALOGUE_TITLE'
-          ) +
-          '&LNG=eq.EN' +
-          '&order=GROUP.asc,CATEGORY.asc,ID.asc',
-        {
-          headers: {
-            apikey:
-              SUPABASE_CONFIG.publishableKey,
+    var response = await fetch(
+      SUPABASE_CONFIG.restUrl +
+        '?select=' +
+        encodeURIComponent(
+          'ID,GROUP,CATEGORY,DIALOGUE_TITLE'
+        ) +
+        '&LNG=eq.EN' +
+        '&order=GROUP.asc,CATEGORY.asc,ID.asc',
+      {
+        headers: {
+          apikey:
+            SUPABASE_CONFIG.publishableKey,
 
-            Authorization:
-              'Bearer ' +
-              SUPABASE_CONFIG.publishableKey,
+          Authorization:
+            'Bearer ' +
+            SUPABASE_CONFIG.publishableKey,
 
-            Range:
-              from + '-' + to,
+          Range: from + '-' + to,
 
-            'Range-Unit':
-              'items'
-          }
+          'Range-Unit': 'items'
         }
-      );
+      }
+    );
 
-    var text =
-      await response.text();
+    var text = await response.text();
 
     if (!response.ok) {
       throw new Error(
@@ -601,13 +600,11 @@ async function loadConversationDirectoryRows() {
       );
     }
 
-    var rows =
-      text
-        ? JSON.parse(text)
-        : [];
+    var rows = text
+      ? JSON.parse(text)
+      : [];
 
-    allRows =
-      allRows.concat(rows);
+    allRows = allRows.concat(rows);
 
     if (rows.length < pageSize) {
       break;
@@ -618,9 +615,7 @@ async function loadConversationDirectoryRows() {
 
   return allRows.filter(function(row) {
     return (
-      Number.isInteger(
-        Number(row.ID)
-      ) &&
+      Number.isInteger(Number(row.ID)) &&
       getConversationDirectoryText(
         row.GROUP
       ) &&
@@ -634,14 +629,21 @@ async function loadConversationDirectoryRows() {
   });
 }
 
+// ----------------------------------------------------------------------------
+// END: DIRECTORY DATA LOADING
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// 🟪 SUB BLOCK 3220-50: DIRECTORY BREADCRUMB AND ITEM RENDERING
+// ----------------------------------------------------------------------------
 
 function renderConversationDirectoryBreadcrumb(
   state
 ) {
-  var breadcrumb =
-    document.getElementById(
-      'conversationDirectoryBreadcrumb'
-    );
+  var breadcrumb = document.getElementById(
+    'conversationDirectoryBreadcrumb'
+  );
 
   if (!breadcrumb) {
     return;
@@ -658,16 +660,12 @@ function renderConversationDirectoryBreadcrumb(
     breadcrumb.appendChild(separator);
   }
 
-  function appendStep(
-    label,
-    action
-  ) {
+  function appendStep(label, action) {
     var button =
       document.createElement('button');
 
     button.type = 'button';
     button.textContent = label;
-
     button.onclick = action;
 
     breadcrumb.appendChild(button);
@@ -703,8 +701,7 @@ function renderConversationDirectoryBreadcrumb(
     var category =
       document.createElement('strong');
 
-    category.textContent =
-      state.category;
+    category.textContent = state.category;
 
     breadcrumb.appendChild(category);
   }
@@ -736,24 +733,29 @@ function renderConversationDirectoryItem(
   container.appendChild(button);
 }
 
+// ----------------------------------------------------------------------------
+// END: DIRECTORY BREADCRUMB AND ITEM RENDERING
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// 🟪 SUB BLOCK 3220-60: DIRECTORY LEVEL AND CATEGORY NAVIGATION
+// ----------------------------------------------------------------------------
 
 function renderConversationDirectory(
   requestedState
 ) {
-  var directory =
-    document.getElementById(
-      'conversationDirectory'
-    );
+  var directory = document.getElementById(
+    'conversationDirectory'
+  );
 
-  var list =
-    document.getElementById(
-      'conversationDirectoryList'
-    );
+  var list = document.getElementById(
+    'conversationDirectoryList'
+  );
 
-  var app =
-    document.getElementById(
-      'conversationApp'
-    );
+  var app = document.getElementById(
+    'conversationApp'
+  );
 
   if (!directory || !list || !app) {
     throw new Error(
@@ -771,8 +773,7 @@ function renderConversationDirectory(
   };
 
   var rows =
-    window.CONVERSATION_V2_DIRECTORY_ROWS ||
-    [];
+    getConversationDirectoryRows();
 
   directory.hidden = false;
 
@@ -807,14 +808,13 @@ function renderConversationDirectory(
     return;
   }
 
-  var levelRows =
-    rows.filter(function(row) {
-      return (
-        getConversationDirectoryText(
-          row.GROUP
-        ) === state.level
-      );
-    });
+  var levelRows = rows.filter(function(row) {
+    return (
+      getConversationDirectoryText(
+        row.GROUP
+      ) === state.level
+    );
+  });
 
   if (!state.category) {
     getConversationDirectoryUniqueValues(
@@ -837,18 +837,42 @@ function renderConversationDirectory(
     return;
   }
 
-  var titleRows =
-    levelRows
-      .filter(function(row) {
-        return (
-          getConversationDirectoryText(
-            row.CATEGORY
-          ) === state.category
-        );
-      })
-      .sort(function(left, right) {
-        return Number(left.ID) - Number(right.ID);
-      });
+  renderConversationDirectoryTitles(
+    levelRows,
+    state,
+    list,
+    directory,
+    app
+  );
+}
+
+// ----------------------------------------------------------------------------
+// END: DIRECTORY LEVEL AND CATEGORY NAVIGATION
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// 🟪 SUB BLOCK 3220-70: DIRECTORY TITLE SELECTION
+// ----------------------------------------------------------------------------
+
+function renderConversationDirectoryTitles(
+  levelRows,
+  state,
+  list,
+  directory,
+  app
+) {
+  var titleRows = levelRows
+    .filter(function(row) {
+      return (
+        getConversationDirectoryText(
+          row.CATEGORY
+        ) === state.category
+      );
+    })
+    .sort(function(left, right) {
+      return Number(left.ID) - Number(right.ID);
+    });
 
   titleRows.forEach(function(row) {
     renderConversationDirectoryItem(
@@ -871,30 +895,36 @@ function renderConversationDirectory(
     );
   });
 
-  if (!titleRows.length) {
-    var empty =
-      document.createElement('p');
-
-    empty.className =
-      'conversation-directory-empty';
-
-    empty.textContent =
-      'No conversations found.';
-
-    list.appendChild(empty);
-  }
-}
-
-
-async function startConversationApp() {
-  if (
-    window.__conversationV2Started
-  ) {
+  if (titleRows.length) {
     return;
   }
 
-  window.__conversationV2Started =
-    true;
+  var empty = document.createElement('p');
+
+  empty.className =
+    'conversation-directory-empty';
+
+  empty.textContent =
+    'No conversations found.';
+
+  list.appendChild(empty);
+}
+
+// ----------------------------------------------------------------------------
+// END: DIRECTORY TITLE SELECTION
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// 🟪 SUB BLOCK 3220-80: APPLICATION STARTUP
+// ----------------------------------------------------------------------------
+
+async function startConversationApp() {
+  if (window.__conversationV2Started) {
+    return;
+  }
+
+  window.__conversationV2Started = true;
 
   try {
     setConversationStatus(
@@ -925,10 +955,8 @@ async function startConversationApp() {
       '[CONVERSATION V2] Directory rows:',
       window.CONVERSATION_V2_DIRECTORY_ROWS.length
     );
-
   } catch (error) {
-    window.__conversationV2Started =
-      false;
+    window.__conversationV2Started = false;
 
     console.error(
       '[CONVERSATION V2] Directory start failed:',
@@ -962,10 +990,13 @@ function bootConversationApp() {
 
 bootConversationApp();
 
+// ----------------------------------------------------------------------------
+// END: APPLICATION STARTUP
+// ----------------------------------------------------------------------------
+
 // ============================================================================
 // END: CONVERSATION DIRECTORY AND APPLICATION START
 // ============================================================================
-
 
 // ============================================================================
 // 🟦 BLOCK 3221: DIRECTORY LOADING VIEW
@@ -2998,6 +3029,7 @@ async function continueCurrentPsgAfterFinish(
     getCurrentContinueMode();
 
   if (mode === 'repeat') {
+    resetCurrentPlayVisualState();
     startCurrentPsgPlay();
     return;
   }
@@ -3025,6 +3057,7 @@ async function continueCurrentPsgAfterFinish(
     return;
   }
 
+  resetCurrentPlayVisualState();
   startCurrentPsgPlay();
 }
 
@@ -6176,7 +6209,7 @@ if (document.readyState === 'loading') {
 
 // ============================================================================
 // 🟦 BLOCK 3400: SPACE PLAY / STOP TOGGLE
-// Purpose: SPACE toggles normal PLAY and STOP outside input controls.
+// Purpose: Only SPACE toggles normal PLAY and STOP.
 // ============================================================================
 
 function isCurrentSpaceShortcutBlocked(
@@ -6198,11 +6231,7 @@ function installCurrentSpacePlayToggle() {
   document.addEventListener(
     'keydown',
     function(event) {
-            var playButtonFocused =
-        event.target &&
-        event.target.id === 'playButton';
-
-            var playButtonFocused =
+      var playButtonFocused =
         event.target &&
         event.target.id === 'playButton';
 
@@ -6216,6 +6245,7 @@ function installCurrentSpacePlayToggle() {
           !playButtonFocused
         )
       ) {
+        return;
       }
 
       var playMenuPanel =
@@ -6260,7 +6290,6 @@ if (document.readyState === 'loading') {
 // ============================================================================
 // END: SPACE PLAY / STOP TOGGLE
 // ============================================================================
-
 
 // ============================================================================
 // 🟦 BLOCK 3401: LEFT / RIGHT CONVERSATION NAVIGATION
@@ -6369,4 +6398,163 @@ if (document.readyState === 'loading') {
 
 // ============================================================================
 // END: PRACTICE RESET
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 3410: BUTTON HOVER HELP
+// Purpose: Give every button a native desktop hover description.
+// ============================================================================
+
+function getCurrentButtonHoverHelp(button) {
+  var helpById = {
+    systemMenuButton:
+      '시스템 메뉴 열기',
+    playButton:
+      '현재 선택 문장부터 재생',
+    playMenuButton:
+      'PLAY 옵션 열기 또는 닫기',
+    stopButton:
+      '재생, 역할 연습, 마이크를 중지',
+    settingsButton:
+      '재생 및 언어 설정 열기',
+
+    playModeToggleButton:
+      'COMPUTER와 I FIRST 순서 전환',
+    practiceStartStopButton:
+      '선택한 연습 시작 또는 중지',
+    practiceModeToggleButton:
+      'ROLE PLAY 연습 모드 전환',
+    continueNextButton:
+      '재생 후 반복 또는 다음 대화 진행 설정',
+    practiceResetButton:
+      '연습 결과와 선택 상태 초기화',
+
+    playLoopToggle:
+      '현재 대화 반복 재생 설정',
+    chunkButton:
+      '선택 문장의 세부 구간 표시',
+    previousButton:
+      '이전 대화로 이동',
+    nextButton:
+      '다음 대화로 이동'
+  };
+
+  var systemHelpByKey = {
+    conversation:
+      '대화 첫 화면 열기',
+    license:
+      '라이선스 안내 열기',
+    bible:
+      '성경 관련 화면 열기',
+    easyLearning:
+      'Easy Learning 열기'
+  };
+
+  if (helpById[button.id]) {
+    return helpById[button.id];
+  }
+
+  var systemKey =
+    String(
+      button.dataset.systemKey || ''
+    ).trim();
+
+  if (systemHelpByKey[systemKey]) {
+    return systemHelpByKey[systemKey];
+  }
+
+  var ariaLabel =
+    String(
+      button.getAttribute('aria-label') || ''
+    ).trim();
+
+  if (ariaLabel) {
+    return ariaLabel;
+  }
+
+  return String(
+    button.textContent || ''
+  )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+
+function applyCurrentButtonHoverHelp(root) {
+  var scope = root || document;
+
+  scope
+    .querySelectorAll('button')
+    .forEach(function(button) {
+      if (
+        button.hasAttribute('title') &&
+        button.title.trim()
+      ) {
+        return;
+      }
+
+      var help =
+        getCurrentButtonHoverHelp(button);
+
+      if (help) {
+        button.title = help;
+      }
+    });
+}
+
+
+function bootCurrentButtonHoverHelp() {
+  var install = function() {
+    applyCurrentButtonHoverHelp(document);
+
+    new MutationObserver(function(records) {
+      records.forEach(function(record) {
+        record.addedNodes.forEach(function(node) {
+          if (
+            !node ||
+            node.nodeType !== 1
+          ) {
+            return;
+          }
+
+          if (node.matches('button')) {
+            var help =
+              getCurrentButtonHoverHelp(node);
+
+            if (help) {
+              node.title = help;
+            }
+          }
+
+          applyCurrentButtonHoverHelp(node);
+        });
+      });
+    }).observe(
+      document.body,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      install,
+      { once: true }
+    );
+
+    return;
+  }
+
+  install();
+}
+
+
+bootCurrentButtonHoverHelp();
+
+// ============================================================================
+// END: BUTTON HOVER HELP
 // ============================================================================
