@@ -2809,6 +2809,181 @@ function startCurrentPsgWebWordFallback() {
 }
 
 
+
+// ============================================================================
+// 🟦 BLOCK 5702: ANDROID CHROME PERSISTENT DIAGNOSTIC TRACE
+// Purpose: Save S26 PLAY/MIC state before DevTools connection changes runtime.
+// ============================================================================
+
+var CONVERSATION_V2_ANDROID_TRACE_KEY_2 =
+  'CONVERSATION_V2_ANDROID_TRACE_2';
+
+
+function writeCurrentAndroidTrace_2(
+  eventName,
+  detail
+) {
+  if (!isCurrentAndroidChrome_2()) {
+    return;
+  }
+
+  try {
+    var entries = JSON.parse(
+      localStorage.getItem(
+        CONVERSATION_V2_ANDROID_TRACE_KEY_2
+      ) || '[]'
+    );
+
+    entries.push({
+      time: new Date().toISOString(),
+      event: eventName,
+      detail: detail || {}
+    });
+
+    if (entries.length > 80) {
+      entries = entries.slice(-80);
+    }
+
+    localStorage.setItem(
+      CONVERSATION_V2_ANDROID_TRACE_KEY_2,
+      JSON.stringify(entries)
+    );
+  } catch (error) {
+    // Diagnostics must never affect PLAY or MIC.
+  }
+}
+
+
+function getCurrentAndroidTraceSnapshot_2() {
+  var synthesis = window.speechSynthesis;
+  var micState =
+    window.CONVERSATION_V2_MIC || {};
+
+  return {
+    visible: document.visibilityState,
+    focused: document.hasFocus(),
+    row: Boolean(window.CONVERSATION_V2_ROW),
+    cards: document.querySelectorAll(
+      '.conversation-turn-card'
+    ).length,
+    sequence:
+      typeof buildCurrentPsgPlaySequence ===
+      'function'
+        ? buildCurrentPsgPlaySequence().length
+        : -1,
+    tts: Boolean(synthesis),
+    paused: synthesis ? synthesis.paused : null,
+    pending: synthesis ? synthesis.pending : null,
+    speaking: synthesis ? synthesis.speaking : null,
+    voices: synthesis
+      ? synthesis.getVoices().length
+      : 0,
+    micClass: Boolean(
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition
+    ),
+    micRunning: Boolean(micState.running)
+  };
+}
+
+
+function installCurrentAndroidTrace_2() {
+  if (!isCurrentAndroidChrome_2()) {
+    return;
+  }
+
+  writeCurrentAndroidTrace_2(
+    'boot',
+    getCurrentAndroidTraceSnapshot_2()
+  );
+
+  window.addEventListener(
+    'pageshow',
+    function() {
+      writeCurrentAndroidTrace_2(
+        'pageshow',
+        getCurrentAndroidTraceSnapshot_2()
+      );
+    }
+  );
+
+  document.addEventListener(
+    'visibilitychange',
+    function() {
+      writeCurrentAndroidTrace_2(
+        'visibilitychange',
+        getCurrentAndroidTraceSnapshot_2()
+      );
+    }
+  );
+
+  document.addEventListener(
+    'click',
+    function(event) {
+      var button =
+        event.target.closest('button');
+
+      if (!button) {
+        return;
+      }
+
+      var watched =
+        button.id === 'playButton' ||
+        button.id ===
+          'practiceStartStopButton';
+
+      if (!watched) {
+        return;
+      }
+
+      writeCurrentAndroidTrace_2(
+        'tap:' + button.id,
+        getCurrentAndroidTraceSnapshot_2()
+      );
+
+      window.setTimeout(function() {
+        writeCurrentAndroidTrace_2(
+          'after-0ms:' + button.id,
+          getCurrentAndroidTraceSnapshot_2()
+        );
+      }, 0);
+
+      window.setTimeout(function() {
+        writeCurrentAndroidTrace_2(
+          'after-1800ms:' + button.id,
+          getCurrentAndroidTraceSnapshot_2()
+        );
+      }, 1800);
+    },
+    true
+  );
+
+  if (
+    navigator.permissions &&
+    typeof navigator.permissions.query ===
+      'function'
+  ) {
+    navigator.permissions.query({
+      name: 'microphone'
+    }).then(
+      function(permission) {
+        writeCurrentAndroidTrace_2(
+          'microphone-permission',
+          { state: permission.state }
+        );
+      },
+      function() {
+        // Some Android Chrome versions do not expose it.
+      }
+    );
+  }
+}
+
+
+installCurrentAndroidTrace_2();
+
+
+
 // ============================================================================
 // 🟦 BLOCK 5750: WEB PLAY ADAPTER
 // ============================================================================
