@@ -2942,8 +2942,7 @@ function createCurrentPsgAndroidChromeAdapter_2() {
     speak: function(item) {
       return new Promise(function(resolve, reject) {
         var settled = false;
-        var started = false;
-        var retryCount = 0;
+        var attemptId = 0;
         var fallbackTimer = null;
         var startTimer = null;
 
@@ -2965,11 +2964,17 @@ function createCurrentPsgAndroidChromeAdapter_2() {
           }
 
           settled = true;
+          attemptId += 1;
           clearTimers();
           callback(value);
         }
 
-        function speakAttempt() {
+        function speakAttempt(retry) {
+          var myAttempt = attemptId + 1;
+          var started = false;
+
+          attemptId = myAttempt;
+
           var utterance =
             new SpeechSynthesisUtterance(
               item.speechText
@@ -2984,6 +2989,13 @@ function createCurrentPsgAndroidChromeAdapter_2() {
             getCurrentPsgPlayRate();
 
           utterance.onstart = function() {
+            if (
+              settled ||
+              myAttempt !== attemptId
+            ) {
+              return;
+            }
+
             started = true;
 
             if (startTimer !== null) {
@@ -2996,6 +3008,13 @@ function createCurrentPsgAndroidChromeAdapter_2() {
           };
 
           utterance.onboundary = function(event) {
+            if (
+              settled ||
+              myAttempt !== attemptId
+            ) {
+              return;
+            }
+
             var charIndex =
               Number(event.charIndex);
 
@@ -3012,13 +3031,24 @@ function createCurrentPsgAndroidChromeAdapter_2() {
           };
 
           utterance.onend = function() {
-            finish(resolve);
+            if (
+              !settled &&
+              myAttempt === attemptId
+            ) {
+              finish(resolve);
+            }
           };
 
           utterance.onerror = function(error) {
-            if (!started && retryCount < 1) {
-              retryCount += 1;
-              speakAttempt();
+            if (
+              settled ||
+              myAttempt !== attemptId
+            ) {
+              return;
+            }
+
+            if (!started && !retry) {
+              speakAttempt(true);
               return;
             }
 
@@ -3026,22 +3056,29 @@ function createCurrentPsgAndroidChromeAdapter_2() {
           };
 
           try {
-            // S26 Chrome can retain a paused/stale TTS engine.
             synthesis.cancel();
             synthesis.resume();
             synthesis.speak(utterance);
 
             window.setTimeout(function() {
-              if (synthesis.paused) {
+              if (
+                !settled &&
+                myAttempt === attemptId &&
+                synthesis.paused
+              ) {
                 synthesis.resume();
               }
             }, 100);
 
             startTimer = window.setTimeout(
               function() {
-                if (!started && retryCount < 1) {
-                  retryCount += 1;
-                  speakAttempt();
+                if (
+                  !settled &&
+                  myAttempt === attemptId &&
+                  !started &&
+                  !retry
+                ) {
+                  speakAttempt(true);
                 }
               },
               1500
@@ -3051,7 +3088,7 @@ function createCurrentPsgAndroidChromeAdapter_2() {
           }
         }
 
-        speakAttempt();
+        speakAttempt(false);
       });
     },
 
