@@ -4142,18 +4142,23 @@ window.startAndCheckCurrentMicAnswer =
 
 
 // ============================================================================
-// 🟦 BLOCK 3327: ROLE PLAY TARGET SENTENCE
-// Purpose: Yellow box selects the sentence to start role play.
-// Default: first sentence.
+// 🟦 BLOCK 3327: ROLE PLAY AND PLAY START TARGET
+// Purpose: One source of truth for the yellow start sentence.
+//          New conversations always begin at their first sentence.
 // ============================================================================
+
+function getCurrentRoleTargetCards() {
+  return Array.from(
+    document.querySelectorAll(
+      '#conversationTurns .conversation-turn-card'
+    )
+  );
+}
+
 
 function selectCurrentRoleTurn(turnNumber) {
   var cards =
-    Array.from(
-      document.querySelectorAll(
-        '.conversation-turn-card'
-      )
-    );
+    getCurrentRoleTargetCards();
 
   var target =
     cards.find(function(card) {
@@ -4181,11 +4186,42 @@ function selectCurrentRoleTurn(turnNumber) {
   return target;
 }
 
+
 function getCurrentRoleTargetTurn() {
+  var yellowCard =
+    document.querySelector(
+      '#conversationTurns ' +
+      '.conversation-turn-card.is-role-target'
+    );
+
+  var yellowTurn =
+    Number(
+      yellowCard &&
+      yellowCard.dataset.turn
+    );
+
+  if (yellowTurn > 0) {
+    window.CONVERSATION_V2_ROLE_TARGET_TURN =
+      yellowTurn;
+
+    return yellowTurn;
+  }
+
   return Number(
     window.CONVERSATION_V2_ROLE_TARGET_TURN || 1
   );
 }
+
+
+function getCurrentRoleTargetConversationId() {
+  var row =
+    window.CONVERSATION_V2_ROW;
+
+  return row && row.ID
+    ? String(row.ID)
+    : '';
+}
+
 
 function installCurrentRoleTurnSelection() {
   var container =
@@ -4217,18 +4253,47 @@ function installCurrentRoleTurnSelection() {
 
   var applyDefaultTarget = function() {
     var cards =
-      container.querySelectorAll(
-        '.conversation-turn-card'
-      );
+      getCurrentRoleTargetCards();
 
     if (!cards.length) {
       return;
     }
 
-    selectCurrentRoleTurn(
-      window.CONVERSATION_V2_ROLE_TARGET_TURN ||
-      cards[0].dataset.turn
-    );
+    var currentConversationId =
+      getCurrentRoleTargetConversationId();
+
+    var previousConversationId =
+      String(
+        window.CONVERSATION_V2_ROLE_TARGET_ROW_ID ||
+        ''
+      );
+
+    var savedTurn =
+      Number(
+        window.CONVERSATION_V2_ROLE_TARGET_TURN
+      );
+
+    var targetTurn =
+      currentConversationId !==
+      previousConversationId
+        ? Number(cards[0].dataset.turn)
+        : savedTurn;
+
+    var targetExists =
+      cards.some(function(card) {
+        return Number(card.dataset.turn) ===
+          targetTurn;
+      });
+
+    if (!targetExists) {
+      targetTurn =
+        Number(cards[0].dataset.turn);
+    }
+
+    window.CONVERSATION_V2_ROLE_TARGET_ROW_ID =
+      currentConversationId;
+
+    selectCurrentRoleTurn(targetTurn);
   };
 
   new MutationObserver(
@@ -4241,6 +4306,7 @@ function installCurrentRoleTurnSelection() {
   applyDefaultTarget();
 }
 
+
 if (document.readyState === 'loading') {
   document.addEventListener(
     'DOMContentLoaded',
@@ -4251,6 +4317,7 @@ if (document.readyState === 'loading') {
   installCurrentRoleTurnSelection();
 }
 
+
 window.selectCurrentRoleTurn =
   selectCurrentRoleTurn;
 
@@ -4258,9 +4325,8 @@ window.getCurrentRoleTargetTurn =
   getCurrentRoleTargetTurn;
 
 // ============================================================================
-// END: ROLE PLAY TARGET SENTENCE
+// END: ROLE PLAY AND PLAY START TARGET
 // ============================================================================
-
 
 // ============================================================================
 // 🟦 BLOCK 3328: PRACTICE MODE AND START / STOP CONTROL
