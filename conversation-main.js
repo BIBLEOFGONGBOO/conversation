@@ -4233,13 +4233,17 @@ function installCurrentRoleTurnSelection() {
     return;
   }
 
-  container.addEventListener(
+  document.addEventListener(
     'click',
     function(event) {
       var card =
-        event.target.closest(
-          '.conversation-turn-card'
-        );
+        event.target &&
+        event.target.closest
+          ? event.target.closest(
+              '#conversationTurns ' +
+              '.conversation-turn-card'
+            )
+          : null;
 
       if (!card || !container.contains(card)) {
         return;
@@ -4248,52 +4252,36 @@ function installCurrentRoleTurnSelection() {
       selectCurrentRoleTurn(
         card.dataset.turn
       );
-    }
+    },
+    true
   );
 
   var applyDefaultTarget = function() {
     var cards =
-      getCurrentRoleTargetCards();
+      container.querySelectorAll(
+        '.conversation-turn-card'
+      );
 
     if (!cards.length) {
       return;
     }
 
-    var currentConversationId =
-      getCurrentRoleTargetConversationId();
-
-    var previousConversationId =
-      String(
-        window.CONVERSATION_V2_ROLE_TARGET_ROW_ID ||
-        ''
+    var selectedCard =
+      container.querySelector(
+        '.conversation-turn-card.is-role-target'
       );
 
-    var savedTurn =
-      Number(
-        window.CONVERSATION_V2_ROLE_TARGET_TURN
-      );
+    if (selectedCard) {
+      window.CONVERSATION_V2_ROLE_TARGET_TURN =
+        Number(selectedCard.dataset.turn);
 
-    var targetTurn =
-      currentConversationId !==
-      previousConversationId
-        ? Number(cards[0].dataset.turn)
-        : savedTurn;
-
-    var targetExists =
-      cards.some(function(card) {
-        return Number(card.dataset.turn) ===
-          targetTurn;
-      });
-
-    if (!targetExists) {
-      targetTurn =
-        Number(cards[0].dataset.turn);
+      return;
     }
 
-    window.CONVERSATION_V2_ROLE_TARGET_ROW_ID =
-      currentConversationId;
-
-    selectCurrentRoleTurn(targetTurn);
+    selectCurrentRoleTurn(
+      window.CONVERSATION_V2_ROLE_TARGET_TURN ||
+      cards[0].dataset.turn
+    );
   };
 
   new MutationObserver(
