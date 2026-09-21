@@ -1,15 +1,29 @@
 // ============================================================================
-// 🟥 BLOCK 3000: CONVERSATION APPLICATION LOGIC
+// 🟥 BLOCK 3000: CONVERSATION APPLICATION LOGIC / NUMBERING RULES
+// ============================================================================
+//
+// BLOCK numbers are always exactly 4 digits: 0000 ~ 9999.
+// Normal COMMON BLOCK spacing: 50.
+//
+// xxx0 = COMMON / Controller
+// xxx1 = PC Chrome
+// xxx2 = Android Chrome
+// xxx3 = Android APK
+// xxx4 = iOS Safari
+// xxx5 = macOS Safari
+// xxx6 = Reserved
+// xxx7 = Reserved
+// xxx8 = Reserved
+// xxx9 = PATCH / Exceptional fallback
+//
+// One BLOCK should normally stay within about 120 lines.
+// Split only at logical / functional boundaries.
+// Do not change executable code merely for BLOCK organization.
 // ============================================================================
 
 
 // ============================================================================
-// 🟩 BLOCK 3100: SUPABASE DATA ACCESS
-// ============================================================================
-
-
-// ============================================================================
-// 🟦 BLOCK 3110: PRIVATE LOCAL CONFIGURATION
+// 🟦 BLOCK 3050: SUPABASE PRIVATE LOCAL CONFIGURATION
 // ============================================================================
 
 const SUPABASE_CONFIG = {
@@ -20,8 +34,7 @@ const SUPABASE_CONFIG = {
 
 
 // ============================================================================
-// 🟦 BLOCK 3120: LOCAL CONVERSATION CACHE AND ROW LOADER
-// Purpose: Cache 20 conversations from the selected position by language.
+// 🟦 BLOCK 3100: LOCAL CONVERSATION CACHE CORE
 // ============================================================================
 
 const CONVERSATION_V2_CACHE_KEY =
@@ -107,6 +120,10 @@ function getCachedConversationRow(
   ) || null;
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 3150: LOCAL CONVERSATION BATCH CACHE
+// ============================================================================
 
 function saveConversationBatch(
   languageCode,
@@ -195,6 +212,10 @@ function getConversationBatchIds(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 3200: SERVER CONVERSATION ROW REQUEST
+// ============================================================================
+
 async function requestConversationRows(
   ids,
   languageCode
@@ -245,6 +266,10 @@ async function requestConversationRows(
     : [];
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 3250: CONVERSATION ROW LOADER
+// ============================================================================
 
 async function loadConversationRow(
   id,
@@ -320,22 +345,9 @@ async function loadConversationRow(
   return row;
 }
 
-// ============================================================================
-// END: LOCAL CONVERSATION CACHE AND ROW LOADER
-// ============================================================================
 
 // ============================================================================
-// END: LOCAL CONVERSATION CACHE AND ROW LOADER
-// ============================================================================
-
-
-// ============================================================================
-// 🟩 BLOCK 3200: APPLICATION START
-// ============================================================================
-
-
-// ============================================================================
-// 🟦 BLOCK 3210: STATUS VIEW
+// 🟦 BLOCK 3300: STATUS VIEW
 // ============================================================================
 
 function setConversationStatus(
@@ -353,18 +365,15 @@ function setConversationStatus(
 
 
 // ============================================================================
-// 🟦 BLOCK 3220: CONVERSATION DIRECTORY AND APPLICATION START
+// 🟦 BLOCK 3350: DIALOGUE NORMALIZATION AND PARSING
 // ============================================================================
-
-// ----------------------------------------------------------------------------
-// 🟪 SUB BLOCK 3220-10: DIALOGUE NORMALIZATION AND PARSING
-// ----------------------------------------------------------------------------
 
 function normalizeConversationDialogueText(dialogue) {
   return String(dialogue || '')
     .replace(/\\r\\n/g, '\n')
     .replace(/\\n|\\r/g, '\n');
 }
+
 
 function parseConversationTurns(dialogue) {
   var lines = normalizeConversationDialogueText(dialogue)
@@ -400,14 +409,10 @@ function parseConversationTurns(dialogue) {
   return turns;
 }
 
-// ----------------------------------------------------------------------------
-// END: DIALOGUE NORMALIZATION AND PARSING
-// ----------------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------------
-// 🟪 SUB BLOCK 3220-20: CONVERSATION TURN RENDERING
-// ----------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 3400: CONVERSATION TURN RENDERING
+// ============================================================================
 
 function renderConversationTurns(turns) {
   var container = document.getElementById(
@@ -511,14 +516,10 @@ function renderFirstConversationRow(row) {
   );
 }
 
-// ----------------------------------------------------------------------------
-// END: CONVERSATION TURN RENDERING
-// ----------------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------------
-// 🟪 SUB BLOCK 3220-30: DIRECTORY VALUE HELPERS
-// ----------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 3450: DIRECTORY VALUE HELPERS
+// ============================================================================
 
 function getConversationDirectoryText(value) {
   return String(value || '').trim();
@@ -550,14 +551,10 @@ function getConversationDirectoryRows() {
     [];
 }
 
-// ----------------------------------------------------------------------------
-// END: DIRECTORY VALUE HELPERS
-// ----------------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------------
-// 🟪 SUB BLOCK 3220-40: DIRECTORY DATA LOADING
-// ----------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 3500: DIRECTORY DATA LOADING
+// ============================================================================
 
 async function loadConversationDirectoryRows() {
   var allRows = [];
@@ -629,14 +626,10 @@ async function loadConversationDirectoryRows() {
   });
 }
 
-// ----------------------------------------------------------------------------
-// END: DIRECTORY DATA LOADING
-// ----------------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------------
-// 🟪 SUB BLOCK 3220-50: DIRECTORY BREADCRUMB AND ITEM RENDERING
-// ----------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 3550: DIRECTORY BREADCRUMB / ITEM RENDERING
+// ============================================================================
 
 function renderConversationDirectoryBreadcrumb(
   state
@@ -733,14 +726,10 @@ function renderConversationDirectoryItem(
   container.appendChild(button);
 }
 
-// ----------------------------------------------------------------------------
-// END: DIRECTORY BREADCRUMB AND ITEM RENDERING
-// ----------------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------------
-// 🟪 SUB BLOCK 3220-60: DIRECTORY LEVEL AND CATEGORY NAVIGATION
-// ----------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 3600: DIRECTORY LEVEL / CATEGORY NAVIGATION
+// ============================================================================
 
 function renderConversationDirectory(
   requestedState
@@ -846,14 +835,10 @@ function renderConversationDirectory(
   );
 }
 
-// ----------------------------------------------------------------------------
-// END: DIRECTORY LEVEL AND CATEGORY NAVIGATION
-// ----------------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------------
-// 🟪 SUB BLOCK 3220-70: DIRECTORY TITLE SELECTION
-// ----------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 3650: DIRECTORY TITLE SELECTION
+// ============================================================================
 
 function renderConversationDirectoryTitles(
   levelRows,
@@ -910,14 +895,10 @@ function renderConversationDirectoryTitles(
   list.appendChild(empty);
 }
 
-// ----------------------------------------------------------------------------
-// END: DIRECTORY TITLE SELECTION
-// ----------------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------------
-// 🟪 SUB BLOCK 3220-80: APPLICATION STARTUP
-// ----------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 3700: APPLICATION STARTUP
+// ============================================================================
 
 async function startConversationApp() {
   if (window.__conversationV2Started) {
@@ -955,6 +936,7 @@ async function startConversationApp() {
       '[CONVERSATION V2] Directory rows:',
       window.CONVERSATION_V2_DIRECTORY_ROWS.length
     );
+
   } catch (error) {
     window.__conversationV2Started = false;
 
@@ -990,17 +972,9 @@ function bootConversationApp() {
 
 bootConversationApp();
 
-// ----------------------------------------------------------------------------
-// END: APPLICATION STARTUP
-// ----------------------------------------------------------------------------
 
 // ============================================================================
-// END: CONVERSATION DIRECTORY AND APPLICATION START
-// ============================================================================
-
-// ============================================================================
-// 🟦 BLOCK 3221: DIRECTORY LOADING VIEW
-// Purpose: Hide lesson navigation and show one loading line at startup.
+// 🟦 BLOCK 3750: DIRECTORY LOADING VIEW
 // ============================================================================
 
 function renderConversationDirectoryLoading() {
@@ -1073,17 +1047,14 @@ function bootConversationDirectoryLoading() {
 
 bootConversationDirectoryLoading();
 
+
 // ============================================================================
-// END: DIRECTORY LOADING VIEW
+// 🟩 4000 — MENU / UI STATE + LANGUAGE / LOADING
 // ============================================================================
-
-
-
 
 
 // ============================================================================
-// 🟦 BLOCK 3230: CONVERSATION MENU STATE
-// Purpose: Open, close, and synchronize top-level menus only.
+// 🟦 BLOCK 4000: CONVERSATION MENU STATE
 // ============================================================================
 
 function getConversationMenus() {
@@ -1154,6 +1125,10 @@ function syncPlayButtonWithPlayMenu() {
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 4050: MENU CLOSE / TOGGLE
+// ============================================================================
 
 function closeConversationMenus() {
   getConversationMenus().forEach(
@@ -1232,17 +1207,9 @@ function toggleConversationMenu(
   syncPlayButtonWithPlayMenu();
 }
 
-// ============================================================================
-// END: CONVERSATION MENU STATE
-// ============================================================================
-
-
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3232: PLAY MENU OPTION CONTROLS
-// Purpose: Control PLAY option values without closing the main PLAY menu.
+// 🟦 BLOCK 4100: PLAY MENU VALUE CONTROLS
 // ============================================================================
 
 function togglePlayMorePanel() {
@@ -1294,6 +1261,10 @@ function updatePlayRangeValue(
     ) + suffix;
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 4150: PLAY MODE TOGGLE
+// ============================================================================
 
 function installPlayModeToggle() {
   var button =
@@ -1347,6 +1318,10 @@ function installPlayModeToggle() {
   };
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 4200: PLAY DETAIL CONTROLS
+// ============================================================================
 
 function installPlayDetails() {
   var moreButton =
@@ -1447,18 +1422,9 @@ function installPlayDetails() {
   });
 }
 
-// ============================================================================
-// END: PLAY MENU OPTION CONTROLS
-// ============================================================================
-
-
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3234: MENU PROTECTION AND EVENT INSTALLATION
-// Purpose: Keep PLAY options open while selecting a conversation sentence.
-//          STOP and EXIT remain responsible for closing menus.
+// 🟦 BLOCK 4250: MENU PROTECTION / EVENT INSTALLATION
 // ============================================================================
 
 function isCurrentPlayMenuProtectedClick(
@@ -1549,6 +1515,10 @@ function installConversationMenus() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 4300: MENU BOOTSTRAP
+// ============================================================================
+
 function bootConversationMenus() {
   if (
     document.readyState ===
@@ -1569,16 +1539,9 @@ function bootConversationMenus() {
 
 bootConversationMenus();
 
-// ============================================================================
-// END: MENU PROTECTION AND EVENT INSTALLATION
-// ============================================================================
-
-
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3236: CURRENT PSG LOOP TOGGLE
+// 🟦 BLOCK 4350: CURRENT PSG LOOP TOGGLE
 // ============================================================================
 
 function renderPlayLoopToggle() {
@@ -1658,15 +1621,9 @@ function bootPlayLoopToggle() {
 
 bootPlayLoopToggle();
 
-// ============================================================================
-// END: CURRENT PSG LOOP TOGGLE
-// ============================================================================
-
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3240: LEVEL0 LANGUAGE OPTIONS
+// 🟦 BLOCK 4400: LEVEL0 LANGUAGE CODE LOADER
 // ============================================================================
 
 async function loadV2LanguageCodes() {
@@ -1739,6 +1696,10 @@ async function loadV2LanguageCodes() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 4450: LANGUAGE SELECT BUILDER
+// ============================================================================
+
 function fillV2LanguageSelect(
   selectId,
   languageCodes,
@@ -1785,10 +1746,12 @@ function fillV2LanguageSelect(
     allowNone
   ) {
     select.value = 'NONE';
+
   } else if (
     languageCodes.includes(previousValue)
   ) {
     select.value = previousValue;
+
   } else if (
     languageCodes.includes('EN')
   ) {
@@ -1796,6 +1759,10 @@ function fillV2LanguageSelect(
   }
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 4500: LANGUAGE OPTIONS INSTALLATION
+// ============================================================================
 
 async function installV2LanguageOptions() {
   try {
@@ -1833,8 +1800,9 @@ async function installV2LanguageOptions() {
 
 installV2LanguageOptions();
 
+
 // ============================================================================
-// 🟦 BLOCK 3250: SELECTED LANGUAGE ROW LOADER
+// 🟦 BLOCK 4550: SELECTED LANGUAGE HELPERS
 // ============================================================================
 
 function getV2SelectedLanguage(
@@ -1884,6 +1852,14 @@ async function loadV2PrimaryRow(
   }
 }
 
+// ============================================================================
+// 🟩 5000 — CATEGORY NAVIGATION / TURN RENDER + PLAY / TTS
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 5000: SELECTED LANGUAGE RELOAD
+// ============================================================================
 
 async function reloadV2SelectedLanguages() {
   var currentId =
@@ -1966,6 +1942,10 @@ async function reloadV2SelectedLanguages() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 5050: LANGUAGE ROW LOADER INSTALLATION
+// ============================================================================
+
 function installV2LanguageRowLoader() {
   var primary =
     document.getElementById(
@@ -1992,11 +1972,8 @@ function installV2LanguageRowLoader() {
 installV2LanguageRowLoader();
 
 
-
 // ============================================================================
-// 🟦 BLOCK 3255: CATEGORY PREVIOUS / NEXT NAVIGATION
-// Purpose: Move inside the selected CATEGORY.
-//          Resume only when CONTINUE: NEXT is selected.
+// 🟦 BLOCK 5100: CATEGORY NAVIGATION ROWS / RESUME STATE
 // ============================================================================
 
 function getCurrentCategoryNavigationRows() {
@@ -2020,9 +1997,11 @@ function getCurrentCategoryNavigationRows() {
   return directoryRows
     .filter(function(row) {
       return (
-        String(row.GROUP || '').trim() === group
+        String(row.GROUP || '').trim() ===
+        group
       ) && (
-        String(row.CATEGORY || '').trim() === category
+        String(row.CATEGORY || '').trim() ===
+        category
       );
     })
     .sort(function(left, right) {
@@ -2049,6 +2028,10 @@ function getCurrentNavigationResumeState() {
   };
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5150: NAVIGATION RESUME / CATEGORY DIRECTORY
+// ============================================================================
 
 function resumeCurrentNavigationActivity(
   resumeState
@@ -2103,6 +2086,10 @@ function openCurrentCategoryDirectory() {
   });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5200: NAVIGATION BUTTON STATE / RENDER
+// ============================================================================
 
 function setConversationNavigationDisabled(
   disabled
@@ -2199,6 +2186,10 @@ function renderConversationNavigation() {
   };
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5250: CONVERSATION ID NAVIGATION LOADER
+// ============================================================================
 
 async function loadConversationById(
   targetId,
@@ -2297,6 +2288,10 @@ var shouldResume =
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 5300: NAVIGATION INSTALLATION / PUBLIC API
+// ============================================================================
+
 function installConversationNavigation() {
   renderConversationNavigation();
 }
@@ -2316,11 +2311,9 @@ if (document.readyState === 'loading') {
 window.loadConversationById =
   loadConversationById;
 
+
 // ============================================================================
-// END: CATEGORY PREVIOUS / NEXT NAVIGATION
-// ============================================================================
-// ============================================================================
-// 🟦 BLOCK 3260: PRIMARY / SECONDARY TURN RENDER
+// 🟦 BLOCK 5350: PRIMARY / SECONDARY TURN RENDER
 // ============================================================================
 
 function renderV2SecondaryTurns() {
@@ -2403,13 +2396,8 @@ window.renderV2SecondaryTurns =
   renderV2SecondaryTurns;
 
 
-  // ============================================================================
-// 🟩 BLOCK 3300: PLAYBACK
 // ============================================================================
-
-// 🟦 BLOCK 3310: LEGACY ROW PLAY SEQUENCE
-// Purpose: Keep the old row-based sequence only for diagnostics.
-//          Actual PLAY uses BLOCK 3315 visible-screen sequence.
+// 🟦 BLOCK 5400: LEGACY ROW PLAY SEQUENCE
 // ============================================================================
 
 function buildLegacyRowPsgPlaySequence() {
@@ -2461,16 +2449,9 @@ window.buildLegacyRowPsgPlaySequence =
 window.inspectLegacyRowPsgPlaySequence =
   inspectLegacyRowPsgPlaySequence;
 
-// ============================================================================
-// END: LEGACY ROW PLAY SEQUENCE
-// ============================================================================
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3315: VISIBLE SCREEN PLAY SEQUENCE
-// Purpose: Play visible primary and secondary sentences in reading order.
-//          Japanese TTS reads furigana only: 私(わたし) -> わたし.
+// 🟦 BLOCK 5450: JAPANESE / CURRENT SPEECH TEXT
 // ============================================================================
 
 function getCurrentJapaneseSpeechText(value) {
@@ -2504,6 +2485,10 @@ function getCurrentPsgSpeechText(
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5500: VISIBLE SCREEN PLAY SEQUENCE
+// ============================================================================
 
 function buildCurrentPsgPlaySequence() {
   var primaryRow =
@@ -2596,6 +2581,10 @@ function buildCurrentPsgPlaySequence() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 5550: PLAY SEQUENCE REFRESH / INSPECTION
+// ============================================================================
+
 function refreshCurrentPsgPlaySequence() {
   var sequence =
     buildCurrentPsgPlaySequence();
@@ -2636,15 +2625,9 @@ window.refreshCurrentPsgPlaySequence =
 window.inspectCurrentPsgPlaySequence =
   inspectCurrentPsgPlaySequence;
 
-// ============================================================================
-// END: VISIBLE SCREEN PLAY SEQUENCE
-// ============================================================================
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3320: SHARED PLAY ADAPTER STATE
-// Purpose: Android native TTS plus browser TTS with sentence-reset highlighting.
+// 🟦 BLOCK 5600: SHARED PLAY STATE / RATE / LOCALE
 // ============================================================================
 
 function getCurrentPsgPlayState() {
@@ -2704,6 +2687,10 @@ function getCurrentPsgPlayLocale(language) {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 5650: NATIVE SPEECH LOOKUP
+// ============================================================================
+
 function getCurrentPsgNativeSpeech() {
   var capacitor = window.Capacitor;
 
@@ -2750,6 +2737,39 @@ function getCurrentPsgNativeSpeech() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 5652: ANDROID CHROME PLATFORM DETECTOR
+// Purpose: S26 Android Chrome only. APK is excluded first.
+// ============================================================================
+
+function isCurrentAndroidChrome_2() {
+  var capacitor = window.Capacitor;
+
+  var isNative =
+    capacitor &&
+    typeof capacitor.isNativePlatform ===
+      'function' &&
+    capacitor.isNativePlatform();
+
+  if (isNative) {
+    return false;
+  }
+
+  var userAgent =
+    String(navigator.userAgent || '');
+
+  return (
+    /Android/i.test(userAgent) &&
+    /Chrome\//i.test(userAgent) &&
+    !/; wv\)/i.test(userAgent)
+  );
+}
+
+
+// ============================================================================
+// 🟦 BLOCK 5700: WEB WORD HIGHLIGHT FALLBACK
+// ============================================================================
+
 function startCurrentPsgWebWordFallback() {
   var data =
     window.CONVERSATION_V2_TTS_WORD_DATA;
@@ -2788,6 +2808,10 @@ function startCurrentPsgWebWordFallback() {
   }, delay);
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5750: WEB PLAY ADAPTER
+// ============================================================================
 
 function createCurrentPsgWebPlayAdapter() {
   if (
@@ -2879,6 +2903,7 @@ function createCurrentPsgWebPlayAdapter() {
           window.setTimeout(function() {
             window.speechSynthesis.resume();
           }, 100);
+
         } catch (error) {
           finish(reject, error);
         }
@@ -2893,6 +2918,157 @@ function createCurrentPsgWebPlayAdapter() {
   };
 }
 
+
+
+// ============================================================================
+// 🟦 BLOCK 5752: ANDROID CHROME PLAY ADAPTER
+// Purpose: S26 cold-start TTS recovery. PC and APK do not enter here.
+// ============================================================================
+
+function createCurrentPsgAndroidChromeAdapter_2() {
+  var synthesis = window.speechSynthesis;
+
+  if (
+    !synthesis ||
+    typeof SpeechSynthesisUtterance !==
+      'function'
+  ) {
+    return null;
+  }
+
+  return {
+    type: 'android-chrome',
+
+    speak: function(item) {
+      return new Promise(function(resolve, reject) {
+        var settled = false;
+        var started = false;
+        var retryCount = 0;
+        var fallbackTimer = null;
+        var startTimer = null;
+
+        function clearTimers() {
+          if (fallbackTimer !== null) {
+            window.clearInterval(fallbackTimer);
+            fallbackTimer = null;
+          }
+
+          if (startTimer !== null) {
+            window.clearTimeout(startTimer);
+            startTimer = null;
+          }
+        }
+
+        function finish(callback, value) {
+          if (settled) {
+            return;
+          }
+
+          settled = true;
+          clearTimers();
+          callback(value);
+        }
+
+        function speakAttempt() {
+          var utterance =
+            new SpeechSynthesisUtterance(
+              item.speechText
+            );
+
+          utterance.lang =
+            getCurrentPsgPlayLocale(
+              item.language
+            );
+
+          utterance.rate =
+            getCurrentPsgPlayRate();
+
+          utterance.onstart = function() {
+            started = true;
+
+            if (startTimer !== null) {
+              window.clearTimeout(startTimer);
+              startTimer = null;
+            }
+
+            fallbackTimer =
+              startCurrentPsgWebWordFallback();
+          };
+
+          utterance.onboundary = function(event) {
+            var charIndex =
+              Number(event.charIndex);
+
+            if (!Number.isInteger(charIndex)) {
+              return;
+            }
+
+            if (fallbackTimer !== null) {
+              window.clearInterval(fallbackTimer);
+              fallbackTimer = null;
+            }
+
+            highlightCurrentTtsWordAt(charIndex);
+          };
+
+          utterance.onend = function() {
+            finish(resolve);
+          };
+
+          utterance.onerror = function(error) {
+            if (!started && retryCount < 1) {
+              retryCount += 1;
+              speakAttempt();
+              return;
+            }
+
+            finish(reject, error);
+          };
+
+          try {
+            // S26 Chrome can retain a paused/stale TTS engine.
+            synthesis.cancel();
+            synthesis.resume();
+            synthesis.speak(utterance);
+
+            window.setTimeout(function() {
+              if (synthesis.paused) {
+                synthesis.resume();
+              }
+            }, 100);
+
+            startTimer = window.setTimeout(
+              function() {
+                if (!started && retryCount < 1) {
+                  retryCount += 1;
+                  speakAttempt();
+                }
+              },
+              1500
+            );
+          } catch (error) {
+            finish(reject, error);
+          }
+        }
+
+        speakAttempt();
+      });
+    },
+
+    stop: function() {
+      synthesis.cancel();
+      synthesis.resume();
+
+      return Promise.resolve();
+    }
+  };
+}
+
+
+
+// ============================================================================
+// 🟦 BLOCK 5800: NATIVE PLAY ADAPTER / BASE ADAPTER
+// ============================================================================
 
 function createCurrentPsgNativePlayAdapter() {
   var nativeSpeech =
@@ -2939,6 +3115,67 @@ function getCurrentPsgBaseAdapter() {
 }
 
 
+
+// ============================================================================
+// 🟦 BLOCK 5800: COMMON PLAY ADAPTER SELECTOR
+// Purpose: Keep APK and PC paths unchanged; send only S26 Chrome to 5752.
+// ============================================================================
+
+function createCurrentPsgNativePlayAdapter() {
+  var nativeSpeech =
+    getCurrentPsgNativeSpeech();
+
+  if (
+    !nativeSpeech ||
+    typeof nativeSpeech.speak !== 'function' ||
+    typeof nativeSpeech.stopSpeaking !==
+      'function'
+  ) {
+    return null;
+  }
+
+  return {
+    type: 'android-native',
+
+    speak: function(item) {
+      return nativeSpeech.speak({
+        text: item.speechText,
+        language: getCurrentPsgPlayLocale(
+          item.language
+        ),
+        rate: getCurrentPsgPlayRate()
+      });
+    },
+
+    stop: function() {
+      return nativeSpeech.stopSpeaking();
+    }
+  };
+}
+
+
+function getCurrentPsgBaseAdapter() {
+  if (isCurrentAndroidChrome_2()) {
+    return createCurrentPsgAndroidChromeAdapter_2();
+  }
+
+  var nativeAdapter =
+    createCurrentPsgNativePlayAdapter();
+
+  if (nativeAdapter) {
+    return nativeAdapter;
+  }
+
+  // Existing PC Chrome path: unchanged.
+  return createCurrentPsgWebPlayAdapter();
+}
+
+
+
+// ============================================================================
+// 🟦 BLOCK 5850: PLAY STOP / CONTINUE NEXT TARGET
+// ============================================================================
+
 function stopCurrentPsgPlay() {
   var state = getCurrentPsgPlayState();
 
@@ -2966,21 +3203,13 @@ function stopCurrentPsgPlay() {
   renderCurrentPsgPlayButton();
 }
 
+
 window.stopCurrentPsgPlay =
   stopCurrentPsgPlay;
 
 window.stopCurrentPsgWebPlay =
   stopCurrentPsgPlay;
 
-// ============================================================================
-// END: SHARED PLAY ADAPTER STATE
-// ============================================================================
-
-
-// ============================================================================
-// 🟦 BLOCK 3322: SHARED TTS SENTENCE SEQUENCE
-// Purpose: Read current PSG and apply CONTINUE OFF / REPEAT / NEXT at finish.
-// ============================================================================
 
 function getCurrentContinueNextTargetId() {
   var currentRow =
@@ -3011,6 +3240,10 @@ function getCurrentContinueNextTargetId() {
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5900: PLAY CONTINUE / SEQUENCE EXECUTION
+// ============================================================================
 
 async function continueCurrentPsgAfterFinish(
   completedRunId
@@ -3127,6 +3360,7 @@ function speakCurrentPsgSequenceItem(
         runId
       );
     },
+
     function(error) {
       if (state.runId !== runId) {
         return;
@@ -3145,6 +3379,10 @@ function speakCurrentPsgSequenceItem(
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 5950: PLAY START / SPEAKING CARD CONNECTION
+// ============================================================================
 
 function startCurrentPsgPlay(
   skipStartSignal
@@ -3223,14 +3461,6 @@ window.startCurrentPsgPlay =
 window.startCurrentPsgWebPlay =
   startCurrentPsgPlay;
 
-// ============================================================================
-// END: SHARED TTS SENTENCE SEQUENCE
-// ============================================================================
-
-// ============================================================================
-// 🟦 BLOCK 3323: CURRENT SPEAKING CARD CONNECTION
-// Purpose: Highlight the active sentence and prepare its word highlights.
-// ============================================================================
 
 function clearCurrentTtsWordHighlight() {
   document
@@ -3488,24 +3718,15 @@ function renderCurrentPsgPlayButton() {
   );
 }
 
-// ============================================================================
-// END: CURRENT SPEAKING CARD CONNECTION
-// ============================================================================
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3325: MIC CONNECTION (NATIVE + WEB ADAPTER)
-// Purpose: APK uses GongbooSpeech. Web uses the V2 webkitSpeechRecognition
-//          engine (continuous + interim + delay finalize). Both paths write
-//          the final transcript into getCurrentMicState().transcript so that
-//          BLOCK 3326 and BLOCK 3328 need no changes.
+// 🟩 6000 — MICROPHONE / PRONUNCIATION + ROLE PRACTICE / PRACTICE MODE
 // ============================================================================
 
 
-// ---------------------------------------------------------------------------
-// SUBBLOCK 3325-1: MIC STATE (unchanged public shape)
-// ---------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 6000: MICROPHONE STATE
+// ============================================================================
 
 function getCurrentMicState() {
   if (!window.CONVERSATION_V2_MIC) {
@@ -3521,18 +3742,14 @@ function getCurrentMicState() {
 }
 
 
-// ---------------------------------------------------------------------------
-// SUBBLOCK 3325-2: WEB SPEECH CLASS
-// ---------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 6050: WEB SPEECH RECOGNITION CLASS / ENGINE STATE
+// ============================================================================
 
 var CurrentMicSpeechRecognition =
   window.SpeechRecognition ||
   window.webkitSpeechRecognition;
 
-
-// ---------------------------------------------------------------------------
-// SUBBLOCK 3325-3: WEB ENGINE STATE (V2 PORT)
-// ---------------------------------------------------------------------------
 
 var _currentMicWebRecognition = null;
 var _currentMicWebFinalizeTimer = null;
@@ -3541,9 +3758,9 @@ var _currentMicWebResolve = null;
 var _currentMicWebReject = null;
 
 
-// ---------------------------------------------------------------------------
-// SUBBLOCK 3325-4: NATIVE ADAPTER (APK, unchanged behavior)
-// ---------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 6100: NATIVE MICROPHONE ADAPTER
+// ============================================================================
 
 function createCurrentMicNativeAdapter() {
   var nativeSpeech =
@@ -3582,10 +3799,9 @@ function createCurrentMicNativeAdapter() {
 }
 
 
-// ---------------------------------------------------------------------------
-// SUBBLOCK 3325-5: WEB ADAPTER (V2 ENGINE)
-// continuous + interimResults + delay finalize.
-// ---------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 6150: WEB MICROPHONE DELAY
+// ============================================================================
 
 function getCurrentMicWebDelayMs() {
   var input =
@@ -3610,6 +3826,31 @@ function getCurrentMicWebDelayMs() {
 }
 
 
+
+// ============================================================================
+// 🟦 BLOCK 6152: ANDROID CHROME MICROPHONE ENGINE STATE
+// Purpose: S26 recognition state is never shared with PC Chrome.
+// ============================================================================
+
+var CurrentMicAndroidChromeRecognition_2 =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+var _currentMicAndroidRecognition_2 = null;
+var _currentMicAndroidFinalizeTimer_2 = null;
+var _currentMicAndroidTranscript_2 = '';
+
+
+function getCurrentMicAndroidDelayMs_2() {
+  return getCurrentMicWebDelayMs();
+}
+
+
+
+// ============================================================================
+// 🟦 BLOCK 6200: WEB MICROPHONE ADAPTER
+// ============================================================================
+
 function createCurrentMicWebAdapter() {
   if (!CurrentMicSpeechRecognition) {
     return null;
@@ -3630,7 +3871,10 @@ function createCurrentMicWebAdapter() {
 
         function cleanup() {
           if (_currentMicWebFinalizeTimer) {
-            clearTimeout(_currentMicWebFinalizeTimer);
+            clearTimeout(
+              _currentMicWebFinalizeTimer
+            );
+
             _currentMicWebFinalizeTimer = null;
           }
 
@@ -3649,22 +3893,29 @@ function createCurrentMicWebAdapter() {
         }
 
         function finish() {
-          var resolveFn = _currentMicWebResolve;
+          var resolveFn =
+            _currentMicWebResolve;
 
           var transcript =
-            String(_currentMicWebLastTranscript || '').trim();
+            String(
+              _currentMicWebLastTranscript || ''
+            ).trim();
 
           cleanup();
 
           if (resolveFn) {
             resolveFn({
-              matches: transcript ? [transcript] : []
+              matches:
+                transcript
+                  ? [transcript]
+                  : []
             });
           }
         }
 
         function fail(error) {
-          var rejectFn = _currentMicWebReject;
+          var rejectFn =
+            _currentMicWebReject;
 
           cleanup();
 
@@ -3678,16 +3929,25 @@ function createCurrentMicWebAdapter() {
 
         recognition.continuous = true;
         recognition.interimResults = true;
+
         recognition.maxAlternatives =
           options.maxResults || 3;
 
         recognition.onresult = function(event) {
           var transcript = '';
 
-          for (var i = 0; i < event.results.length; i++) {
-            if (event.results[i] && event.results[i][0]) {
+          for (
+            var i = 0;
+            i < event.results.length;
+            i++
+          ) {
+            if (
+              event.results[i] &&
+              event.results[i][0]
+            ) {
               transcript +=
-                event.results[i][0].transcript + ' ';
+                event.results[i][0].transcript +
+                ' ';
             }
           }
 
@@ -3697,24 +3957,31 @@ function createCurrentMicWebAdapter() {
             return;
           }
 
-          _currentMicWebLastTranscript = transcript;
+          _currentMicWebLastTranscript =
+            transcript;
 
           if (_currentMicWebFinalizeTimer) {
-            clearTimeout(_currentMicWebFinalizeTimer);
+            clearTimeout(
+              _currentMicWebFinalizeTimer
+            );
           }
 
-          _currentMicWebFinalizeTimer = setTimeout(
-            function() {
-              if (_currentMicWebRecognition === recognition) {
-                try {
-                  recognition.stop();
-                } catch (error) {
-                  // Ignore.
+          _currentMicWebFinalizeTimer =
+            setTimeout(
+              function() {
+                if (
+                  _currentMicWebRecognition ===
+                  recognition
+                ) {
+                  try {
+                    recognition.stop();
+                  } catch (error) {
+                    // Ignore.
+                  }
                 }
-              }
-            },
-            getCurrentMicWebDelayMs()
-          );
+              },
+              getCurrentMicWebDelayMs()
+            );
         };
 
         recognition.onerror = function(event) {
@@ -3728,13 +3995,24 @@ function createCurrentMicWebAdapter() {
 
           if (
             event.error === 'not-allowed' ||
-            event.error === 'service-not-allowed'
+            event.error ===
+              'service-not-allowed'
           ) {
-            fail(new Error('Microphone permission denied.'));
+            fail(
+              new Error(
+                'Microphone permission denied.'
+              )
+            );
+
             return;
           }
 
-          fail(new Error('Web speech error: ' + event.error));
+          fail(
+            new Error(
+              'Web speech error: ' +
+              event.error
+            )
+          );
         };
 
         recognition.onend = function() {
@@ -3764,43 +4042,239 @@ function createCurrentMicWebAdapter() {
 }
 
 
-// ---------------------------------------------------------------------------
-// SUBBLOCK 3325-6: ADAPTER SELECTOR
-// Native first (APK), then web.
-// ---------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 6202: ANDROID CHROME MICROPHONE ADAPTER
+// Purpose: S26 only. Clean one-session recognition prevents stale mic sessions.
+// ============================================================================
+
+function createCurrentMicAndroidChromeAdapter_2() {
+  if (!CurrentMicAndroidChromeRecognition_2) {
+    return null;
+  }
+
+  return {
+    type: 'android-chrome-speech',
+
+    start: function(options) {
+      return new Promise(function(resolve, reject) {
+        if (_currentMicAndroidRecognition_2) {
+          try {
+            _currentMicAndroidRecognition_2.abort();
+          } catch (error) {
+            // Ignore stale recognition session.
+          }
+        }
+
+        var recognition =
+          new CurrentMicAndroidChromeRecognition_2();
+
+        var settled = false;
+
+        _currentMicAndroidRecognition_2 =
+          recognition;
+
+        _currentMicAndroidTranscript_2 = '';
+
+        function cleanup() {
+          if (_currentMicAndroidFinalizeTimer_2) {
+            window.clearTimeout(
+              _currentMicAndroidFinalizeTimer_2
+            );
+
+            _currentMicAndroidFinalizeTimer_2 =
+              null;
+          }
+
+          recognition.onresult = null;
+          recognition.onerror = null;
+          recognition.onend = null;
+
+          if (
+            _currentMicAndroidRecognition_2 ===
+            recognition
+          ) {
+            _currentMicAndroidRecognition_2 =
+              null;
+          }
+        }
+
+        function finish() {
+          if (settled) {
+            return;
+          }
+
+          settled = true;
+
+          var transcript =
+            String(
+              _currentMicAndroidTranscript_2 || ''
+            ).trim();
+
+          cleanup();
+
+          resolve({
+            matches: transcript
+              ? [transcript]
+              : []
+          });
+        }
+
+        function fail(error) {
+          if (settled) {
+            return;
+          }
+
+          settled = true;
+          cleanup();
+          reject(error);
+        }
+
+        recognition.lang =
+          options.language || 'en-US';
+
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.maxAlternatives =
+          options.maxResults || 3;
+
+        recognition.onresult = function(event) {
+          var transcript = '';
+
+          for (
+            var i = event.resultIndex;
+            i < event.results.length;
+            i += 1
+          ) {
+            if (event.results[i][0]) {
+              transcript +=
+                event.results[i][0].transcript +
+                ' ';
+            }
+          }
+
+          transcript = transcript.trim();
+
+          if (!transcript) {
+            return;
+          }
+
+          _currentMicAndroidTranscript_2 =
+            transcript;
+
+          if (_currentMicAndroidFinalizeTimer_2) {
+            window.clearTimeout(
+              _currentMicAndroidFinalizeTimer_2
+            );
+          }
+
+          _currentMicAndroidFinalizeTimer_2 =
+            window.setTimeout(function() {
+              try {
+                recognition.stop();
+              } catch (error) {
+                // onend completes the session.
+              }
+            }, getCurrentMicAndroidDelayMs_2());
+        };
+
+        recognition.onerror = function(event) {
+          if (
+            event.error === 'no-speech' ||
+            event.error === 'aborted'
+          ) {
+            finish();
+            return;
+          }
+
+          fail(
+            new Error(
+              'Android Chrome mic error: ' +
+              event.error
+            )
+          );
+        };
+
+        recognition.onend = function() {
+          finish();
+        };
+
+        try {
+          recognition.start();
+        } catch (error) {
+          fail(error);
+        }
+      });
+    },
+
+    stop: function() {
+      if (_currentMicAndroidRecognition_2) {
+        try {
+          _currentMicAndroidRecognition_2.stop();
+        } catch (error) {
+          // Ignore.
+        }
+      }
+
+      return Promise.resolve();
+    }
+  };
+}
+
+
+
+
+// ============================================================================
+// 🟦 BLOCK 6250: COMMON MICROPHONE ADAPTER SELECTOR
+// Purpose: Only S26 Chrome enters BLOCK 6202.
+// ============================================================================
 
 function getCurrentMicAdapter() {
-  var nativeAdapter = createCurrentMicNativeAdapter();
+  if (isCurrentAndroidChrome_2()) {
+    return createCurrentMicAndroidChromeAdapter_2();
+  }
+
+  var nativeAdapter =
+    createCurrentMicNativeAdapter();
 
   if (nativeAdapter) {
     return nativeAdapter;
   }
 
+  // Existing PC Chrome path: unchanged.
   return createCurrentMicWebAdapter();
 }
 
 
-// ---------------------------------------------------------------------------
-// SUBBLOCK 3325-7: PUBLIC API (same signatures, same state contract)
-// ---------------------------------------------------------------------------
+// ============================================================================
+// 🟦 BLOCK 6300: MICROPHONE START API
+// ============================================================================
 
 function startCurrentMicRecognition(options) {
   var config = options || {};
 
-  var adapter = getCurrentMicAdapter();
-  var state = getCurrentMicState();
+  var adapter =
+    getCurrentMicAdapter();
+
+  var state =
+    getCurrentMicState();
 
   if (!adapter) {
     return Promise.reject(
-      new Error('Microphone is unavailable on this device.')
+      new Error(
+        'Microphone is unavailable on this device.'
+      )
     );
   }
 
-  var row = window.CONVERSATION_V2_ROW || {};
+  var row =
+    window.CONVERSATION_V2_ROW || {};
 
   var language =
     config.language ||
-    getCurrentPsgPlayLocale(row.LNG || 'EN');
+    getCurrentPsgPlayLocale(
+      row.LNG || 'EN'
+    );
 
   state.runId += 1;
 
@@ -3810,7 +4284,11 @@ function startCurrentMicRecognition(options) {
   state.transcript = '';
   state.matches = [];
 
-  console.log('[MIC] Adapter:', adapter.type, language);
+  console.log(
+    '[MIC] Adapter:',
+    adapter.type,
+    language
+  );
 
   return adapter.start({
     language: language,
@@ -3824,21 +4302,32 @@ function startCurrentMicRecognition(options) {
       state.running = false;
 
       state.matches =
-        Array.isArray(result.matches) ? result.matches : [];
+        Array.isArray(result.matches)
+          ? result.matches
+          : [];
 
       state.transcript =
-        String(state.matches[0] || '').trim();
+        String(
+          state.matches[0] || ''
+        ).trim();
 
-      console.log('[MIC] recognized:', state.transcript);
+      console.log(
+        '[MIC] recognized:',
+        state.transcript
+      );
 
       return state;
     },
+
     function(error) {
       if (state.runId === runId) {
         state.running = false;
       }
 
-      console.error('[MIC] recognition failed:', error);
+      console.error(
+        '[MIC] recognition failed:',
+        error
+      );
 
       throw error;
     }
@@ -3846,14 +4335,24 @@ function startCurrentMicRecognition(options) {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 6350: MICROPHONE STOP API / PUBLIC CONNECTION
+// ============================================================================
+
 function stopCurrentMicRecognition() {
-  var adapter = getCurrentMicAdapter();
-  var state = getCurrentMicState();
+  var adapter =
+    getCurrentMicAdapter();
+
+  var state =
+    getCurrentMicState();
 
   state.runId += 1;
   state.running = false;
 
-  if (!adapter || typeof adapter.stop !== 'function') {
+  if (
+    !adapter ||
+    typeof adapter.stop !== 'function'
+  ) {
     return Promise.resolve();
   }
 
@@ -3867,14 +4366,9 @@ window.startCurrentMicRecognition =
 window.stopCurrentMicRecognition =
   stopCurrentMicRecognition;
 
-// ============================================================================
-// END: MIC CONNECTION (NATIVE + WEB ADAPTER)
-// ============================================================================
-
 
 // ============================================================================
-// 🟦 BLOCK 3326: MIC PASS / RETRY CHECK
-// Purpose: Compare spoken English with one turn using the PASS slider value.
+// 🟦 BLOCK 6400: MICROPHONE TEXT NORMALIZATION / TARGET CARD
 // ============================================================================
 
 function normalizeCurrentMicText(value) {
@@ -3917,6 +4411,10 @@ function getCurrentMicTargetCard(turnNumber) {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 6450: MICROPHONE PASS THRESHOLD / SIMILARITY
+// ============================================================================
+
 function getCurrentMicPassThreshold() {
   var input =
     document.getElementById(
@@ -3928,7 +4426,10 @@ function getCurrentMicPassThreshold() {
 
   return Math.max(
     0.01,
-    Math.min(1, percent / 100)
+    Math.min(
+      1,
+      percent / 100
+    )
   );
 }
 
@@ -3956,9 +4457,14 @@ function getCurrentMicSimilarity(
     return 0;
   }
 
-  return matchedCount / expectedWords.length;
+  return matchedCount /
+    expectedWords.length;
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6500: MICROPHONE WORD MATCH RENDER
+// ============================================================================
 
 function renderCurrentMicWordMatches(
   card,
@@ -4037,6 +4543,10 @@ function renderCurrentMicWordMatches(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 6550: MICROPHONE CHECK RESULT
+// ============================================================================
+
 function showCurrentMicCheckResult(
   card,
   passed,
@@ -4097,6 +4607,10 @@ function showCurrentMicCheckResult(
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6600: MICROPHONE ANSWER EVALUATION
+// ============================================================================
 
 function evaluateCurrentMicAnswer(options) {
   var config =
@@ -4168,16 +4682,9 @@ window.evaluateCurrentMicAnswer =
 window.startAndCheckCurrentMicAnswer =
   startAndCheckCurrentMicAnswer;
 
-// ============================================================================
-// END: MIC PASS / RETRY CHECK
-// ============================================================================
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3327: ROLE PLAY AND PLAY START TARGET
-// Purpose: One source of truth for the yellow start sentence.
-//          New conversations always begin at their first sentence.
+// 🟦 BLOCK 6650: ROLE TARGET CARD / TURN SELECTION
 // ============================================================================
 
 function getCurrentRoleTargetCards() {
@@ -4220,6 +4727,10 @@ function selectCurrentRoleTurn(turnNumber) {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 6700: CURRENT ROLE TARGET LOOKUP
+// ============================================================================
+
 function getCurrentRoleTargetTurn() {
   var yellowCard =
     document.querySelector(
@@ -4241,7 +4752,8 @@ function getCurrentRoleTargetTurn() {
   }
 
   return Number(
-    window.CONVERSATION_V2_ROLE_TARGET_TURN || 1
+    window.CONVERSATION_V2_ROLE_TARGET_TURN ||
+    1
   );
 }
 
@@ -4255,6 +4767,10 @@ function getCurrentRoleTargetConversationId() {
     : '';
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6750: ROLE TURN SELECTION INSTALLATION
+// ============================================================================
 
 function installCurrentRoleTurnSelection() {
   var container =
@@ -4278,7 +4794,10 @@ function installCurrentRoleTurnSelection() {
             )
           : null;
 
-      if (!card || !container.contains(card)) {
+      if (
+        !card ||
+        !container.contains(card)
+      ) {
         return;
       }
 
@@ -4306,7 +4825,9 @@ function installCurrentRoleTurnSelection() {
 
     if (selectedCard) {
       window.CONVERSATION_V2_ROLE_TARGET_TURN =
-        Number(selectedCard.dataset.turn);
+        Number(
+          selectedCard.dataset.turn
+        );
 
       return;
     }
@@ -4345,13 +4866,9 @@ window.selectCurrentRoleTurn =
 window.getCurrentRoleTargetTurn =
   getCurrentRoleTargetTurn;
 
-// ============================================================================
-// END: ROLE PLAY AND PLAY START TARGET
-// ============================================================================
 
 // ============================================================================
-// 🟦 BLOCK 3328: PRACTICE MODE AND START / STOP CONTROL
-// Purpose: ROLE PLAY / FOLLOW UP plus CONTINUE REPEAT / NEXT.
+// 🟦 BLOCK 6800: PRACTICE STATE / TYPE / DELAY
 // ============================================================================
 
 function getCurrentRolePlayState() {
@@ -4383,10 +4900,16 @@ function getCurrentRolePlayDelay() {
 
   return Math.max(
     500,
-    Number(input ? input.value : 0.5) * 1000
+    Number(
+      input ? input.value : 0.5
+    ) * 1000
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6850: PRACTICE RESULT RESET
+// ============================================================================
 
 function resetCurrentRolePlayResults() {
   document
@@ -4412,6 +4935,10 @@ function resetCurrentRolePlayResults() {
     });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6900: PRACTICE CONTROL RENDER
+// ============================================================================
 
 function renderCurrentPracticeControls() {
   var orderButton =
@@ -4470,11 +4997,13 @@ function renderCurrentPracticeControls() {
   }
 
   if (typeButton) {
-    typeButton.textContent = followUp
-      ? 'FOLLOW UP'
-      : 'ROLE PLAY';
+    typeButton.textContent =
+      followUp
+        ? 'FOLLOW UP'
+        : 'ROLE PLAY';
 
-    typeButton.disabled = state.running;
+    typeButton.disabled =
+      state.running;
 
     typeButton.setAttribute(
       'aria-pressed',
@@ -4483,6 +5012,10 @@ function renderCurrentPracticeControls() {
   }
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 6950: USER TURN / NEXT PRACTICE TARGET
+// ============================================================================
 
 function isCurrentRolePlayUserTurn(
   turnNumber
@@ -4531,6 +5064,15 @@ function getCurrentPracticeContinueNextTargetId() {
 }
 
 
+// ============================================================================
+// 🟩 7000 — PRACTICE EXECUTION / CONTINUE CONTROL
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 7000: ROLE PLAY STOP
+// ============================================================================
+
 function stopCurrentRolePlay() {
   var state =
     getCurrentRolePlayState();
@@ -4553,6 +5095,10 @@ function stopCurrentRolePlay() {
   renderCurrentPracticeControls();
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7050: ROLE PLAY FINISH / CONTINUE
+// ============================================================================
 
 function finishCurrentRolePlay() {
   var state =
@@ -4579,7 +5125,8 @@ function finishCurrentRolePlay() {
   if (continueMode === 'repeat') {
     window.setTimeout(function() {
       if (
-        state.continueToken !== continueToken ||
+        state.continueToken !==
+          continueToken ||
         state.running
       ) {
         return;
@@ -4601,7 +5148,9 @@ function finishCurrentRolePlay() {
   if (!nextId) {
     return;
   }
-  window.CONVERSATION_V2_ROLE_TARGET_TURN = 1;
+
+  window.CONVERSATION_V2_ROLE_TARGET_TURN =
+    1;
 
   loadConversationById(
     nextId,
@@ -4615,6 +5164,10 @@ function finishCurrentRolePlay() {
   });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7100: PRACTICE RETRY / LISTEN
+// ============================================================================
 
 function retryCurrentPracticeTurn() {
   window.setTimeout(
@@ -4642,6 +5195,7 @@ function listenCurrentPracticeTurn(
     }
 
     retryCurrentPracticeTurn();
+
   }).catch(function(error) {
     console.warn(
       '[PRACTICE] MIC retry:',
@@ -4654,6 +5208,10 @@ function listenCurrentPracticeTurn(
   });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7150: PRACTICE SPEAK TURN
+// ============================================================================
 
 function speakCurrentPracticeTurn(
   state,
@@ -4670,11 +5228,15 @@ function speakCurrentPracticeTurn(
     }
 
     if (followUp) {
-      listenCurrentPracticeTurn(state);
+      listenCurrentPracticeTurn(
+        state
+      );
+
       return;
     }
 
     state.currentTurn += 1;
+
     runCurrentPracticeTurn();
 
   }, function(error) {
@@ -4687,6 +5249,10 @@ function speakCurrentPracticeTurn(
   });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7200: PRACTICE TURN EXECUTION
+// ============================================================================
 
 function runCurrentPracticeTurn() {
   var state =
@@ -4743,7 +5309,10 @@ function runCurrentPracticeTurn() {
       state.currentTurn
     )
   ) {
-    listenCurrentPracticeTurn(state);
+    listenCurrentPracticeTurn(
+      state
+    );
+
     return;
   }
 
@@ -4754,6 +5323,10 @@ function runCurrentPracticeTurn() {
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7250: ROLE PLAY START
+// ============================================================================
 
 function startCurrentRolePlay(
   skipStartSignal
@@ -4773,7 +5346,8 @@ function startCurrentRolePlay(
       function() {
         if (
           state.running ||
-          state.continueToken !== signalToken
+          state.continueToken !==
+            signalToken
         ) {
           return;
         }
@@ -4810,6 +5384,10 @@ function startCurrentRolePlay(
   runCurrentPracticeTurn();
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7300: PRACTICE BUTTON INSTALLATION
+// ============================================================================
 
 function installCurrentRolePlayButton() {
   var orderButton =
@@ -4854,7 +5432,9 @@ function installCurrentRolePlayButton() {
 
   if (typeButton) {
     typeButton.onclick = function() {
-      if (getCurrentRolePlayState().running) {
+      if (
+        getCurrentRolePlayState().running
+      ) {
         return;
       }
 
@@ -4870,7 +5450,9 @@ function installCurrentRolePlayButton() {
 
   if (startButton) {
     startButton.onclick = function() {
-      if (getCurrentRolePlayState().running) {
+      if (
+        getCurrentRolePlayState().running
+      ) {
         stopCurrentRolePlay();
         return;
       }
@@ -4882,6 +5464,10 @@ function installCurrentRolePlayButton() {
   renderCurrentPracticeControls();
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7350: PRACTICE BOOT / PUBLIC API
+// ============================================================================
 
 if (document.readyState === 'loading') {
   document.addEventListener(
@@ -4900,15 +5486,9 @@ window.startCurrentRolePlay =
 window.stopCurrentRolePlay =
   stopCurrentRolePlay;
 
-// ============================================================================
-// END: PRACTICE MODE AND START / STOP CONTROL
-// ============================================================================
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3329: CONTINUE MODE CONTROL
-// Purpose: CONTINUE button cycles OFF -> REPEAT -> NEXT -> OFF.
+// 🟦 BLOCK 7400: CONTINUE MODE STATE / RENDER
 // ============================================================================
 
 function getCurrentContinueMode() {
@@ -4943,6 +5523,10 @@ function renderCurrentContinueMode() {
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7450: CONTINUE MODE BUTTON INSTALLATION
+// ============================================================================
 
 function installCurrentContinueModeButton() {
   var button =
@@ -4982,15 +5566,9 @@ if (document.readyState === 'loading') {
   installCurrentContinueModeButton();
 }
 
+
 // ============================================================================
-// END: CONTINUE MODE CONTROL
-// ============================================================================
-
-
-
-// 🟦 BLOCK 3324: PLAY AND EXTERNAL STOP BUTTON CONNECTION
-// Purpose: PLAY begins clean playback with one moving yellow speaking box.
-//          STOP cancels playback, role play, and microphone recognition.
+// 🟦 BLOCK 7500: PLAY / EXTERNAL STOP VISUAL RESET
 // ============================================================================
 
 function resetCurrentPlayVisualState() {
@@ -5017,6 +5595,10 @@ function stopCurrentConversationActivity() {
   closeConversationMenus();
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 7550: PLAY / EXTERNAL STOP BUTTON CONNECTION
+// ============================================================================
 
 function installCurrentPsgPlayButton() {
   var playButton =
@@ -5068,6 +5650,10 @@ function installCurrentPsgPlayButton() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 7600: PLAY BUTTON BOOT
+// ============================================================================
+
 function bootCurrentPsgPlayButton() {
   if (
     document.readyState ===
@@ -5088,13 +5674,15 @@ function bootCurrentPsgPlayButton() {
 
 bootCurrentPsgPlayButton();
 
-// ============================================================================
-// END: PLAY AND EXTERNAL STOP BUTTON CONNECTION
-// ============================================================================
+
 
 // ============================================================================
-// 🟦 BLOCK 3256: SELECTED TURN CHUNK VIEW
-// Purpose: Show only the selected 2ND language chunk below the yellow turn.
+// 🟩 8000 — CHUNK / SIGNAL / SETTINGS / EXTERNAL / KEYBOARD
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 8000: SELECTED CHUNK STATE / PARSING
 // ============================================================================
 
 function getCurrentSelectedChunkState() {
@@ -5138,6 +5726,10 @@ function parseCurrentTurnChunks(helpText) {
   return chunks;
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 8050: SELECTED CHUNK RENDER
+// ============================================================================
 
 function clearCurrentSelectedChunks() {
   document
@@ -5216,6 +5808,10 @@ function renderCurrentSelectedChunks() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 8100: CHUNK BUTTON STATE
+// ============================================================================
+
 function renderCurrentChunkButton() {
   var button =
     document.getElementById(
@@ -5240,6 +5836,10 @@ function renderCurrentChunkButton() {
   );
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 8150: CHUNK VIEW INSTALLATION
+// ============================================================================
 
 function installCurrentSelectedChunkView() {
   var button =
@@ -5321,15 +5921,9 @@ if (document.readyState === 'loading') {
   installCurrentSelectedChunkView();
 }
 
-// ============================================================================
-// END: SELECTED TURN CHUNK VIEW
-// ============================================================================
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3330: I FIRST SIGNAL CUE
-// Purpose: Play one short cue before I FIRST begins Role Play.
+// 🟦 BLOCK 8200: I FIRST SIGNAL CUE
 // ============================================================================
 
 function playCurrentIStartSignal() {
@@ -5397,6 +5991,10 @@ function getCurrentIStartSignalState() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 8250: I FIRST SIGNAL INSTALLATION
+// ============================================================================
+
 function installCurrentIStartSignal() {
   var startButton =
     document.getElementById(
@@ -5434,7 +6032,6 @@ function installCurrentIStartSignal() {
       }
 
       event.preventDefault();
-
       event.stopImmediatePropagation();
 
       signalState.pending = true;
@@ -5449,6 +6046,7 @@ function installCurrentIStartSignal() {
             startCurrentRolePlay(true);
           }
         },
+
         function() {
           signalState.pending = false;
           startCurrentRolePlay(true);
@@ -5470,14 +6068,9 @@ if (document.readyState === 'loading') {
   installCurrentIStartSignal();
 }
 
-// ============================================================================
-// END: I FIRST SIGNAL CUE
-// ============================================================================
-
 
 // ============================================================================
-// 🟦 BLOCK 3390: LOCAL USER SETTINGS
-// Purpose: Restore all user-configurable settings on app start.
+// 🟦 BLOCK 8300: LOCAL SETTINGS READ / SAVE
 // ============================================================================
 
 const CONVERSATION_V2_SETTINGS_KEY =
@@ -5567,6 +6160,10 @@ function saveConversationSettings() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 8350: SETTINGS SELECT RESTORE
+// ============================================================================
+
 function restoreConversationSelectValue(
   selectId,
   value
@@ -5590,6 +6187,10 @@ function restoreConversationSelectValue(
   }
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 8400: SETTINGS RESTORE
+// ============================================================================
 
 function restoreConversationSettings() {
   var settings =
@@ -5705,6 +6306,10 @@ function restoreConversationSettings() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 8450: SETTINGS STORAGE INSTALLATION
+// ============================================================================
+
 function installConversationSettingsStorage() {
   restoreConversationSettings();
 
@@ -5789,14 +6394,9 @@ if (document.readyState === 'loading') {
   installConversationSettingsStorage();
 }
 
-// ============================================================================
-// END: LOCAL USER SETTINGS
-// ============================================================================
-
 
 // ============================================================================
-// 🟦 BLOCK 3391: SPEAKER TO BIBLE PERSON LINK
-// Purpose: Open verified Bible person details without changing Role Play.
+// 🟦 BLOCK 8500: BIBLE PERSON LINK CONFIGURATION / LOOKUP
 // ============================================================================
 
 const CONVERSATION_V2_BIBLE_LINKS_URL =
@@ -5828,6 +6428,10 @@ function getConversationV2SpeakerName(
     .trim();
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 8550: BIBLE PERSON LINK LOADER
+// ============================================================================
 
 async function loadConversationV2BibleLinks() {
   try {
@@ -5907,6 +6511,10 @@ async function loadConversationV2BibleLinks() {
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 8600: BIBLE SPEAKER DECORATION
+// ============================================================================
+
 function decorateConversationV2BibleSpeakers() {
   var links =
     window.CONVERSATION_V2_BIBLE_LINKS ||
@@ -5972,6 +6580,10 @@ function decorateConversationV2BibleSpeakers() {
     });
 }
 
+
+// ============================================================================
+// 🟦 BLOCK 8650: BIBLE PERSON OPEN / EVENT CONNECTION
+// ============================================================================
 
 function openConversationV2BiblePerson(
   personId
@@ -6079,14 +6691,9 @@ if (document.readyState === 'loading') {
   installConversationV2BibleSpeakerLinks();
 }
 
-// ============================================================================
-// END: SPEAKER TO BIBLE PERSON LINK
-// ============================================================================
-
 
 // ============================================================================
-// 🟦 BLOCK 3392: ANDROID TTS WORD BOUNDARY LISTENER
-// Purpose: Receive Android native TTS word positions for the active sentence.
+// 🟦 BLOCK 8700: ANDROID TTS WORD BOUNDARY LISTENER
 // ============================================================================
 
 function installCurrentAndroidTtsWordListener() {
@@ -6135,15 +6742,9 @@ if (document.readyState === 'loading') {
   installCurrentAndroidTtsWordListener();
 }
 
-// ============================================================================
-// END: ANDROID TTS WORD BOUNDARY LISTENER
-// ============================================================================
-
-
 
 // ============================================================================
-// 🟦 BLOCK 3393: SYSTEM URL SETTINGS
-// Purpose: Change every external system URL only in this one object.
+// 🟦 BLOCK 8750: SYSTEM URL SETTINGS
 // ============================================================================
 
 const CONVERSATION_V2_SYSTEM_URLS = {
@@ -6157,7 +6758,7 @@ const CONVERSATION_V2_SYSTEM_URLS = {
     'https://bibleofgongboo.github.io/anne/',
 
   license:
-    'https://biblegongboo.github.io/license/app/'
+    ''
 };
 
 
@@ -6202,14 +6803,9 @@ if (document.readyState === 'loading') {
   installConversationSystemExternalLinks();
 }
 
-// ============================================================================
-// END: SYSTEM URL SETTINGS
-// ============================================================================
-
 
 // ============================================================================
-// 🟦 BLOCK 3400: SPACE PLAY / STOP TOGGLE
-// Purpose: Only SPACE toggles normal PLAY and STOP.
+// 🟦 BLOCK 8800: SPACE PLAY / STOP TOGGLE
 // ============================================================================
 
 function isCurrentSpaceShortcutBlocked(
@@ -6287,13 +6883,9 @@ if (document.readyState === 'loading') {
   installCurrentSpacePlayToggle();
 }
 
-// ============================================================================
-// END: SPACE PLAY / STOP TOGGLE
-// ============================================================================
 
 // ============================================================================
-// 🟦 BLOCK 3401: LEFT / RIGHT CONVERSATION NAVIGATION
-// Purpose: ArrowLeft = PREV, ArrowRight = NEXT outside input controls.
+// 🟦 BLOCK 8850: LEFT / RIGHT CONVERSATION NAVIGATION
 // ============================================================================
 
 function installCurrentArrowNavigation() {
@@ -6321,9 +6913,14 @@ function installCurrentArrowNavigation() {
       }
 
       var button =
-        document.getElementById(buttonId);
+        document.getElementById(
+          buttonId
+        );
 
-      if (!button || button.disabled) {
+      if (
+        !button ||
+        button.disabled
+      ) {
         return;
       }
 
@@ -6344,13 +6941,9 @@ if (document.readyState === 'loading') {
   installCurrentArrowNavigation();
 }
 
-// ============================================================================
-// END: LEFT / RIGHT CONVERSATION NAVIGATION
-// ============================================================================
 
 // ============================================================================
-// 🟦 BLOCK 3402: PRACTICE RESET
-// Purpose: Clear PASS / RETRY / MIC results and keep the selected yellow turn.
+// 🟦 BLOCK 8900: PRACTICE RESET
 // ============================================================================
 
 function resetCurrentPracticeSession() {
@@ -6364,7 +6957,9 @@ function resetCurrentPracticeSession() {
   resetCurrentRolePlayResults();
   clearCurrentSpeakingCard();
 
-  selectCurrentRoleTurn(targetTurn);
+  selectCurrentRoleTurn(
+    targetTurn
+  );
 
   renderCurrentPracticeControls();
 }
@@ -6396,46 +6991,63 @@ if (document.readyState === 'loading') {
   installCurrentPracticeResetButton();
 }
 
+
 // ============================================================================
-// END: PRACTICE RESET
+// 8950–9899 RESERVED FOR FUTURE BLOCKS
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3410: BUTTON HOVER HELP
-// Purpose: Give every button a native desktop hover description.
+// 🟩 9900 — HELP
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 9900: BUTTON HOVER HELP
+// IMPORTANT: HELP remains ONE block even when longer than 120 lines.
 // ============================================================================
 
 function getCurrentButtonHoverHelp(button) {
   var helpById = {
     systemMenuButton:
       '시스템 메뉴 열기',
+
     playButton:
       '현재 선택 문장부터 재생',
+
     playMenuButton:
       'PLAY 옵션 열기 또는 닫기',
+
     stopButton:
       '재생, 역할 연습, 마이크를 중지',
+
     settingsButton:
       '재생 및 언어 설정 열기',
 
     playModeToggleButton:
       'COMPUTER와 I FIRST 순서 전환',
+
     practiceStartStopButton:
       '선택한 연습 시작 또는 중지',
+
     practiceModeToggleButton:
       'ROLE PLAY 연습 모드 전환',
+
     continueNextButton:
       '재생 후 반복 또는 다음 대화 진행 설정',
+
     practiceResetButton:
       '연습 결과와 선택 상태 초기화',
 
     playLoopToggle:
       '현재 대화 반복 재생 설정',
+
     chunkButton:
       '선택 문장의 세부 구간 표시',
+
     previousButton:
       '이전 대화로 이동',
+
     nextButton:
       '다음 대화로 이동'
   };
@@ -6443,10 +7055,13 @@ function getCurrentButtonHoverHelp(button) {
   var systemHelpByKey = {
     conversation:
       '대화 첫 화면 열기',
+
     license:
       '라이선스 안내 열기',
+
     bible:
       '성경 관련 화면 열기',
+
     easyLearning:
       'Easy Learning 열기'
   };
@@ -6466,7 +7081,9 @@ function getCurrentButtonHoverHelp(button) {
 
   var ariaLabel =
     String(
-      button.getAttribute('aria-label') || ''
+      button.getAttribute(
+        'aria-label'
+      ) || ''
     ).trim();
 
   if (ariaLabel) {
@@ -6482,7 +7099,8 @@ function getCurrentButtonHoverHelp(button) {
 
 
 function applyCurrentButtonHoverHelp(root) {
-  var scope = root || document;
+  var scope =
+    root || document;
 
   scope
     .querySelectorAll('button')
@@ -6495,7 +7113,9 @@ function applyCurrentButtonHoverHelp(root) {
       }
 
       var help =
-        getCurrentButtonHoverHelp(button);
+        getCurrentButtonHoverHelp(
+          button
+        );
 
       if (help) {
         button.title = help;
@@ -6506,31 +7126,45 @@ function applyCurrentButtonHoverHelp(root) {
 
 function bootCurrentButtonHoverHelp() {
   var install = function() {
-    applyCurrentButtonHoverHelp(document);
+    applyCurrentButtonHoverHelp(
+      document
+    );
 
-    new MutationObserver(function(records) {
-      records.forEach(function(record) {
-        record.addedNodes.forEach(function(node) {
-          if (
-            !node ||
-            node.nodeType !== 1
-          ) {
-            return;
+    new MutationObserver(
+      function(records) {
+        records.forEach(
+          function(record) {
+            record.addedNodes.forEach(
+              function(node) {
+                if (
+                  !node ||
+                  node.nodeType !== 1
+                ) {
+                  return;
+                }
+
+                if (
+                  node.matches('button')
+                ) {
+                  var help =
+                    getCurrentButtonHoverHelp(
+                      node
+                    );
+
+                  if (help) {
+                    node.title = help;
+                  }
+                }
+
+                applyCurrentButtonHoverHelp(
+                  node
+                );
+              }
+            );
           }
-
-          if (node.matches('button')) {
-            var help =
-              getCurrentButtonHoverHelp(node);
-
-            if (help) {
-              node.title = help;
-            }
-          }
-
-          applyCurrentButtonHoverHelp(node);
-        });
-      });
-    }).observe(
+        );
+      }
+    ).observe(
       document.body,
       {
         childList: true,
@@ -6539,7 +7173,10 @@ function bootCurrentButtonHoverHelp() {
     );
   };
 
-  if (document.readyState === 'loading') {
+  if (
+    document.readyState ===
+    'loading'
+  ) {
     document.addEventListener(
       'DOMContentLoaded',
       install,
@@ -6554,6 +7191,7 @@ function bootCurrentButtonHoverHelp() {
 
 
 bootCurrentButtonHoverHelp();
+
 
 // ============================================================================
 // END: BUTTON HOVER HELP
