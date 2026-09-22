@@ -62,15 +62,38 @@
     </button>
 
     <section
-      id="systemMenuPanel"
-      class="conversation-menu"
-      hidden
-    >
-      <button type="button">CONVERSATION</button>
-      <button type="button">LICENSE</button>
-      <button type="button">BIBLE</button>
-      <button type="button">EASY LEARNING</button>
-    </section>
+  id="systemMenuPanel"
+  class="conversation-menu"
+  hidden
+>
+  <button
+    type="button"
+    data-system-key="conversation"
+  >
+    CONVERSATION
+  </button>
+
+  <button
+    type="button"
+    data-system-key="license"
+  >
+    LICENSE
+  </button>
+
+  <button
+    type="button"
+    data-system-key="bible"
+  >
+    BIBLE
+  </button>
+
+  <button
+    type="button"
+    data-system-key="easyLearning"
+  >
+    EASY LEARNING
+  </button>
+</section>
   </div>
 
   <div class="conversation-play-split">
@@ -151,7 +174,24 @@
     type="button"
     aria-pressed="false"
   >
-    ROLE<br>PLAY
+    ROLE PLAY
+  </button>
+
+  <button
+    id="continueNextButton"
+    class="continue-next-toggle"
+    type="button"
+    aria-pressed="false"
+  >
+    CONTINUE: OFF
+  </button>
+
+    <button
+    id="practiceResetButton"
+    class="practice-reset-button"
+    type="button"
+  >
+    RESET
   </button>
 </section>
 
@@ -159,9 +199,7 @@
      END: PRACTICE CONTROL MENU
      ======================================================================= -->
 
-
-
-    <!-- =======================================================================
+   <!-- =======================================================================
      🟦 BLOCK 1218: CONVERSATION SETTINGS MENU
      ======================================================================= -->
 
@@ -170,36 +208,20 @@
   class="conversation-menu"
   hidden
 >
-  <div class="conversation-settings-actions">
-    <button
-      id="psgButton"
-      type="button"
-    >
-      PSG
-    </button>
-
-    <button
-      id="chunkButton"
-      type="button"
-    >
-      CHUNK
-    </button>
-  </div>
-
   <label class="conversation-setting-row">
     <span>PASS</span>
 
     <input
       id="passRange"
       type="range"
-      min="1"
+      min="0"
       max="100"
       step="1"
-      value="1"
+      value="0"
       aria-label="Pass score"
     >
 
-    <output id="passValue">1%</output>
+    <output id="passValue">0%</output>
   </label>
 
   <label class="conversation-setting-row">
@@ -270,12 +292,37 @@
       </select>
     </label>
   </div>
+
+  <div class="conversation-settings-actions">
+    <button
+      id="chunkButton"
+      type="button"
+    >
+      CHUNK
+    </button>
+
+    <button
+      id="psgButton"
+      type="button"
+      disabled
+      aria-disabled="true"
+    >
+      PSG
+    </button>
+
+    <button
+      type="button"
+      disabled
+      aria-disabled="true"
+    >
+      —
+    </button>
+  </div>
 </section>
 
 <!-- =======================================================================
      END: CONVERSATION SETTINGS MENU
      ======================================================================= -->
-
 
 <!-- =======================================================================
      🟦 BLOCK 1219: CONVERSATION DIRECTORY

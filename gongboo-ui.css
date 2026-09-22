@@ -241,23 +241,47 @@ body {
 
 #playMenuPanel {
   grid-template-columns:
-    minmax(0, 1.35fr)
-    minmax(52px, 0.85fr)
-    minmax(0, 1.10fr)
-    44px;
+    repeat(2, minmax(0, 1fr));
 }
 
 #playMenuPanel .play-mode-toggle,
 #playMenuPanel .practice-start-stop-toggle,
 #playMenuPanel .play-practice-toggle,
-#playMenuPanel .play-more-button {
-  min-height: 58px;
-  line-height: 1.05;
+#playMenuPanel .continue-next-split {
+  min-height: 36px;
 }
 
-#playMenuPanel .play-more-button {
+#playMenuPanel .play-mode-toggle,
+#playMenuPanel .practice-start-stop-toggle,
+#playMenuPanel .play-practice-toggle {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.continue-next-split {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    34px;
+  gap: 0;
+}
+
+#playMenuPanel .continue-next-toggle,
+#playMenuPanel .continue-next-menu-button {
+  min-height: 36px;
+  line-height: 1;
+}
+
+#playMenuPanel .continue-next-toggle {
+  border-radius: 8px 0 0 8px;
+  border-right: 0;
+  white-space: nowrap;
+}
+
+#playMenuPanel .continue-next-menu-button {
   padding: 0;
-  font-size: 22px;
+  border-radius: 0 8px 8px 0;
+  font-size: 16px;
 }
 
 .play-more-panel {
@@ -270,7 +294,6 @@ body {
 /* ==========================================================================
    END: DROPDOWN AND PLAY MENUS
    ========================================================================== */
-
 
 
 
@@ -309,10 +332,7 @@ body {
 #playMenuPanel {
   display: grid;
   grid-template-columns:
-    minmax(0, 1.35fr)
-    minmax(52px, 0.85fr)
-    minmax(0, 1.10fr);
-
+    repeat(2, minmax(0, 1fr));
   gap: 7px;
   padding: 8px;
 }
@@ -341,7 +361,6 @@ body {
 /* ==========================================================================
    END: FIXED DROPDOWN LAYERS
    ========================================================================== */
-
 
 /* ==========================================================================
    🟦 BLOCK 2226: SETTINGS, STATUS, AND BOTTOM NAVIGATION
@@ -734,25 +753,25 @@ body {
 
 /* ==========================================================================
    🟦 BLOCK 2234: CURRENT TTS WORD HIGHLIGHT
-   Purpose: Highlight only the word currently spoken by Android TTS.
+   Purpose: Highlight only the current word without changing its size or weight.
    ========================================================================== */
 
 .conversation-tts-word {
-  padding: 1px 2px;
-  border-radius: 3px;
+  padding: 0;
+  border-radius: 2px;
+  font: inherit;
   transition: background-color 0.08s ease;
 }
 
 .conversation-tts-word.is-tts-current-word {
   background: #fde68a;
-  color: #172033;
-  font-weight: 900;
+  color: inherit;
+  font-weight: inherit;
 }
 
 /* ==========================================================================
    END: CURRENT TTS WORD HIGHLIGHT
    ========================================================================== */
-
 
 
 /* ==========================================================================
@@ -993,3 +1012,63 @@ body {
 /* ==========================================================================
    END: SELECTED TURN CHUNK DISPLAY
    ========================================================================== */  
+
+
+.conversation-play-split #playButton:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  border-color: #d7dee8;
+  background: #eef2f7;
+  color: #8a94a6;
+}   
+
+#playMenuPanel .practice-reset-button {
+  grid-column: 1 / -1;
+  min-height: 36px;
+  border-color: #efb7b7;
+  background: #fff7f7;
+  color: #b42318;
+}
+
+#settingsPanel .conversation-settings-actions {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+}
+
+#settingsPanel .conversation-settings-actions button {
+  min-height: 34px;
+}
+
+#settingsPanel .conversation-settings-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ==========================================================================
+   🟦 BLOCK 2340: BUTTON HOVER FEEDBACK
+   Purpose: Show clear hover feedback on every active application button.
+   ========================================================================== */
+
+button:not(:disabled) {
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+
+button:not(:disabled):hover {
+  filter: brightness(0.88);
+  box-shadow:
+    0 2px 8px
+    rgb(23 32 51 / 35%);
+}
+
+button:not(:disabled):active {
+  filter: brightness(0.80);
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   END: BUTTON HOVER FEEDBACK
+   ========================================================================== */
