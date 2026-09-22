@@ -2738,8 +2738,8 @@ function getCurrentPsgNativeSpeech() {
 
 
 // ============================================================================
-// 🟦 BLOCK 5652: ANDROID CHROME PLATFORM DETECTOR
-// Purpose: S26 Android Chrome only. APK is excluded first.
+// 🟦 BLOCK 5652: ANDROID BROWSER PLATFORM DETECTOR
+// Purpose: Android browser/WebView uses xxx2. Native Capacitor APK is excluded.
 // ============================================================================
 
 function isCurrentAndroidChrome_2() {
@@ -2755,13 +2755,8 @@ function isCurrentAndroidChrome_2() {
     return false;
   }
 
-  var userAgent =
-    String(navigator.userAgent || '');
-
-  return (
-    /Android/i.test(userAgent) &&
-    /Chrome\//i.test(userAgent) &&
-    !/; wv\)/i.test(userAgent)
+  return /Android/i.test(
+    String(navigator.userAgent || '')
   );
 }
 
