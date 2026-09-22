@@ -3278,55 +3278,6 @@ function createCurrentPsgAndroidChromeAdapter_2() {
 
 
 
-// ============================================================================
-// 🟦 BLOCK 5800: NATIVE PLAY ADAPTER / BASE ADAPTER
-// ============================================================================
-
-function createCurrentPsgNativePlayAdapter() {
-  var nativeSpeech =
-    getCurrentPsgNativeSpeech();
-
-  if (
-    !nativeSpeech ||
-    typeof nativeSpeech.speak !== 'function' ||
-    typeof nativeSpeech.stopSpeaking !==
-      'function'
-  ) {
-    return null;
-  }
-
-  return {
-    type: 'android-native',
-
-    speak: function(item) {
-      return nativeSpeech.speak({
-        text: item.speechText,
-        language: getCurrentPsgPlayLocale(
-          item.language
-        ),
-        rate: getCurrentPsgPlayRate()
-      });
-    },
-
-    stop: function() {
-      return nativeSpeech.stopSpeaking();
-    }
-  };
-}
-
-
-function getCurrentPsgBaseAdapter() {
-  var nativeAdapter =
-    createCurrentPsgNativePlayAdapter();
-
-  if (nativeAdapter) {
-    return nativeAdapter;
-  }
-
-  return createCurrentPsgWebPlayAdapter();
-}
-
-
 
 // ============================================================================
 // 🟦 BLOCK 5800: COMMON PLAY ADAPTER SELECTOR
@@ -3935,6 +3886,8 @@ function renderCurrentPsgPlayButton() {
     String(state.running)
   );
 }
+
+
 
 
 // ============================================================================
