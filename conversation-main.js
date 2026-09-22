@@ -5809,6 +5809,13 @@ function installCurrentPsgPlayButton() {
 
     resetCurrentPlayVisualState();
 
+    // S26: console-verified direct path.
+    if (isCurrentAndroidChrome_2()) {
+      startCurrentPsgPlay(true);
+      return;
+    }
+
+    // PC Chrome and APK: existing behavior.
     startCurrentPsgPlay();
   };
 
