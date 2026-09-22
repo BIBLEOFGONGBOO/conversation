@@ -1,29 +1,15 @@
 // ============================================================================
-// 🟥 BLOCK 3000: CONVERSATION APPLICATION LOGIC / NUMBERING RULES
-// ============================================================================
-//
-// BLOCK numbers are always exactly 4 digits: 0000 ~ 9999.
-// Normal COMMON BLOCK spacing: 50.
-//
-// xxx0 = COMMON / Controller
-// xxx1 = PC Chrome
-// xxx2 = Android Chrome
-// xxx3 = Android APK
-// xxx4 = iOS Safari
-// xxx5 = macOS Safari
-// xxx6 = Reserved
-// xxx7 = Reserved
-// xxx8 = Reserved
-// xxx9 = PATCH / Exceptional fallback
-//
-// One BLOCK should normally stay within about 120 lines.
-// Split only at logical / functional boundaries.
-// Do not change executable code merely for BLOCK organization.
+// 🟥 BLOCK 3000: CONVERSATION APPLICATION LOGIC
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 3050: SUPABASE PRIVATE LOCAL CONFIGURATION
+// 🟩 BLOCK 3100: SUPABASE DATA ACCESS
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 3110: PRIVATE LOCAL CONFIGURATION
 // ============================================================================
 
 const SUPABASE_CONFIG = {
@@ -34,7 +20,8 @@ const SUPABASE_CONFIG = {
 
 
 // ============================================================================
-// 🟦 BLOCK 3100: LOCAL CONVERSATION CACHE CORE
+// 🟦 BLOCK 3120: LOCAL CONVERSATION CACHE AND ROW LOADER
+// Purpose: Cache 20 conversations from the selected position by language.
 // ============================================================================
 
 const CONVERSATION_V2_CACHE_KEY =
@@ -120,10 +107,6 @@ function getCachedConversationRow(
   ) || null;
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 3150: LOCAL CONVERSATION BATCH CACHE
-// ============================================================================
 
 function saveConversationBatch(
   languageCode,
@@ -212,10 +195,6 @@ function getConversationBatchIds(
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 3200: SERVER CONVERSATION ROW REQUEST
-// ============================================================================
-
 async function requestConversationRows(
   ids,
   languageCode
@@ -266,10 +245,6 @@ async function requestConversationRows(
     : [];
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 3250: CONVERSATION ROW LOADER
-// ============================================================================
 
 async function loadConversationRow(
   id,
@@ -345,9 +320,22 @@ async function loadConversationRow(
   return row;
 }
 
+// ============================================================================
+// END: LOCAL CONVERSATION CACHE AND ROW LOADER
+// ============================================================================
 
 // ============================================================================
-// 🟦 BLOCK 3300: STATUS VIEW
+// END: LOCAL CONVERSATION CACHE AND ROW LOADER
+// ============================================================================
+
+
+// ============================================================================
+// 🟩 BLOCK 3200: APPLICATION START
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 3210: STATUS VIEW
 // ============================================================================
 
 function setConversationStatus(
@@ -365,35 +353,42 @@ function setConversationStatus(
 
 
 // ============================================================================
-// 🟦 BLOCK 3350: DIALOGUE NORMALIZATION AND PARSING
+// 🟦 BLOCK 3220: CONVERSATION DIRECTORY AND APPLICATION START
+// Purpose: Show LEVEL → CATEGORY → TITLE before loading a conversation.
 // ============================================================================
 
-function normalizeConversationDialogueText(dialogue) {
-  return String(dialogue || '')
-    .replace(/\\r\\n/g, '\n')
-    .replace(/\\n|\\r/g, '\n');
-}
-
-
-function parseConversationTurns(dialogue) {
-  var lines = normalizeConversationDialogueText(dialogue)
-    .split(/<br\s*\/?>|\r?\n/gi)
-    .map(function(line) {
-      return String(line || '').trim();
-    })
-    .filter(Boolean);
+function parseConversationTurns(
+  dialogue
+) {
+  var lines =
+    String(dialogue || '')
+      .split(
+        /<br\s*\/?>|\r?\n/gi
+      )
+      .map(function(line) {
+        return String(line || '').trim();
+      })
+      .filter(Boolean);
 
   var turns = [];
 
   lines.forEach(function(line) {
-    var colonIndex = line.indexOf(':');
+    var colonIndex =
+      line.indexOf(':');
 
     if (colonIndex <= 0) {
       return;
     }
 
-    var speaker = line.slice(0, colonIndex).trim();
-    var text = line.slice(colonIndex + 1).trim();
+    var speaker =
+      line
+        .slice(0, colonIndex)
+        .trim();
+
+    var text =
+      line
+        .slice(colonIndex + 1)
+        .trim();
 
     if (!speaker || !text) {
       return;
@@ -410,14 +405,13 @@ function parseConversationTurns(dialogue) {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 3400: CONVERSATION TURN RENDERING
-// ============================================================================
-
-function renderConversationTurns(turns) {
-  var container = document.getElementById(
-    'conversationTurns'
-  );
+function renderConversationTurns(
+  turns
+) {
+  var container =
+    document.getElementById(
+      'conversationTurns'
+    );
 
   if (!container) {
     throw new Error(
@@ -428,9 +422,8 @@ function renderConversationTurns(turns) {
   container.innerHTML = '';
 
   turns.forEach(function(turn) {
-    var card = document.createElement('article');
-    var speaker = document.createElement('strong');
-    var text = document.createElement('span');
+    var card =
+      document.createElement('article');
 
     card.className =
       'conversation-turn-card';
@@ -438,11 +431,17 @@ function renderConversationTurns(turns) {
     card.dataset.turn =
       String(turn.number);
 
+    var speaker =
+      document.createElement('strong');
+
     speaker.className =
       'conversation-turn-speaker';
 
     speaker.textContent =
       turn.speaker + ':';
+
+    var text =
+      document.createElement('span');
 
     text.className =
       'conversation-turn-text';
@@ -452,19 +451,24 @@ function renderConversationTurns(turns) {
 
     card.appendChild(speaker);
     card.appendChild(text);
+
     container.appendChild(card);
   });
 }
 
 
-function renderFirstConversationRow(row) {
-  var lesson = document.getElementById(
-    'conversationLesson'
-  );
+function renderFirstConversationRow(
+  row
+) {
+  var lesson =
+    document.getElementById(
+      'conversationLesson'
+    );
 
-  var meta = document.getElementById(
-    'conversationMeta'
-  );
+  var meta =
+    document.getElementById(
+      'conversationMeta'
+    );
 
   if (!lesson || !meta) {
     throw new Error(
@@ -472,9 +476,10 @@ function renderFirstConversationRow(row) {
     );
   }
 
-  var turns = parseConversationTurns(
-    row.DIALOGUE
-  );
+  var turns =
+    parseConversationTurns(
+      row.DIALOGUE
+    );
 
   if (!turns.length) {
     throw new Error(
@@ -484,20 +489,26 @@ function renderFirstConversationRow(row) {
 
   meta.innerHTML = '';
 
-  var group = document.createElement('div');
-  var title = document.createElement('h2');
+  var group =
+    document.createElement('div');
 
-  group.className = 'conversation-group';
+  group.className =
+    'conversation-group';
 
   group.textContent =
     String(row.GROUP || '') +
     (
       row.CATEGORY
-        ? ' · ' + String(row.CATEGORY)
+        ? ' · ' +
+          String(row.CATEGORY)
         : ''
     );
 
-  title.className = 'conversation-title';
+  var title =
+    document.createElement('h2');
+
+  title.className =
+    'conversation-title';
 
   title.textContent =
     row.DIALOGUE_TITLE ||
@@ -517,11 +528,9 @@ function renderFirstConversationRow(row) {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 3450: DIRECTORY VALUE HELPERS
-// ============================================================================
-
-function getConversationDirectoryText(value) {
+function getConversationDirectoryText(
+  value
+) {
   return String(value || '').trim();
 }
 
@@ -546,49 +555,44 @@ function getConversationDirectoryUniqueValues(
 }
 
 
-function getConversationDirectoryRows() {
-  return window.CONVERSATION_V2_DIRECTORY_ROWS ||
-    [];
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 3500: DIRECTORY DATA LOADING
-// ============================================================================
-
 async function loadConversationDirectoryRows() {
   var allRows = [];
   var from = 0;
   var pageSize = 1000;
 
   while (true) {
-    var to = from + pageSize - 1;
+    var to =
+      from + pageSize - 1;
 
-    var response = await fetch(
-      SUPABASE_CONFIG.restUrl +
-        '?select=' +
-        encodeURIComponent(
-          'ID,GROUP,CATEGORY,DIALOGUE_TITLE'
-        ) +
-        '&LNG=eq.EN' +
-        '&order=GROUP.asc,CATEGORY.asc,ID.asc',
-      {
-        headers: {
-          apikey:
-            SUPABASE_CONFIG.publishableKey,
+    var response =
+      await fetch(
+        SUPABASE_CONFIG.restUrl +
+          '?select=' +
+          encodeURIComponent(
+            'ID,GROUP,CATEGORY,DIALOGUE_TITLE'
+          ) +
+          '&LNG=eq.EN' +
+          '&order=GROUP.asc,CATEGORY.asc,ID.asc',
+        {
+          headers: {
+            apikey:
+              SUPABASE_CONFIG.publishableKey,
 
-          Authorization:
-            'Bearer ' +
-            SUPABASE_CONFIG.publishableKey,
+            Authorization:
+              'Bearer ' +
+              SUPABASE_CONFIG.publishableKey,
 
-          Range: from + '-' + to,
+            Range:
+              from + '-' + to,
 
-          'Range-Unit': 'items'
+            'Range-Unit':
+              'items'
+          }
         }
-      }
-    );
+      );
 
-    var text = await response.text();
+    var text =
+      await response.text();
 
     if (!response.ok) {
       throw new Error(
@@ -597,11 +601,13 @@ async function loadConversationDirectoryRows() {
       );
     }
 
-    var rows = text
-      ? JSON.parse(text)
-      : [];
+    var rows =
+      text
+        ? JSON.parse(text)
+        : [];
 
-    allRows = allRows.concat(rows);
+    allRows =
+      allRows.concat(rows);
 
     if (rows.length < pageSize) {
       break;
@@ -612,7 +618,9 @@ async function loadConversationDirectoryRows() {
 
   return allRows.filter(function(row) {
     return (
-      Number.isInteger(Number(row.ID)) &&
+      Number.isInteger(
+        Number(row.ID)
+      ) &&
       getConversationDirectoryText(
         row.GROUP
       ) &&
@@ -627,16 +635,13 @@ async function loadConversationDirectoryRows() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 3550: DIRECTORY BREADCRUMB / ITEM RENDERING
-// ============================================================================
-
 function renderConversationDirectoryBreadcrumb(
   state
 ) {
-  var breadcrumb = document.getElementById(
-    'conversationDirectoryBreadcrumb'
-  );
+  var breadcrumb =
+    document.getElementById(
+      'conversationDirectoryBreadcrumb'
+    );
 
   if (!breadcrumb) {
     return;
@@ -653,12 +658,16 @@ function renderConversationDirectoryBreadcrumb(
     breadcrumb.appendChild(separator);
   }
 
-  function appendStep(label, action) {
+  function appendStep(
+    label,
+    action
+  ) {
     var button =
       document.createElement('button');
 
     button.type = 'button';
     button.textContent = label;
+
     button.onclick = action;
 
     breadcrumb.appendChild(button);
@@ -694,7 +703,8 @@ function renderConversationDirectoryBreadcrumb(
     var category =
       document.createElement('strong');
 
-    category.textContent = state.category;
+    category.textContent =
+      state.category;
 
     breadcrumb.appendChild(category);
   }
@@ -727,24 +737,23 @@ function renderConversationDirectoryItem(
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 3600: DIRECTORY LEVEL / CATEGORY NAVIGATION
-// ============================================================================
-
 function renderConversationDirectory(
   requestedState
 ) {
-  var directory = document.getElementById(
-    'conversationDirectory'
-  );
+  var directory =
+    document.getElementById(
+      'conversationDirectory'
+    );
 
-  var list = document.getElementById(
-    'conversationDirectoryList'
-  );
+  var list =
+    document.getElementById(
+      'conversationDirectoryList'
+    );
 
-  var app = document.getElementById(
-    'conversationApp'
-  );
+  var app =
+    document.getElementById(
+      'conversationApp'
+    );
 
   if (!directory || !list || !app) {
     throw new Error(
@@ -762,7 +771,8 @@ function renderConversationDirectory(
   };
 
   var rows =
-    getConversationDirectoryRows();
+    window.CONVERSATION_V2_DIRECTORY_ROWS ||
+    [];
 
   directory.hidden = false;
 
@@ -797,13 +807,14 @@ function renderConversationDirectory(
     return;
   }
 
-  var levelRows = rows.filter(function(row) {
-    return (
-      getConversationDirectoryText(
-        row.GROUP
-      ) === state.level
-    );
-  });
+  var levelRows =
+    rows.filter(function(row) {
+      return (
+        getConversationDirectoryText(
+          row.GROUP
+        ) === state.level
+      );
+    });
 
   if (!state.category) {
     getConversationDirectoryUniqueValues(
@@ -826,38 +837,18 @@ function renderConversationDirectory(
     return;
   }
 
-  renderConversationDirectoryTitles(
-    levelRows,
-    state,
-    list,
-    directory,
-    app
-  );
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 3650: DIRECTORY TITLE SELECTION
-// ============================================================================
-
-function renderConversationDirectoryTitles(
-  levelRows,
-  state,
-  list,
-  directory,
-  app
-) {
-  var titleRows = levelRows
-    .filter(function(row) {
-      return (
-        getConversationDirectoryText(
-          row.CATEGORY
-        ) === state.category
-      );
-    })
-    .sort(function(left, right) {
-      return Number(left.ID) - Number(right.ID);
-    });
+  var titleRows =
+    levelRows
+      .filter(function(row) {
+        return (
+          getConversationDirectoryText(
+            row.CATEGORY
+          ) === state.category
+        );
+      })
+      .sort(function(left, right) {
+        return Number(left.ID) - Number(right.ID);
+      });
 
   titleRows.forEach(function(row) {
     renderConversationDirectoryItem(
@@ -880,32 +871,30 @@ function renderConversationDirectoryTitles(
     );
   });
 
-  if (titleRows.length) {
-    return;
+  if (!titleRows.length) {
+    var empty =
+      document.createElement('p');
+
+    empty.className =
+      'conversation-directory-empty';
+
+    empty.textContent =
+      'No conversations found.';
+
+    list.appendChild(empty);
   }
-
-  var empty = document.createElement('p');
-
-  empty.className =
-    'conversation-directory-empty';
-
-  empty.textContent =
-    'No conversations found.';
-
-  list.appendChild(empty);
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 3700: APPLICATION STARTUP
-// ============================================================================
-
 async function startConversationApp() {
-  if (window.__conversationV2Started) {
+  if (
+    window.__conversationV2Started
+  ) {
     return;
   }
 
-  window.__conversationV2Started = true;
+  window.__conversationV2Started =
+    true;
 
   try {
     setConversationStatus(
@@ -938,7 +927,8 @@ async function startConversationApp() {
     );
 
   } catch (error) {
-    window.__conversationV2Started = false;
+    window.__conversationV2Started =
+      false;
 
     console.error(
       '[CONVERSATION V2] Directory start failed:',
@@ -972,9 +962,14 @@ function bootConversationApp() {
 
 bootConversationApp();
 
+// ============================================================================
+// END: CONVERSATION DIRECTORY AND APPLICATION START
+// ============================================================================
+
 
 // ============================================================================
-// 🟦 BLOCK 3750: DIRECTORY LOADING VIEW
+// 🟦 BLOCK 3221: DIRECTORY LOADING VIEW
+// Purpose: Hide lesson navigation and show one loading line at startup.
 // ============================================================================
 
 function renderConversationDirectoryLoading() {
@@ -1047,14 +1042,14 @@ function bootConversationDirectoryLoading() {
 
 bootConversationDirectoryLoading();
 
+// ============================================================================
+// END: DIRECTORY LOADING VIEW
+// ============================================================================
+
+
 
 // ============================================================================
-// 🟩 4000 — MENU / UI STATE + LANGUAGE / LOADING
-// ============================================================================
-
-
-// ============================================================================
-// 🟦 BLOCK 4000: CONVERSATION MENU STATE
+// 🟦 BLOCK 3230: TOP, PLAY, AND DETAIL MENU CONTROL
 // ============================================================================
 
 function getConversationMenus() {
@@ -1099,37 +1094,6 @@ function closePlayMorePanel() {
 }
 
 
-function syncPlayButtonWithPlayMenu() {
-  var playButton =
-    document.getElementById(
-      'playButton'
-    );
-
-  var playMenuPanel =
-    document.getElementById(
-      'playMenuPanel'
-    );
-
-  if (!playButton || !playMenuPanel) {
-    return;
-  }
-
-  var menuOpen =
-    !playMenuPanel.hidden;
-
-  playButton.disabled = menuOpen;
-
-  playButton.setAttribute(
-    'aria-disabled',
-    String(menuOpen)
-  );
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 4050: MENU CLOSE / TOGGLE
-// ============================================================================
-
 function closeConversationMenus() {
   getConversationMenus().forEach(
     function(menu) {
@@ -1157,13 +1121,10 @@ function closeConversationMenus() {
   );
 
   closePlayMorePanel();
-  syncPlayButtonWithPlayMenu();
 }
 
 
-function toggleConversationMenu(
-  targetButtonId
-) {
+function toggleConversationMenu(targetButtonId) {
   var targetMenu =
     getConversationMenus().find(
       function(menu) {
@@ -1190,8 +1151,7 @@ function toggleConversationMenu(
     return;
   }
 
-  var opening =
-    targetPanel.hidden;
+  var opening = targetPanel.hidden;
 
   closeConversationMenus();
 
@@ -1203,14 +1163,8 @@ function toggleConversationMenu(
       'true'
     );
   }
-
-  syncPlayButtonWithPlayMenu();
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 4100: PLAY MENU VALUE CONTROLS
-// ============================================================================
 
 function togglePlayMorePanel() {
   var button =
@@ -1262,10 +1216,6 @@ function updatePlayRangeValue(
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 4150: PLAY MODE TOGGLE
-// ============================================================================
-
 function installPlayModeToggle() {
   var button =
     document.getElementById(
@@ -1284,7 +1234,7 @@ function installPlayModeToggle() {
   button.textContent =
     window.CONVERSATION_V2_PLAY_MODE ===
     'i-start'
-      ? 'I FIRST'
+      ? 'I START'
       : 'COMPUTER';
 
   button.setAttribute(
@@ -1305,7 +1255,7 @@ function installPlayModeToggle() {
     button.textContent =
       window.CONVERSATION_V2_PLAY_MODE ===
       'i-start'
-        ? 'I FIRST'
+        ? 'I START'
         : 'COMPUTER';
 
     button.setAttribute(
@@ -1318,10 +1268,6 @@ function installPlayModeToggle() {
   };
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 4200: PLAY DETAIL CONTROLS
-// ============================================================================
 
 function installPlayDetails() {
   var moreButton =
@@ -1423,25 +1369,6 @@ function installPlayDetails() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 4250: MENU PROTECTION / EVENT INSTALLATION
-// ============================================================================
-
-function isCurrentPlayMenuProtectedClick(
-  event
-) {
-  if (!event.target || !event.target.closest) {
-    return false;
-  }
-
-  return Boolean(
-    event.target.closest(
-      '#conversationTurns .conversation-turn-card'
-    )
-  );
-}
-
-
 function installConversationMenus() {
   var menus = getConversationMenus();
 
@@ -1500,24 +1427,13 @@ function installConversationMenus() {
         }
       );
 
-      if (
-        clickedMenu ||
-        isCurrentPlayMenuProtectedClick(
-          event
-        )
-      ) {
-        return;
+      if (!clickedMenu) {
+        closeConversationMenus();
       }
-
-      closeConversationMenus();
     }
   );
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 4300: MENU BOOTSTRAP
-// ============================================================================
 
 function bootConversationMenus() {
   if (
@@ -1539,9 +1455,15 @@ function bootConversationMenus() {
 
 bootConversationMenus();
 
+// ============================================================================
+// END: TOP, PLAY, AND DETAIL MENU CONTROL
+// ============================================================================
+
+
+
 
 // ============================================================================
-// 🟦 BLOCK 4350: CURRENT PSG LOOP TOGGLE
+// 🟦 BLOCK 3236: CURRENT PSG LOOP TOGGLE
 // ============================================================================
 
 function renderPlayLoopToggle() {
@@ -1621,9 +1543,15 @@ function bootPlayLoopToggle() {
 
 bootPlayLoopToggle();
 
+// ============================================================================
+// END: CURRENT PSG LOOP TOGGLE
+// ============================================================================
+
+
+
 
 // ============================================================================
-// 🟦 BLOCK 4400: LEVEL0 LANGUAGE CODE LOADER
+// 🟦 BLOCK 3240: LEVEL0 LANGUAGE OPTIONS
 // ============================================================================
 
 async function loadV2LanguageCodes() {
@@ -1696,10 +1624,6 @@ async function loadV2LanguageCodes() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 4450: LANGUAGE SELECT BUILDER
-// ============================================================================
-
 function fillV2LanguageSelect(
   selectId,
   languageCodes,
@@ -1746,12 +1670,10 @@ function fillV2LanguageSelect(
     allowNone
   ) {
     select.value = 'NONE';
-
   } else if (
     languageCodes.includes(previousValue)
   ) {
     select.value = previousValue;
-
   } else if (
     languageCodes.includes('EN')
   ) {
@@ -1759,10 +1681,6 @@ function fillV2LanguageSelect(
   }
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 4500: LANGUAGE OPTIONS INSTALLATION
-// ============================================================================
 
 async function installV2LanguageOptions() {
   try {
@@ -1800,9 +1718,8 @@ async function installV2LanguageOptions() {
 
 installV2LanguageOptions();
 
-
 // ============================================================================
-// 🟦 BLOCK 4550: SELECTED LANGUAGE HELPERS
+// 🟦 BLOCK 3250: SELECTED LANGUAGE ROW LOADER
 // ============================================================================
 
 function getV2SelectedLanguage(
@@ -1852,14 +1769,6 @@ async function loadV2PrimaryRow(
   }
 }
 
-// ============================================================================
-// 🟩 5000 — CATEGORY NAVIGATION / TURN RENDER + PLAY / TTS
-// ============================================================================
-
-
-// ============================================================================
-// 🟦 BLOCK 5000: SELECTED LANGUAGE RELOAD
-// ============================================================================
 
 async function reloadV2SelectedLanguages() {
   var currentId =
@@ -1942,10 +1851,6 @@ async function reloadV2SelectedLanguages() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 5050: LANGUAGE ROW LOADER INSTALLATION
-// ============================================================================
-
 function installV2LanguageRowLoader() {
   var primary =
     document.getElementById(
@@ -1972,8 +1877,11 @@ function installV2LanguageRowLoader() {
 installV2LanguageRowLoader();
 
 
+
 // ============================================================================
-// 🟦 BLOCK 5100: CATEGORY NAVIGATION ROWS / RESUME STATE
+// 🟦 BLOCK 3255: CATEGORY PREVIOUS / NEXT NAVIGATION
+// Purpose: Move only inside the selected CATEGORY.
+//          At either end, return to that CATEGORY's title list.
 // ============================================================================
 
 function getCurrentCategoryNavigationRows() {
@@ -2010,55 +1918,6 @@ function getCurrentCategoryNavigationRows() {
 }
 
 
-function getCurrentNavigationResumeState() {
-  var playState =
-    getCurrentPsgPlayState();
-
-  var roleState =
-    getCurrentRolePlayState();
-
-  return {
-    play: playState.running === true,
-    rolePlay: roleState.running === true,
-    playMode:
-      window.CONVERSATION_V2_PLAY_MODE ||
-      'computer',
-    practiceType:
-      getCurrentPracticeType()
-  };
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 5150: NAVIGATION RESUME / CATEGORY DIRECTORY
-// ============================================================================
-
-function resumeCurrentNavigationActivity(
-  resumeState
-) {
-  if (!resumeState) {
-    return;
-  }
-
-  window.CONVERSATION_V2_PLAY_MODE =
-    resumeState.playMode;
-
-  window.CONVERSATION_V2_PRACTICE_TYPE =
-    resumeState.practiceType;
-
-  renderCurrentPracticeControls();
-
-  if (resumeState.rolePlay) {
-    startCurrentRolePlay();
-    return;
-  }
-
-  if (resumeState.play) {
-    startCurrentPsgPlay();
-  }
-}
-
-
 function openCurrentCategoryDirectory() {
   var currentRow =
     window.CONVERSATION_V2_ROW;
@@ -2086,10 +1945,6 @@ function openCurrentCategoryDirectory() {
   });
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 5200: NAVIGATION BUTTON STATE / RENDER
-// ============================================================================
 
 function setConversationNavigationDisabled(
   disabled
@@ -2187,16 +2042,9 @@ function renderConversationNavigation() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 5250: CONVERSATION ID NAVIGATION LOADER
-// ============================================================================
-
 async function loadConversationById(
-  targetId,
-  options
+  targetId
 ) {
-  options = options || {};
-
   var currentRow =
     window.CONVERSATION_V2_ROW;
 
@@ -2204,37 +2052,15 @@ async function loadConversationById(
     Number(targetId);
 
   if (!Number.isInteger(target) || target < 1) {
-    return false;
+    return;
   }
 
   if (
     currentRow &&
     Number(currentRow.ID) === target
   ) {
-    return false;
+    return;
   }
-
-  var currentContinueMode =
-  typeof getCurrentContinueMode === 'function'
-    ? getCurrentContinueMode()
-    : 'off';
-
-var currentContinueMode =
-  typeof getCurrentContinueMode === 'function'
-    ? getCurrentContinueMode()
-    : 'off';
-
-var shouldResume =
-  options.resume === true ||
-  (
-    options.resume !== false &&
-    currentContinueMode === 'next'
-  );
-
-  var resumeState =
-    shouldResume
-      ? getCurrentNavigationResumeState()
-      : null;
 
   setConversationNavigationDisabled(true);
 
@@ -2261,12 +2087,6 @@ var shouldResume =
       'Conversation loaded'
     );
 
-    resumeCurrentNavigationActivity(
-      resumeState
-    );
-
-    return true;
-
   } catch (error) {
     console.error(
       '[CONVERSATION V2] Navigation failed:',
@@ -2280,17 +2100,11 @@ var shouldResume =
       'No conversation found'
     );
 
-    return false;
-
   } finally {
     renderConversationNavigation();
   }
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 5300: NAVIGATION INSTALLATION / PUBLIC API
-// ============================================================================
 
 function installConversationNavigation() {
   renderConversationNavigation();
@@ -2311,9 +2125,12 @@ if (document.readyState === 'loading') {
 window.loadConversationById =
   loadConversationById;
 
+// ============================================================================
+// END: CATEGORY PREVIOUS / NEXT NAVIGATION
+// ============================================================================
 
 // ============================================================================
-// 🟦 BLOCK 5350: PRIMARY / SECONDARY TURN RENDER
+// 🟦 BLOCK 3260: PRIMARY / SECONDARY TURN RENDER
 // ============================================================================
 
 function renderV2SecondaryTurns() {
@@ -2396,11 +2213,15 @@ window.renderV2SecondaryTurns =
   renderV2SecondaryTurns;
 
 
-// ============================================================================
-// 🟦 BLOCK 5400: LEGACY ROW PLAY SEQUENCE
+  // ============================================================================
+// 🟩 BLOCK 3300: PLAYBACK
 // ============================================================================
 
-function buildLegacyRowPsgPlaySequence() {
+// ============================================================================
+// 🟦 BLOCK 3310: CURRENT PSG PLAY SEQUENCE
+// ============================================================================
+
+function buildCurrentPsgPlaySequence() {
   var row =
     window.CONVERSATION_V2_ROW;
 
@@ -2424,9 +2245,20 @@ function buildLegacyRowPsgPlaySequence() {
 }
 
 
-function inspectLegacyRowPsgPlaySequence() {
+function refreshCurrentPsgPlaySequence() {
   var sequence =
-    buildLegacyRowPsgPlaySequence();
+    buildCurrentPsgPlaySequence();
+
+  window.CONVERSATION_V2_PLAY_SEQUENCE =
+    sequence;
+
+  return sequence;
+}
+
+
+function inspectCurrentPsgPlaySequence() {
+  var sequence =
+    refreshCurrentPsgPlaySequence();
 
   console.table(
     sequence.map(function(item) {
@@ -2443,15 +2275,21 @@ function inspectLegacyRowPsgPlaySequence() {
 }
 
 
-window.buildLegacyRowPsgPlaySequence =
-  buildLegacyRowPsgPlaySequence;
+window.buildCurrentPsgPlaySequence =
+  buildCurrentPsgPlaySequence;
 
-window.inspectLegacyRowPsgPlaySequence =
-  inspectLegacyRowPsgPlaySequence;
+window.inspectCurrentPsgPlaySequence =
+  inspectCurrentPsgPlaySequence;
+
+// ============================================================================
+// END: CURRENT PSG PLAY SEQUENCE
+// ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 5450: JAPANESE / CURRENT SPEECH TEXT
+// 🟦 BLOCK 3315: VISIBLE SCREEN PLAY SEQUENCE
+// Purpose: Play visible primary and secondary sentences in reading order.
+//          Japanese TTS reads furigana only: 私(わたし) -> わたし.
 // ============================================================================
 
 function getCurrentJapaneseSpeechText(value) {
@@ -2486,10 +2324,6 @@ function getCurrentPsgSpeechText(
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 5500: VISIBLE SCREEN PLAY SEQUENCE
-// ============================================================================
-
 function buildCurrentPsgPlaySequence() {
   var primaryRow =
     window.CONVERSATION_V2_ROW || {};
@@ -2505,8 +2339,6 @@ function buildCurrentPsgPlaySequence() {
     primaryLanguage;
 
   var sequence = [];
-    var startTurn =
-    getCurrentRoleTargetTurn();
 
   function addItem(
     text,
@@ -2533,7 +2365,19 @@ function buildCurrentPsgPlaySequence() {
     });
   }
 
- 
+  var title =
+    document.querySelector(
+      '.conversation-title'
+    );
+
+  if (title) {
+    addItem(
+      title.textContent,
+      primaryLanguage,
+      0,
+      'title'
+    );
+  }
 
   Array.from(
     document.querySelectorAll(
@@ -2543,10 +2387,6 @@ function buildCurrentPsgPlaySequence() {
     var turnNumber =
       Number(card.dataset.turn) ||
       index + 1;
-
-          if (turnNumber < startTurn) {
-      return;
-    }
 
     var primaryText =
       card.querySelector(
@@ -2580,10 +2420,6 @@ function buildCurrentPsgPlaySequence() {
   return sequence;
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 5550: PLAY SEQUENCE REFRESH / INSPECTION
-// ============================================================================
 
 function refreshCurrentPsgPlaySequence() {
   var sequence =
@@ -2625,9 +2461,15 @@ window.refreshCurrentPsgPlaySequence =
 window.inspectCurrentPsgPlaySequence =
   inspectCurrentPsgPlaySequence;
 
+// ============================================================================
+// END: VISIBLE SCREEN PLAY SEQUENCE
+// ============================================================================
+
+
 
 // ============================================================================
-// 🟦 BLOCK 5600: SHARED PLAY STATE / RATE / LOCALE
+// 🟦 BLOCK 3320: SHARED PLAY ADAPTER STATE
+// Purpose: One PLAY state for Android native TTS and web TTS.
 // ============================================================================
 
 function getCurrentPsgPlayState() {
@@ -2687,10 +2529,6 @@ function getCurrentPsgPlayLocale(language) {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 5650: NATIVE SPEECH LOOKUP
-// ============================================================================
-
 function getCurrentPsgNativeSpeech() {
   var capacitor = window.Capacitor;
 
@@ -2737,252 +2575,6 @@ function getCurrentPsgNativeSpeech() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 5652: ANDROID BROWSER PLATFORM DETECTOR
-// Purpose: Android browser/WebView uses xxx2. Native Capacitor APK is excluded.
-// ============================================================================
-
-function isCurrentAndroidChrome_2() {
-  var capacitor = window.Capacitor;
-
-  var isNative =
-    capacitor &&
-    typeof capacitor.isNativePlatform ===
-      'function' &&
-    capacitor.isNativePlatform();
-
-  if (isNative) {
-    return false;
-  }
-
-  return /Android/i.test(
-    String(navigator.userAgent || '')
-  );
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 5700: WEB WORD HIGHLIGHT FALLBACK
-// ============================================================================
-
-function startCurrentPsgWebWordFallback() {
-  var data =
-    window.CONVERSATION_V2_TTS_WORD_DATA;
-
-  if (
-    !data ||
-    !data.words ||
-    !data.words.length
-  ) {
-    return null;
-  }
-
-  var index = 0;
-
-  var delay = Math.max(
-    160,
-    Math.round(
-      340 / getCurrentPsgPlayRate()
-    )
-  );
-
-  highlightCurrentTtsWordAt(
-    Number(data.words[0].start)
-  );
-
-  return window.setInterval(function() {
-    index += 1;
-
-    if (index >= data.words.length) {
-      return;
-    }
-
-    highlightCurrentTtsWordAt(
-      Number(data.words[index].start)
-    );
-  }, delay);
-}
-
-
-
-// ============================================================================
-// 🟦 BLOCK 5702: ANDROID CHROME PERSISTENT DIAGNOSTIC TRACE
-// Purpose: Save S26 PLAY/MIC state before DevTools connection changes runtime.
-// ============================================================================
-
-var CONVERSATION_V2_ANDROID_TRACE_KEY_2 =
-  'CONVERSATION_V2_ANDROID_TRACE_2';
-
-
-function writeCurrentAndroidTrace_2(
-  eventName,
-  detail
-) {
-  if (!isCurrentAndroidChrome_2()) {
-    return;
-  }
-
-  try {
-    var entries = JSON.parse(
-      localStorage.getItem(
-        CONVERSATION_V2_ANDROID_TRACE_KEY_2
-      ) || '[]'
-    );
-
-    entries.push({
-      time: new Date().toISOString(),
-      event: eventName,
-      detail: detail || {}
-    });
-
-    if (entries.length > 80) {
-      entries = entries.slice(-80);
-    }
-
-    localStorage.setItem(
-      CONVERSATION_V2_ANDROID_TRACE_KEY_2,
-      JSON.stringify(entries)
-    );
-  } catch (error) {
-    // Diagnostics must never affect PLAY or MIC.
-  }
-}
-
-
-function getCurrentAndroidTraceSnapshot_2() {
-  var synthesis = window.speechSynthesis;
-  var micState =
-    window.CONVERSATION_V2_MIC || {};
-
-  return {
-    visible: document.visibilityState,
-    focused: document.hasFocus(),
-    row: Boolean(window.CONVERSATION_V2_ROW),
-    cards: document.querySelectorAll(
-      '.conversation-turn-card'
-    ).length,
-    sequence:
-      typeof buildCurrentPsgPlaySequence ===
-      'function'
-        ? buildCurrentPsgPlaySequence().length
-        : -1,
-    tts: Boolean(synthesis),
-    paused: synthesis ? synthesis.paused : null,
-    pending: synthesis ? synthesis.pending : null,
-    speaking: synthesis ? synthesis.speaking : null,
-    voices: synthesis
-      ? synthesis.getVoices().length
-      : 0,
-    micClass: Boolean(
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition
-    ),
-    micRunning: Boolean(micState.running)
-  };
-}
-
-
-function installCurrentAndroidTrace_2() {
-  if (!isCurrentAndroidChrome_2()) {
-    return;
-  }
-
-  writeCurrentAndroidTrace_2(
-    'boot',
-    getCurrentAndroidTraceSnapshot_2()
-  );
-
-  window.addEventListener(
-    'pageshow',
-    function() {
-      writeCurrentAndroidTrace_2(
-        'pageshow',
-        getCurrentAndroidTraceSnapshot_2()
-      );
-    }
-  );
-
-  document.addEventListener(
-    'visibilitychange',
-    function() {
-      writeCurrentAndroidTrace_2(
-        'visibilitychange',
-        getCurrentAndroidTraceSnapshot_2()
-      );
-    }
-  );
-
-  document.addEventListener(
-    'click',
-    function(event) {
-      var button =
-        event.target.closest('button');
-
-      if (!button) {
-        return;
-      }
-
-      var watched =
-        button.id === 'playButton' ||
-        button.id ===
-          'practiceStartStopButton';
-
-      if (!watched) {
-        return;
-      }
-
-      writeCurrentAndroidTrace_2(
-        'tap:' + button.id,
-        getCurrentAndroidTraceSnapshot_2()
-      );
-
-      window.setTimeout(function() {
-        writeCurrentAndroidTrace_2(
-          'after-0ms:' + button.id,
-          getCurrentAndroidTraceSnapshot_2()
-        );
-      }, 0);
-
-      window.setTimeout(function() {
-        writeCurrentAndroidTrace_2(
-          'after-1800ms:' + button.id,
-          getCurrentAndroidTraceSnapshot_2()
-        );
-      }, 1800);
-    },
-    true
-  );
-
-  if (
-    navigator.permissions &&
-    typeof navigator.permissions.query ===
-      'function'
-  ) {
-    navigator.permissions.query({
-      name: 'microphone'
-    }).then(
-      function(permission) {
-        writeCurrentAndroidTrace_2(
-          'microphone-permission',
-          { state: permission.state }
-        );
-      },
-      function() {
-        // Some Android Chrome versions do not expose it.
-      }
-    );
-  }
-}
-
-
-installCurrentAndroidTrace_2();
-
-
-
-// ============================================================================
-// 🟦 BLOCK 5750: WEB PLAY ADAPTER
-// ============================================================================
-
 function createCurrentPsgWebPlayAdapter() {
   if (
     !window.speechSynthesis ||
@@ -2997,30 +2589,6 @@ function createCurrentPsgWebPlayAdapter() {
 
     speak: function(item) {
       return new Promise(function(resolve, reject) {
-        var settled = false;
-        var fallbackTimer = null;
-        var boundaryReceived = false;
-
-        function clearFallback() {
-          if (fallbackTimer !== null) {
-            window.clearInterval(
-              fallbackTimer
-            );
-
-            fallbackTimer = null;
-          }
-        }
-
-        function finish(callback, value) {
-          if (settled) {
-            return;
-          }
-
-          settled = true;
-          clearFallback();
-          callback(value);
-        }
-
         var utterance =
           new SpeechSynthesisUtterance(
             item.speechText
@@ -3034,49 +2602,15 @@ function createCurrentPsgWebPlayAdapter() {
         utterance.rate =
           getCurrentPsgPlayRate();
 
-        utterance.onstart = function() {
-          if (!boundaryReceived) {
-            fallbackTimer =
-              startCurrentPsgWebWordFallback();
-          }
-        };
-
-        utterance.onboundary = function(event) {
-          var charIndex =
-            Number(event.charIndex);
-
-          if (!Number.isInteger(charIndex)) {
-            return;
-          }
-
-          boundaryReceived = true;
-          clearFallback();
-
-          highlightCurrentTtsWordAt(
-            charIndex
-          );
-        };
-
         utterance.onend = function() {
-          finish(resolve);
+          resolve();
         };
 
         utterance.onerror = function(error) {
-          finish(reject, error);
+          reject(error);
         };
 
-        try {
-          window.speechSynthesis.speak(
-            utterance
-          );
-
-          window.setTimeout(function() {
-            window.speechSynthesis.resume();
-          }, 100);
-
-        } catch (error) {
-          finish(reject, error);
-        }
+        window.speechSynthesis.speak(utterance);
       });
     },
 
@@ -3088,196 +2622,6 @@ function createCurrentPsgWebPlayAdapter() {
   };
 }
 
-
-
-// ============================================================================
-// 🟦 BLOCK 5752: ANDROID CHROME PLAY ADAPTER
-// Purpose: S26 cold-start TTS recovery. PC and APK do not enter here.
-// ============================================================================
-
-function createCurrentPsgAndroidChromeAdapter_2() {
-  var synthesis = window.speechSynthesis;
-
-  if (
-    !synthesis ||
-    typeof SpeechSynthesisUtterance !==
-      'function'
-  ) {
-    return null;
-  }
-
-  return {
-    type: 'android-chrome',
-
-    speak: function(item) {
-      return new Promise(function(resolve, reject) {
-        var settled = false;
-        var attemptId = 0;
-        var fallbackTimer = null;
-        var startTimer = null;
-
-        function clearTimers() {
-          if (fallbackTimer !== null) {
-            window.clearInterval(fallbackTimer);
-            fallbackTimer = null;
-          }
-
-          if (startTimer !== null) {
-            window.clearTimeout(startTimer);
-            startTimer = null;
-          }
-        }
-
-        function finish(callback, value) {
-          if (settled) {
-            return;
-          }
-
-          settled = true;
-          attemptId += 1;
-          clearTimers();
-          callback(value);
-        }
-
-        function speakAttempt(retry) {
-          var myAttempt = attemptId + 1;
-          var started = false;
-
-          attemptId = myAttempt;
-
-          var utterance =
-            new SpeechSynthesisUtterance(
-              item.speechText
-            );
-
-          utterance.lang =
-            getCurrentPsgPlayLocale(
-              item.language
-            );
-
-          utterance.rate =
-            getCurrentPsgPlayRate();
-
-          utterance.onstart = function() {
-            if (
-              settled ||
-              myAttempt !== attemptId
-            ) {
-              return;
-            }
-
-            started = true;
-
-            if (startTimer !== null) {
-              window.clearTimeout(startTimer);
-              startTimer = null;
-            }
-
-            fallbackTimer =
-              startCurrentPsgWebWordFallback();
-          };
-
-          utterance.onboundary = function(event) {
-            if (
-              settled ||
-              myAttempt !== attemptId
-            ) {
-              return;
-            }
-
-            var charIndex =
-              Number(event.charIndex);
-
-            if (!Number.isInteger(charIndex)) {
-              return;
-            }
-
-            if (fallbackTimer !== null) {
-              window.clearInterval(fallbackTimer);
-              fallbackTimer = null;
-            }
-
-            highlightCurrentTtsWordAt(charIndex);
-          };
-
-          utterance.onend = function() {
-            if (
-              !settled &&
-              myAttempt === attemptId
-            ) {
-              finish(resolve);
-            }
-          };
-
-          utterance.onerror = function(error) {
-            if (
-              settled ||
-              myAttempt !== attemptId
-            ) {
-              return;
-            }
-
-            if (!started && !retry) {
-              speakAttempt(true);
-              return;
-            }
-
-            finish(reject, error);
-          };
-
-          try {
-            synthesis.cancel();
-            synthesis.resume();
-            synthesis.speak(utterance);
-
-            window.setTimeout(function() {
-              if (
-                !settled &&
-                myAttempt === attemptId &&
-                synthesis.paused
-              ) {
-                synthesis.resume();
-              }
-            }, 100);
-
-            startTimer = window.setTimeout(
-              function() {
-                if (
-                  !settled &&
-                  myAttempt === attemptId &&
-                  !started &&
-                  !retry
-                ) {
-                  speakAttempt(true);
-                }
-              },
-              1500
-            );
-          } catch (error) {
-            finish(reject, error);
-          }
-        }
-
-        speakAttempt(false);
-      });
-    },
-
-    stop: function() {
-      synthesis.cancel();
-      synthesis.resume();
-
-      return Promise.resolve();
-    }
-  };
-}
-
-
-
-
-// ============================================================================
-// 🟦 BLOCK 5800: COMMON PLAY ADAPTER SELECTOR
-// Purpose: Keep APK and PC paths unchanged; send only S26 Chrome to 5752.
-// ============================================================================
 
 function createCurrentPsgNativePlayAdapter() {
   var nativeSpeech =
@@ -3312,11 +2656,7 @@ function createCurrentPsgNativePlayAdapter() {
 }
 
 
-function getCurrentPsgBaseAdapter() {
-  if (isCurrentAndroidChrome_2()) {
-    return createCurrentPsgAndroidChromeAdapter_2();
-  }
-
+function getCurrentPsgPlayAdapter() {
   var nativeAdapter =
     createCurrentPsgNativePlayAdapter();
 
@@ -3324,15 +2664,9 @@ function getCurrentPsgBaseAdapter() {
     return nativeAdapter;
   }
 
-  // Existing PC Chrome path: unchanged.
   return createCurrentPsgWebPlayAdapter();
 }
 
-
-
-// ============================================================================
-// 🟦 BLOCK 5850: PLAY STOP / CONTINUE NEXT TARGET
-// ============================================================================
 
 function stopCurrentPsgPlay() {
   var state = getCurrentPsgPlayState();
@@ -3368,90 +2702,16 @@ window.stopCurrentPsgPlay =
 window.stopCurrentPsgWebPlay =
   stopCurrentPsgPlay;
 
+// ============================================================================
+// END: SHARED PLAY ADAPTER STATE
+// ============================================================================
 
-function getCurrentContinueNextTargetId() {
-  var currentRow =
-    window.CONVERSATION_V2_ROW;
-
-  var rows =
-    getCurrentCategoryNavigationRows();
-
-  if (!currentRow || !rows.length) {
-    return null;
-  }
-
-  var currentIndex =
-    rows.findIndex(function(row) {
-      return Number(row.ID) ===
-        Number(currentRow.ID);
-    });
-
-  if (
-    currentIndex < 0 ||
-    currentIndex >= rows.length - 1
-  ) {
-    return null;
-  }
-
-  return Number(
-    rows[currentIndex + 1].ID
-  );
-}
 
 
 // ============================================================================
-// 🟦 BLOCK 5900: PLAY CONTINUE / SEQUENCE EXECUTION
+// 🟦 BLOCK 3322: SHARED TTS SENTENCE SEQUENCE
+// Purpose: Read the current PSG through native Android TTS or web TTS.
 // ============================================================================
-
-async function continueCurrentPsgAfterFinish(
-  completedRunId
-) {
-  var state =
-    getCurrentPsgPlayState();
-
-  if (
-    state.running ||
-    state.runId !== completedRunId
-  ) {
-    return;
-  }
-
-  var mode =
-    getCurrentContinueMode();
-
-  if (mode === 'repeat') {
-    resetCurrentPlayVisualState();
-    startCurrentPsgPlay();
-    return;
-  }
-
-  if (mode !== 'next') {
-    return;
-  }
-
-  var nextId =
-    getCurrentContinueNextTargetId();
-
-  if (!nextId) {
-    return;
-  }
-
-  window.CONVERSATION_V2_ROLE_TARGET_TURN = 1;
-
-  var loaded =
-    await loadConversationById(
-      nextId,
-      { resume: false }
-    );
-
-  if (!loaded || state.running) {
-    return;
-  }
-
-  resetCurrentPlayVisualState();
-  startCurrentPsgPlay();
-}
-
 
 function speakCurrentPsgSequenceItem(
   sequence,
@@ -3468,11 +2728,7 @@ function speakCurrentPsgSequenceItem(
   }
 
   if (index >= sequence.length) {
-    var continueMode =
-      getCurrentContinueMode();
-
     if (
-      continueMode === 'off' &&
       window.CONVERSATION_V2_LOOP_PLAY ===
       true
     ) {
@@ -3489,8 +2745,6 @@ function speakCurrentPsgSequenceItem(
     state.adapter = null;
 
     renderCurrentPsgPlayButton();
-
-    continueCurrentPsgAfterFinish(runId);
 
     return;
   }
@@ -3518,7 +2772,6 @@ function speakCurrentPsgSequenceItem(
         runId
       );
     },
-
     function(error) {
       if (state.runId !== runId) {
         return;
@@ -3538,42 +2791,10 @@ function speakCurrentPsgSequenceItem(
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 5950: PLAY START / SPEAKING CARD CONNECTION
-// ============================================================================
-
-function startCurrentPsgPlay(
-  skipStartSignal
-) {
-  var state =
-    getCurrentPsgPlayState();
+function startCurrentPsgPlay() {
+  var state = getCurrentPsgPlayState();
 
   if (state.running) {
-    return;
-  }
-
-  if (!skipStartSignal) {
-    if (isCurrentAndroidChrome_2()) {
-  startCurrentPsgPlay(true);
-  return;
-}
-
-    var startRunId =
-      state.runId;
-
-    playCurrentIStartSignal().then(
-      function() {
-        if (
-          state.running ||
-          state.runId !== startRunId
-        ) {
-          return;
-        }
-
-        startCurrentPsgPlay(true);
-      }
-    );
-
     return;
   }
 
@@ -3588,8 +2809,7 @@ function startCurrentPsgPlay(
     return;
   }
 
-  var adapter =
-    getCurrentPsgPlayAdapter();
+  var adapter = getCurrentPsgPlayAdapter();
 
   if (!adapter) {
     console.error(
@@ -3624,6 +2844,15 @@ window.startCurrentPsgPlay =
 window.startCurrentPsgWebPlay =
   startCurrentPsgPlay;
 
+// ============================================================================
+// END: SHARED TTS SENTENCE SEQUENCE
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 3323: CURRENT SPEAKING CARD CONNECTION
+// Purpose: Highlight the active sentence and prepare its word highlights.
+// ============================================================================
 
 function clearCurrentTtsWordHighlight() {
   document
@@ -3829,7 +3058,8 @@ function setCurrentSpeakingCard(item) {
 
 function getCurrentPsgPlayAdapter() {
   var baseAdapter =
-    getCurrentPsgBaseAdapter();
+    createCurrentPsgNativePlayAdapter() ||
+    createCurrentPsgWebPlayAdapter();
 
   if (!baseAdapter) {
     return null;
@@ -3881,17 +3111,24 @@ function renderCurrentPsgPlayButton() {
   );
 }
 
+// ============================================================================
+// END: CURRENT SPEAKING CARD CONNECTION
+// ============================================================================
 
 
 
 // ============================================================================
-// 🟩 6000 — MICROPHONE / PRONUNCIATION + ROLE PRACTICE / PRACTICE MODE
+// 🟦 BLOCK 3325: MIC CONNECTION (NATIVE + WEB ADAPTER)
+// Purpose: APK uses GongbooSpeech. Web uses the V2 webkitSpeechRecognition
+//          engine (continuous + interim + delay finalize). Both paths write
+//          the final transcript into getCurrentMicState().transcript so that
+//          BLOCK 3326 and BLOCK 3328 need no changes.
 // ============================================================================
 
 
-// ============================================================================
-// 🟦 BLOCK 6000: MICROPHONE STATE
-// ============================================================================
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-1: MIC STATE (unchanged public shape)
+// ---------------------------------------------------------------------------
 
 function getCurrentMicState() {
   if (!window.CONVERSATION_V2_MIC) {
@@ -3907,14 +3144,18 @@ function getCurrentMicState() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 6050: WEB SPEECH RECOGNITION CLASS / ENGINE STATE
-// ============================================================================
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-2: WEB SPEECH CLASS
+// ---------------------------------------------------------------------------
 
 var CurrentMicSpeechRecognition =
   window.SpeechRecognition ||
   window.webkitSpeechRecognition;
 
+
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-3: WEB ENGINE STATE (V2 PORT)
+// ---------------------------------------------------------------------------
 
 var _currentMicWebRecognition = null;
 var _currentMicWebFinalizeTimer = null;
@@ -3923,9 +3164,9 @@ var _currentMicWebResolve = null;
 var _currentMicWebReject = null;
 
 
-// ============================================================================
-// 🟦 BLOCK 6100: NATIVE MICROPHONE ADAPTER
-// ============================================================================
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-4: NATIVE ADAPTER (APK, unchanged behavior)
+// ---------------------------------------------------------------------------
 
 function createCurrentMicNativeAdapter() {
   var nativeSpeech =
@@ -3964,9 +3205,10 @@ function createCurrentMicNativeAdapter() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 6150: WEB MICROPHONE DELAY
-// ============================================================================
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-5: WEB ADAPTER (V2 ENGINE)
+// continuous + interimResults + delay finalize.
+// ---------------------------------------------------------------------------
 
 function getCurrentMicWebDelayMs() {
   var input =
@@ -3991,31 +3233,6 @@ function getCurrentMicWebDelayMs() {
 }
 
 
-
-// ============================================================================
-// 🟦 BLOCK 6152: ANDROID CHROME MICROPHONE ENGINE STATE
-// Purpose: S26 recognition state is never shared with PC Chrome.
-// ============================================================================
-
-var CurrentMicAndroidChromeRecognition_2 =
-  window.SpeechRecognition ||
-  window.webkitSpeechRecognition;
-
-var _currentMicAndroidRecognition_2 = null;
-var _currentMicAndroidFinalizeTimer_2 = null;
-var _currentMicAndroidTranscript_2 = '';
-
-
-function getCurrentMicAndroidDelayMs_2() {
-  return getCurrentMicWebDelayMs();
-}
-
-
-
-// ============================================================================
-// 🟦 BLOCK 6200: WEB MICROPHONE ADAPTER
-// ============================================================================
-
 function createCurrentMicWebAdapter() {
   if (!CurrentMicSpeechRecognition) {
     return null;
@@ -4036,10 +3253,7 @@ function createCurrentMicWebAdapter() {
 
         function cleanup() {
           if (_currentMicWebFinalizeTimer) {
-            clearTimeout(
-              _currentMicWebFinalizeTimer
-            );
-
+            clearTimeout(_currentMicWebFinalizeTimer);
             _currentMicWebFinalizeTimer = null;
           }
 
@@ -4058,29 +3272,22 @@ function createCurrentMicWebAdapter() {
         }
 
         function finish() {
-          var resolveFn =
-            _currentMicWebResolve;
+          var resolveFn = _currentMicWebResolve;
 
           var transcript =
-            String(
-              _currentMicWebLastTranscript || ''
-            ).trim();
+            String(_currentMicWebLastTranscript || '').trim();
 
           cleanup();
 
           if (resolveFn) {
             resolveFn({
-              matches:
-                transcript
-                  ? [transcript]
-                  : []
+              matches: transcript ? [transcript] : []
             });
           }
         }
 
         function fail(error) {
-          var rejectFn =
-            _currentMicWebReject;
+          var rejectFn = _currentMicWebReject;
 
           cleanup();
 
@@ -4094,25 +3301,16 @@ function createCurrentMicWebAdapter() {
 
         recognition.continuous = true;
         recognition.interimResults = true;
-
         recognition.maxAlternatives =
           options.maxResults || 3;
 
         recognition.onresult = function(event) {
           var transcript = '';
 
-          for (
-            var i = 0;
-            i < event.results.length;
-            i++
-          ) {
-            if (
-              event.results[i] &&
-              event.results[i][0]
-            ) {
+          for (var i = 0; i < event.results.length; i++) {
+            if (event.results[i] && event.results[i][0]) {
               transcript +=
-                event.results[i][0].transcript +
-                ' ';
+                event.results[i][0].transcript + ' ';
             }
           }
 
@@ -4122,31 +3320,24 @@ function createCurrentMicWebAdapter() {
             return;
           }
 
-          _currentMicWebLastTranscript =
-            transcript;
+          _currentMicWebLastTranscript = transcript;
 
           if (_currentMicWebFinalizeTimer) {
-            clearTimeout(
-              _currentMicWebFinalizeTimer
-            );
+            clearTimeout(_currentMicWebFinalizeTimer);
           }
 
-          _currentMicWebFinalizeTimer =
-            setTimeout(
-              function() {
-                if (
-                  _currentMicWebRecognition ===
-                  recognition
-                ) {
-                  try {
-                    recognition.stop();
-                  } catch (error) {
-                    // Ignore.
-                  }
+          _currentMicWebFinalizeTimer = setTimeout(
+            function() {
+              if (_currentMicWebRecognition === recognition) {
+                try {
+                  recognition.stop();
+                } catch (error) {
+                  // Ignore.
                 }
-              },
-              getCurrentMicWebDelayMs()
-            );
+              }
+            },
+            getCurrentMicWebDelayMs()
+          );
         };
 
         recognition.onerror = function(event) {
@@ -4160,24 +3351,13 @@ function createCurrentMicWebAdapter() {
 
           if (
             event.error === 'not-allowed' ||
-            event.error ===
-              'service-not-allowed'
+            event.error === 'service-not-allowed'
           ) {
-            fail(
-              new Error(
-                'Microphone permission denied.'
-              )
-            );
-
+            fail(new Error('Microphone permission denied.'));
             return;
           }
 
-          fail(
-            new Error(
-              'Web speech error: ' +
-              event.error
-            )
-          );
+          fail(new Error('Web speech error: ' + event.error));
         };
 
         recognition.onend = function() {
@@ -4207,239 +3387,43 @@ function createCurrentMicWebAdapter() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 6202: ANDROID CHROME MICROPHONE ADAPTER
-// Purpose: S26 only. Clean one-session recognition prevents stale mic sessions.
-// ============================================================================
-
-function createCurrentMicAndroidChromeAdapter_2() {
-  if (!CurrentMicAndroidChromeRecognition_2) {
-    return null;
-  }
-
-  return {
-    type: 'android-chrome-speech',
-
-    start: function(options) {
-      return new Promise(function(resolve, reject) {
-        if (_currentMicAndroidRecognition_2) {
-          try {
-            _currentMicAndroidRecognition_2.abort();
-          } catch (error) {
-            // Ignore stale recognition session.
-          }
-        }
-
-        var recognition =
-          new CurrentMicAndroidChromeRecognition_2();
-
-        var settled = false;
-
-        _currentMicAndroidRecognition_2 =
-          recognition;
-
-        _currentMicAndroidTranscript_2 = '';
-
-        function cleanup() {
-          if (_currentMicAndroidFinalizeTimer_2) {
-            window.clearTimeout(
-              _currentMicAndroidFinalizeTimer_2
-            );
-
-            _currentMicAndroidFinalizeTimer_2 =
-              null;
-          }
-
-          recognition.onresult = null;
-          recognition.onerror = null;
-          recognition.onend = null;
-
-          if (
-            _currentMicAndroidRecognition_2 ===
-            recognition
-          ) {
-            _currentMicAndroidRecognition_2 =
-              null;
-          }
-        }
-
-        function finish() {
-          if (settled) {
-            return;
-          }
-
-          settled = true;
-
-          var transcript =
-            String(
-              _currentMicAndroidTranscript_2 || ''
-            ).trim();
-
-          cleanup();
-
-          resolve({
-            matches: transcript
-              ? [transcript]
-              : []
-          });
-        }
-
-        function fail(error) {
-          if (settled) {
-            return;
-          }
-
-          settled = true;
-          cleanup();
-          reject(error);
-        }
-
-        recognition.lang =
-          options.language || 'en-US';
-
-        recognition.continuous = false;
-        recognition.interimResults = true;
-
-        recognition.maxAlternatives =
-          options.maxResults || 3;
-
-        recognition.onresult = function(event) {
-          var transcript = '';
-
-          for (
-            var i = event.resultIndex;
-            i < event.results.length;
-            i += 1
-          ) {
-            if (event.results[i][0]) {
-              transcript +=
-                event.results[i][0].transcript +
-                ' ';
-            }
-          }
-
-          transcript = transcript.trim();
-
-          if (!transcript) {
-            return;
-          }
-
-          _currentMicAndroidTranscript_2 =
-            transcript;
-
-          if (_currentMicAndroidFinalizeTimer_2) {
-            window.clearTimeout(
-              _currentMicAndroidFinalizeTimer_2
-            );
-          }
-
-          _currentMicAndroidFinalizeTimer_2 =
-            window.setTimeout(function() {
-              try {
-                recognition.stop();
-              } catch (error) {
-                // onend completes the session.
-              }
-            }, getCurrentMicAndroidDelayMs_2());
-        };
-
-        recognition.onerror = function(event) {
-          if (
-            event.error === 'no-speech' ||
-            event.error === 'aborted'
-          ) {
-            finish();
-            return;
-          }
-
-          fail(
-            new Error(
-              'Android Chrome mic error: ' +
-              event.error
-            )
-          );
-        };
-
-        recognition.onend = function() {
-          finish();
-        };
-
-        try {
-          recognition.start();
-        } catch (error) {
-          fail(error);
-        }
-      });
-    },
-
-    stop: function() {
-      if (_currentMicAndroidRecognition_2) {
-        try {
-          _currentMicAndroidRecognition_2.stop();
-        } catch (error) {
-          // Ignore.
-        }
-      }
-
-      return Promise.resolve();
-    }
-  };
-}
-
-
-
-
-// ============================================================================
-// 🟦 BLOCK 6250: COMMON MICROPHONE ADAPTER SELECTOR
-// Purpose: Only S26 Chrome enters BLOCK 6202.
-// ============================================================================
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-6: ADAPTER SELECTOR
+// Native first (APK), then web.
+// ---------------------------------------------------------------------------
 
 function getCurrentMicAdapter() {
-  if (isCurrentAndroidChrome_2()) {
-    return createCurrentMicAndroidChromeAdapter_2();
-  }
-
-  var nativeAdapter =
-    createCurrentMicNativeAdapter();
+  var nativeAdapter = createCurrentMicNativeAdapter();
 
   if (nativeAdapter) {
     return nativeAdapter;
   }
 
-  // Existing PC Chrome path: unchanged.
   return createCurrentMicWebAdapter();
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 6300: MICROPHONE START API
-// ============================================================================
+// ---------------------------------------------------------------------------
+// SUBBLOCK 3325-7: PUBLIC API (same signatures, same state contract)
+// ---------------------------------------------------------------------------
 
 function startCurrentMicRecognition(options) {
   var config = options || {};
 
-  var adapter =
-    getCurrentMicAdapter();
-
-  var state =
-    getCurrentMicState();
+  var adapter = getCurrentMicAdapter();
+  var state = getCurrentMicState();
 
   if (!adapter) {
     return Promise.reject(
-      new Error(
-        'Microphone is unavailable on this device.'
-      )
+      new Error('Microphone is unavailable on this device.')
     );
   }
 
-  var row =
-    window.CONVERSATION_V2_ROW || {};
+  var row = window.CONVERSATION_V2_ROW || {};
 
   var language =
     config.language ||
-    getCurrentPsgPlayLocale(
-      row.LNG || 'EN'
-    );
+    getCurrentPsgPlayLocale(row.LNG || 'EN');
 
   state.runId += 1;
 
@@ -4449,11 +3433,7 @@ function startCurrentMicRecognition(options) {
   state.transcript = '';
   state.matches = [];
 
-  console.log(
-    '[MIC] Adapter:',
-    adapter.type,
-    language
-  );
+  console.log('[MIC] Adapter:', adapter.type, language);
 
   return adapter.start({
     language: language,
@@ -4467,32 +3447,21 @@ function startCurrentMicRecognition(options) {
       state.running = false;
 
       state.matches =
-        Array.isArray(result.matches)
-          ? result.matches
-          : [];
+        Array.isArray(result.matches) ? result.matches : [];
 
       state.transcript =
-        String(
-          state.matches[0] || ''
-        ).trim();
+        String(state.matches[0] || '').trim();
 
-      console.log(
-        '[MIC] recognized:',
-        state.transcript
-      );
+      console.log('[MIC] recognized:', state.transcript);
 
       return state;
     },
-
     function(error) {
       if (state.runId === runId) {
         state.running = false;
       }
 
-      console.error(
-        '[MIC] recognition failed:',
-        error
-      );
+      console.error('[MIC] recognition failed:', error);
 
       throw error;
     }
@@ -4500,24 +3469,14 @@ function startCurrentMicRecognition(options) {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 6350: MICROPHONE STOP API / PUBLIC CONNECTION
-// ============================================================================
-
 function stopCurrentMicRecognition() {
-  var adapter =
-    getCurrentMicAdapter();
-
-  var state =
-    getCurrentMicState();
+  var adapter = getCurrentMicAdapter();
+  var state = getCurrentMicState();
 
   state.runId += 1;
   state.running = false;
 
-  if (
-    !adapter ||
-    typeof adapter.stop !== 'function'
-  ) {
+  if (!adapter || typeof adapter.stop !== 'function') {
     return Promise.resolve();
   }
 
@@ -4531,9 +3490,14 @@ window.startCurrentMicRecognition =
 window.stopCurrentMicRecognition =
   stopCurrentMicRecognition;
 
+// ============================================================================
+// END: MIC CONNECTION (NATIVE + WEB ADAPTER)
+// ============================================================================
+
 
 // ============================================================================
-// 🟦 BLOCK 6400: MICROPHONE TEXT NORMALIZATION / TARGET CARD
+// 🟦 BLOCK 3326: MIC PASS / RETRY CHECK
+// Purpose: Compare spoken English with one turn using the PASS slider value.
 // ============================================================================
 
 function normalizeCurrentMicText(value) {
@@ -4576,10 +3540,6 @@ function getCurrentMicTargetCard(turnNumber) {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 6450: MICROPHONE PASS THRESHOLD / SIMILARITY
-// ============================================================================
-
 function getCurrentMicPassThreshold() {
   var input =
     document.getElementById(
@@ -4591,10 +3551,7 @@ function getCurrentMicPassThreshold() {
 
   return Math.max(
     0.01,
-    Math.min(
-      1,
-      percent / 100
-    )
+    Math.min(1, percent / 100)
   );
 }
 
@@ -4622,14 +3579,9 @@ function getCurrentMicSimilarity(
     return 0;
   }
 
-  return matchedCount /
-    expectedWords.length;
+  return matchedCount / expectedWords.length;
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 6500: MICROPHONE WORD MATCH RENDER
-// ============================================================================
 
 function renderCurrentMicWordMatches(
   card,
@@ -4708,10 +3660,6 @@ function renderCurrentMicWordMatches(
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 6550: MICROPHONE CHECK RESULT
-// ============================================================================
-
 function showCurrentMicCheckResult(
   card,
   passed,
@@ -4772,10 +3720,6 @@ function showCurrentMicCheckResult(
   );
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 6600: MICROPHONE ANSWER EVALUATION
-// ============================================================================
 
 function evaluateCurrentMicAnswer(options) {
   var config =
@@ -4847,23 +3791,25 @@ window.evaluateCurrentMicAnswer =
 window.startAndCheckCurrentMicAnswer =
   startAndCheckCurrentMicAnswer;
 
+// ============================================================================
+// END: MIC PASS / RETRY CHECK
+// ============================================================================
+
+
 
 // ============================================================================
-// 🟦 BLOCK 6650: ROLE TARGET CARD / TURN SELECTION
+// 🟦 BLOCK 3327: ROLE PLAY TARGET SENTENCE
+// Purpose: Yellow box selects the sentence to start role play.
+// Default: first sentence.
 // ============================================================================
-
-function getCurrentRoleTargetCards() {
-  return Array.from(
-    document.querySelectorAll(
-      '#conversationTurns .conversation-turn-card'
-    )
-  );
-}
-
 
 function selectCurrentRoleTurn(turnNumber) {
   var cards =
-    getCurrentRoleTargetCards();
+    Array.from(
+      document.querySelectorAll(
+        '.conversation-turn-card'
+      )
+    );
 
   var target =
     cards.find(function(card) {
@@ -4891,51 +3837,11 @@ function selectCurrentRoleTurn(turnNumber) {
   return target;
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 6700: CURRENT ROLE TARGET LOOKUP
-// ============================================================================
-
 function getCurrentRoleTargetTurn() {
-  var yellowCard =
-    document.querySelector(
-      '#conversationTurns ' +
-      '.conversation-turn-card.is-role-target'
-    );
-
-  var yellowTurn =
-    Number(
-      yellowCard &&
-      yellowCard.dataset.turn
-    );
-
-  if (yellowTurn > 0) {
-    window.CONVERSATION_V2_ROLE_TARGET_TURN =
-      yellowTurn;
-
-    return yellowTurn;
-  }
-
   return Number(
-    window.CONVERSATION_V2_ROLE_TARGET_TURN ||
-    1
+    window.CONVERSATION_V2_ROLE_TARGET_TURN || 1
   );
 }
-
-
-function getCurrentRoleTargetConversationId() {
-  var row =
-    window.CONVERSATION_V2_ROW;
-
-  return row && row.ID
-    ? String(row.ID)
-    : '';
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 6750: ROLE TURN SELECTION INSTALLATION
-// ============================================================================
 
 function installCurrentRoleTurnSelection() {
   var container =
@@ -4947,30 +3853,22 @@ function installCurrentRoleTurnSelection() {
     return;
   }
 
-  document.addEventListener(
+  container.addEventListener(
     'click',
     function(event) {
       var card =
-        event.target &&
-        event.target.closest
-          ? event.target.closest(
-              '#conversationTurns ' +
-              '.conversation-turn-card'
-            )
-          : null;
+        event.target.closest(
+          '.conversation-turn-card'
+        );
 
-      if (
-        !card ||
-        !container.contains(card)
-      ) {
+      if (!card || !container.contains(card)) {
         return;
       }
 
       selectCurrentRoleTurn(
         card.dataset.turn
       );
-    },
-    true
+    }
   );
 
   var applyDefaultTarget = function() {
@@ -4980,20 +3878,6 @@ function installCurrentRoleTurnSelection() {
       );
 
     if (!cards.length) {
-      return;
-    }
-
-    var selectedCard =
-      container.querySelector(
-        '.conversation-turn-card.is-role-target'
-      );
-
-    if (selectedCard) {
-      window.CONVERSATION_V2_ROLE_TARGET_TURN =
-        Number(
-          selectedCard.dataset.turn
-        );
-
       return;
     }
 
@@ -5013,7 +3897,6 @@ function installCurrentRoleTurnSelection() {
   applyDefaultTarget();
 }
 
-
 if (document.readyState === 'loading') {
   document.addEventListener(
     'DOMContentLoaded',
@@ -5024,16 +3907,20 @@ if (document.readyState === 'loading') {
   installCurrentRoleTurnSelection();
 }
 
-
 window.selectCurrentRoleTurn =
   selectCurrentRoleTurn;
 
 window.getCurrentRoleTargetTurn =
   getCurrentRoleTargetTurn;
 
-
 // ============================================================================
-// 🟦 BLOCK 6800: PRACTICE STATE / TYPE / DELAY
+// END: ROLE PLAY TARGET SENTENCE
+// ============================================================================
+
+
+// ===// ============================================================================
+// 🟦 BLOCK 3328: PRACTICE MODE AND START / STOP CONTROL
+// Purpose: Order, practice type, and execution state are independent.
 // ============================================================================
 
 function getCurrentRolePlayState() {
@@ -5042,8 +3929,7 @@ function getCurrentRolePlayState() {
       running: false,
       startTurn: 1,
       currentTurn: 1,
-      adapter: null,
-      continueToken: 0
+      adapter: null
     };
   }
 
@@ -5065,16 +3951,10 @@ function getCurrentRolePlayDelay() {
 
   return Math.max(
     500,
-    Number(
-      input ? input.value : 0.5
-    ) * 1000
+    Number(input ? input.value : 0.5) * 1000
   );
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 6850: PRACTICE RESULT RESET
-// ============================================================================
 
 function resetCurrentRolePlayResults() {
   document
@@ -5101,10 +3981,6 @@ function resetCurrentRolePlayResults() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 6900: PRACTICE CONTROL RENDER
-// ============================================================================
-
 function renderCurrentPracticeControls() {
   var orderButton =
     document.getElementById(
@@ -5129,10 +4005,10 @@ function renderCurrentPracticeControls() {
     'follow-up';
 
   if (orderButton) {
-    orderButton.textContent =
+    orderButton.innerHTML =
       window.CONVERSATION_V2_PLAY_MODE ===
       'i-start'
-        ? 'I FIRST'
+        ? 'I<br>START'
         : 'COMPUTER';
 
     orderButton.disabled =
@@ -5162,13 +4038,11 @@ function renderCurrentPracticeControls() {
   }
 
   if (typeButton) {
-    typeButton.textContent =
-      followUp
-        ? 'FOLLOW UP'
-        : 'ROLE PLAY';
+    typeButton.innerHTML = followUp
+      ? 'FOLLOW<br>UP'
+      : 'ROLE<br>PLAY';
 
-    typeButton.disabled =
-      state.running;
+    typeButton.disabled = state.running;
 
     typeButton.setAttribute(
       'aria-pressed',
@@ -5177,10 +4051,6 @@ function renderCurrentPracticeControls() {
   }
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 6950: USER TURN / NEXT PRACTICE TARGET
-// ============================================================================
 
 function isCurrentRolePlayUserTurn(
   turnNumber
@@ -5199,50 +4069,10 @@ function isCurrentRolePlayUserTurn(
 }
 
 
-function getCurrentPracticeContinueNextTargetId() {
-  var currentRow =
-    window.CONVERSATION_V2_ROW;
-
-  var rows =
-    getCurrentCategoryNavigationRows();
-
-  if (!currentRow || !rows.length) {
-    return null;
-  }
-
-  var currentIndex =
-    rows.findIndex(function(row) {
-      return Number(row.ID) ===
-        Number(currentRow.ID);
-    });
-
-  if (
-    currentIndex < 0 ||
-    currentIndex >= rows.length - 1
-  ) {
-    return null;
-  }
-
-  return Number(
-    rows[currentIndex + 1].ID
-  );
-}
-
-
-// ============================================================================
-// 🟩 7000 — PRACTICE EXECUTION / CONTINUE CONTROL
-// ============================================================================
-
-
-// ============================================================================
-// 🟦 BLOCK 7000: ROLE PLAY STOP
-// ============================================================================
-
 function stopCurrentRolePlay() {
   var state =
     getCurrentRolePlayState();
 
-  state.continueToken += 1;
   state.running = false;
 
   if (
@@ -5261,14 +4091,7 @@ function stopCurrentRolePlay() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 7050: ROLE PLAY FINISH / CONTINUE
-// ============================================================================
-
 function finishCurrentRolePlay() {
-  var state =
-    getCurrentRolePlayState();
-
   stopCurrentRolePlay();
 
   document
@@ -5281,58 +4104,11 @@ function finishCurrentRolePlay() {
       );
     });
 
-  var continueToken =
-    state.continueToken;
-
-  var continueMode =
-    getCurrentContinueMode();
-
-  if (continueMode === 'repeat') {
-    window.setTimeout(function() {
-      if (
-        state.continueToken !==
-          continueToken ||
-        state.running
-      ) {
-        return;
-      }
-
-      startCurrentRolePlay();
-    }, getCurrentRolePlayDelay());
-
-    return;
-  }
-
-  if (continueMode !== 'next') {
-    return;
-  }
-
-  var nextId =
-    getCurrentPracticeContinueNextTargetId();
-
-  if (!nextId) {
-    return;
-  }
-
-  window.CONVERSATION_V2_ROLE_TARGET_TURN =
-    1;
-
-  loadConversationById(
-    nextId,
-    { resume: false }
-  ).then(function(loaded) {
-    if (!loaded || state.running) {
-      return;
-    }
-
-    startCurrentRolePlay();
-  });
+  console.log(
+    '[PRACTICE] complete'
+  );
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 7100: PRACTICE RETRY / LISTEN
-// ============================================================================
 
 function retryCurrentPracticeTurn() {
   window.setTimeout(
@@ -5355,12 +4131,12 @@ function listenCurrentPracticeTurn(
 
     if (result.passed) {
       state.currentTurn += 1;
+
       runCurrentPracticeTurn();
       return;
     }
 
     retryCurrentPracticeTurn();
-
   }).catch(function(error) {
     console.warn(
       '[PRACTICE] MIC retry:',
@@ -5373,10 +4149,6 @@ function listenCurrentPracticeTurn(
   });
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 7150: PRACTICE SPEAK TURN
-// ============================================================================
 
 function speakCurrentPracticeTurn(
   state,
@@ -5393,17 +4165,13 @@ function speakCurrentPracticeTurn(
     }
 
     if (followUp) {
-      listenCurrentPracticeTurn(
-        state
-      );
-
+      listenCurrentPracticeTurn(state);
       return;
     }
 
     state.currentTurn += 1;
 
     runCurrentPracticeTurn();
-
   }, function(error) {
     console.error(
       '[PRACTICE] TTS failed:',
@@ -5414,10 +4182,6 @@ function speakCurrentPracticeTurn(
   });
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 7200: PRACTICE TURN EXECUTION
-// ============================================================================
 
 function runCurrentPracticeTurn() {
   var state =
@@ -5474,10 +4238,7 @@ function runCurrentPracticeTurn() {
       state.currentTurn
     )
   ) {
-    listenCurrentPracticeTurn(
-      state
-    );
-
+    listenCurrentPracticeTurn(state);
     return;
   }
 
@@ -5489,42 +4250,13 @@ function runCurrentPracticeTurn() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 7250: ROLE PLAY START
-// ============================================================================
-
-function startCurrentRolePlay(
-  skipStartSignal
-) {
+function startCurrentRolePlay() {
   var state =
     getCurrentRolePlayState();
 
   if (state.running) {
     return;
   }
-
-  if (!skipStartSignal) {
-    var signalToken =
-      state.continueToken;
-
-    playCurrentIStartSignal().then(
-      function() {
-        if (
-          state.running ||
-          state.continueToken !==
-            signalToken
-        ) {
-          return;
-        }
-
-        startCurrentRolePlay(true);
-      }
-    );
-
-    return;
-  }
-
-  state.continueToken += 1;
 
   state.startTurn =
     getCurrentRoleTargetTurn();
@@ -5549,10 +4281,6 @@ function startCurrentRolePlay(
   runCurrentPracticeTurn();
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 7300: PRACTICE BUTTON INSTALLATION
-// ============================================================================
 
 function installCurrentRolePlayButton() {
   var orderButton =
@@ -5597,9 +4325,7 @@ function installCurrentRolePlayButton() {
 
   if (typeButton) {
     typeButton.onclick = function() {
-      if (
-        getCurrentRolePlayState().running
-      ) {
+      if (getCurrentRolePlayState().running) {
         return;
       }
 
@@ -5615,9 +4341,7 @@ function installCurrentRolePlayButton() {
 
   if (startButton) {
     startButton.onclick = function() {
-      if (
-        getCurrentRolePlayState().running
-      ) {
+      if (getCurrentRolePlayState().running) {
         stopCurrentRolePlay();
         return;
       }
@@ -5629,10 +4353,6 @@ function installCurrentRolePlayButton() {
   renderCurrentPracticeControls();
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 7350: PRACTICE BOOT / PUBLIC API
-// ============================================================================
 
 if (document.readyState === 'loading') {
   document.addEventListener(
@@ -5651,90 +4371,39 @@ window.startCurrentRolePlay =
 window.stopCurrentRolePlay =
   stopCurrentRolePlay;
 
+// ============================================================================
+// END: PRACTICE MODE AND START / STOP CONTROL
+// ============================================================================
+
 
 // ============================================================================
-// 🟦 BLOCK 7400: CONTINUE MODE STATE / RENDER
+// 🟦 BLOCK 3324: PLAY AND EXTERNAL STOP BUTTON CONNECTION
+// Purpose: PLAY begins clean playback with one moving yellow speaking box.
+//          STOP cancels playback, role play, and microphone recognition.
 // ============================================================================
 
-function getCurrentContinueMode() {
-  return window.CONVERSATION_V2_CONTINUE_MODE ||
-    'off';
-}
-
-
-function renderCurrentContinueMode() {
+function renderCurrentPsgPlayButton() {
   var button =
     document.getElementById(
-      'continueNextButton'
+      'playButton'
     );
 
   if (!button) {
     return;
   }
 
-  var mode =
-    getCurrentContinueMode();
-
-  button.textContent =
-    mode === 'repeat'
-      ? 'CONTINUE: REPEAT'
-      : mode === 'next'
-        ? 'CONTINUE: NEXT'
-        : 'CONTINUE: OFF';
+  button.textContent = 'PLAY';
 
   button.setAttribute(
     'aria-pressed',
-    String(mode !== 'off')
+    'false'
   );
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 7450: CONTINUE MODE BUTTON INSTALLATION
-// ============================================================================
+window.renderCurrentPsgPlayButton =
+  renderCurrentPsgPlayButton;
 
-function installCurrentContinueModeButton() {
-  var button =
-    document.getElementById(
-      'continueNextButton'
-    );
-
-  if (!button) {
-    return;
-  }
-
-  button.onclick = function() {
-    var mode =
-      getCurrentContinueMode();
-
-    window.CONVERSATION_V2_CONTINUE_MODE =
-      mode === 'off'
-        ? 'repeat'
-        : mode === 'repeat'
-          ? 'next'
-          : 'off';
-
-    renderCurrentContinueMode();
-  };
-
-  renderCurrentContinueMode();
-}
-
-
-if (document.readyState === 'loading') {
-  document.addEventListener(
-    'DOMContentLoaded',
-    installCurrentContinueModeButton,
-    { once: true }
-  );
-} else {
-  installCurrentContinueModeButton();
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 7500: PLAY / EXTERNAL STOP VISUAL RESET
-// ============================================================================
 
 function resetCurrentPlayVisualState() {
   resetCurrentRolePlayResults();
@@ -5760,10 +4429,6 @@ function stopCurrentConversationActivity() {
   closeConversationMenus();
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 7550: PLAY / EXTERNAL STOP BUTTON CONNECTION
-// ============================================================================
 
 function installCurrentPsgPlayButton() {
   var playButton =
@@ -5799,18 +4464,13 @@ function installCurrentPsgPlayButton() {
       playMenuPanel &&
       !playMenuPanel.hidden
     ) {
+      closeConversationMenus();
+
       return;
     }
 
     resetCurrentPlayVisualState();
 
-    // S26: console-verified direct path.
-    if (isCurrentAndroidChrome_2()) {
-      startCurrentPsgPlay(true);
-      return;
-    }
-
-    // PC Chrome and APK: existing behavior.
     startCurrentPsgPlay();
   };
 
@@ -5821,10 +4481,6 @@ function installCurrentPsgPlayButton() {
   }
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 7600: PLAY BUTTON BOOT
-// ============================================================================
 
 function bootCurrentPsgPlayButton() {
   if (
@@ -5846,15 +4502,14 @@ function bootCurrentPsgPlayButton() {
 
 bootCurrentPsgPlayButton();
 
-
-
 // ============================================================================
-// 🟩 8000 — CHUNK / SIGNAL / SETTINGS / EXTERNAL / KEYBOARD
+// END: PLAY AND EXTERNAL STOP BUTTON CONNECTION
 // ============================================================================
 
 
 // ============================================================================
-// 🟦 BLOCK 8000: SELECTED CHUNK STATE / PARSING
+// 🟦 BLOCK 3256: SELECTED TURN CHUNK VIEW
+// Purpose: Show only the selected 2ND language chunk below the yellow turn.
 // ============================================================================
 
 function getCurrentSelectedChunkState() {
@@ -5898,10 +4553,6 @@ function parseCurrentTurnChunks(helpText) {
   return chunks;
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 8050: SELECTED CHUNK RENDER
-// ============================================================================
 
 function clearCurrentSelectedChunks() {
   document
@@ -5980,10 +4631,6 @@ function renderCurrentSelectedChunks() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 8100: CHUNK BUTTON STATE
-// ============================================================================
-
 function renderCurrentChunkButton() {
   var button =
     document.getElementById(
@@ -6008,10 +4655,6 @@ function renderCurrentChunkButton() {
   );
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 8150: CHUNK VIEW INSTALLATION
-// ============================================================================
 
 function installCurrentSelectedChunkView() {
   var button =
@@ -6093,9 +4736,15 @@ if (document.readyState === 'loading') {
   installCurrentSelectedChunkView();
 }
 
+// ============================================================================
+// END: SELECTED TURN CHUNK VIEW
+// ============================================================================
+
+
 
 // ============================================================================
-// 🟦 BLOCK 8200: I FIRST SIGNAL CUE
+// 🟦 BLOCK 3330: I START SIGNAL CUE
+// Purpose: Play one short cue before I START begins Role Play.
 // ============================================================================
 
 function playCurrentIStartSignal() {
@@ -6163,10 +4812,6 @@ function getCurrentIStartSignalState() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 8250: I FIRST SIGNAL INSTALLATION
-// ============================================================================
-
 function installCurrentIStartSignal() {
   var startButton =
     document.getElementById(
@@ -6204,6 +4849,7 @@ function installCurrentIStartSignal() {
       }
 
       event.preventDefault();
+
       event.stopImmediatePropagation();
 
       signalState.pending = true;
@@ -6215,13 +4861,12 @@ function installCurrentIStartSignal() {
           if (
             !getCurrentRolePlayState().running
           ) {
-            startCurrentRolePlay(true);
+            startCurrentRolePlay();
           }
         },
-
         function() {
           signalState.pending = false;
-          startCurrentRolePlay(true);
+          startCurrentRolePlay();
         }
       );
     },
@@ -6240,13 +4885,18 @@ if (document.readyState === 'loading') {
   installCurrentIStartSignal();
 }
 
+// ============================================================================
+// END: I START SIGNAL CUE
+// ============================================================================
+
 
 // ============================================================================
-// 🟦 BLOCK 8300: LOCAL SETTINGS READ / SAVE
+// 🟦 BLOCK 3390: LOCAL USER SETTINGS
+// Purpose: Restore the user's last conversation settings on app start.
 // ============================================================================
 
 const CONVERSATION_V2_SETTINGS_KEY =
-  'gongbooConversationV2SettingsV2';
+  'gongbooConversationV2SettingsV1';
 
 
 function getConversationSettings() {
@@ -6276,7 +4926,7 @@ function saveConversationSettings() {
     pass:
       document.getElementById(
         'passRange'
-      )?.value || '0',
+      )?.value || '1',
 
     delay:
       document.getElementById(
@@ -6308,13 +4958,7 @@ function saveConversationSettings() {
 
     playMode:
       window.CONVERSATION_V2_PLAY_MODE ||
-      'computer',
-
-    practiceType:
-      getCurrentPracticeType(),
-
-    continueMode:
-      getCurrentContinueMode()
+      'computer'
   };
 
   try {
@@ -6331,10 +4975,6 @@ function saveConversationSettings() {
   }
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 8350: SETTINGS SELECT RESTORE
-// ============================================================================
 
 function restoreConversationSelectValue(
   selectId,
@@ -6359,10 +4999,6 @@ function restoreConversationSelectValue(
   }
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 8400: SETTINGS RESTORE
-// ============================================================================
 
 function restoreConversationSettings() {
   var settings =
@@ -6393,11 +5029,7 @@ function restoreConversationSettings() {
         item.inputId
       );
 
-    if (
-      !input ||
-      item.value === undefined ||
-      item.value === null
-    ) {
+    if (!input || !item.value) {
       return;
     }
 
@@ -6438,13 +5070,6 @@ function restoreConversationSettings() {
       settings.chunk;
 
     renderCurrentChunkButton();
-
-    if (
-      typeof renderCurrentSelectedChunks ===
-      'function'
-    ) {
-      renderCurrentSelectedChunks();
-    }
   }
 
   if (
@@ -6453,34 +5078,11 @@ function restoreConversationSettings() {
   ) {
     window.CONVERSATION_V2_PLAY_MODE =
       settings.playMode;
+
+    installPlayModeToggle();
   }
-
-  if (
-    settings.practiceType === 'role-play' ||
-    settings.practiceType === 'follow-up'
-  ) {
-    window.CONVERSATION_V2_PRACTICE_TYPE =
-      settings.practiceType;
-  }
-
-  if (
-    settings.continueMode === 'off' ||
-    settings.continueMode === 'repeat' ||
-    settings.continueMode === 'next'
-  ) {
-    window.CONVERSATION_V2_CONTINUE_MODE =
-      settings.continueMode;
-
-    renderCurrentContinueMode();
-  }
-
-  renderCurrentPracticeControls();
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 8450: SETTINGS STORAGE INSTALLATION
-// ============================================================================
 
 function installConversationSettingsStorage() {
   restoreConversationSettings();
@@ -6513,9 +5115,7 @@ function installConversationSettingsStorage() {
   [
     'playLoopToggle',
     'chunkButton',
-    'playModeToggleButton',
-    'practiceModeToggleButton',
-    'continueNextButton'
+    'playModeToggleButton'
   ].forEach(function(id) {
     var button =
       document.getElementById(id);
@@ -6566,9 +5166,15 @@ if (document.readyState === 'loading') {
   installConversationSettingsStorage();
 }
 
+// ============================================================================
+// END: LOCAL USER SETTINGS
+// ============================================================================
+
+
 
 // ============================================================================
-// 🟦 BLOCK 8500: BIBLE PERSON LINK CONFIGURATION / LOOKUP
+// 🟦 BLOCK 3391: SPEAKER TO BIBLE PERSON LINK
+// Purpose: Open verified Bible person details without changing Role Play.
 // ============================================================================
 
 const CONVERSATION_V2_BIBLE_LINKS_URL =
@@ -6600,10 +5206,6 @@ function getConversationV2SpeakerName(
     .trim();
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 8550: BIBLE PERSON LINK LOADER
-// ============================================================================
 
 async function loadConversationV2BibleLinks() {
   try {
@@ -6683,10 +5285,6 @@ async function loadConversationV2BibleLinks() {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 8600: BIBLE SPEAKER DECORATION
-// ============================================================================
-
 function decorateConversationV2BibleSpeakers() {
   var links =
     window.CONVERSATION_V2_BIBLE_LINKS ||
@@ -6752,10 +5350,6 @@ function decorateConversationV2BibleSpeakers() {
     });
 }
 
-
-// ============================================================================
-// 🟦 BLOCK 8650: BIBLE PERSON OPEN / EVENT CONNECTION
-// ============================================================================
 
 function openConversationV2BiblePerson(
   personId
@@ -6863,9 +5457,14 @@ if (document.readyState === 'loading') {
   installConversationV2BibleSpeakerLinks();
 }
 
+// ============================================================================
+// END: SPEAKER TO BIBLE PERSON LINK
+// ============================================================================
+
 
 // ============================================================================
-// 🟦 BLOCK 8700: ANDROID TTS WORD BOUNDARY LISTENER
+// 🟦 BLOCK 3392: ANDROID TTS WORD BOUNDARY LISTENER
+// Purpose: Receive Android native TTS word positions for the active sentence.
 // ============================================================================
 
 function installCurrentAndroidTtsWordListener() {
@@ -6914,573 +5513,6 @@ if (document.readyState === 'loading') {
   installCurrentAndroidTtsWordListener();
 }
 
-
 // ============================================================================
-// 🟦 BLOCK 8750: SYSTEM URL SETTINGS
+// END: ANDROID TTS WORD BOUNDARY LISTENER
 // ============================================================================
-
-const CONVERSATION_V2_SYSTEM_URLS = {
-  conversation:
-    'https://bibleofgongboo.github.io/conversation/',
-
-  bible:
-    'https://bibleofgongboo.github.io/biblenew/',
-
-  easyLearning:
-    'https://bibleofgongboo.github.io/anne/',
-
-  license:
-    ''
-};
-
-
-function installConversationSystemExternalLinks() {
-  document
-    .querySelectorAll(
-      '[data-system-key]'
-    )
-    .forEach(function(button) {
-      button.onclick = function() {
-        var systemKey =
-          String(
-            button.dataset.systemKey || ''
-          ).trim();
-
-        var url =
-          CONVERSATION_V2_SYSTEM_URLS[
-            systemKey
-          ];
-
-        if (!url) {
-          return;
-        }
-
-        window.open(
-          url,
-          '_blank',
-          'noopener,noreferrer'
-        );
-      };
-    });
-}
-
-
-if (document.readyState === 'loading') {
-  document.addEventListener(
-    'DOMContentLoaded',
-    installConversationSystemExternalLinks,
-    { once: true }
-  );
-} else {
-  installConversationSystemExternalLinks();
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 8800: SPACE PLAY / STOP TOGGLE
-// ============================================================================
-
-function isCurrentSpaceShortcutBlocked(
-  target
-) {
-  if (!target || !target.closest) {
-    return false;
-  }
-
-  return Boolean(
-    target.closest(
-      'input, textarea, select, button, [contenteditable="true"]'
-    )
-  );
-}
-
-
-function installCurrentSpacePlayToggle() {
-  document.addEventListener(
-    'keydown',
-    function(event) {
-      var playButtonFocused =
-        event.target &&
-        event.target.id === 'playButton';
-
-      if (
-        event.code !== 'Space' ||
-        event.repeat ||
-        (
-          isCurrentSpaceShortcutBlocked(
-            event.target
-          ) &&
-          !playButtonFocused
-        )
-      ) {
-        return;
-      }
-
-      var playMenuPanel =
-        document.getElementById(
-          'playMenuPanel'
-        );
-
-      if (
-        playMenuPanel &&
-        !playMenuPanel.hidden
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-
-      var playState =
-        getCurrentPsgPlayState();
-
-      if (playState.running) {
-        stopCurrentPsgPlay();
-        return;
-      }
-
-      resetCurrentPlayVisualState();
-      startCurrentPsgPlay();
-    }
-  );
-}
-
-
-if (document.readyState === 'loading') {
-  document.addEventListener(
-    'DOMContentLoaded',
-    installCurrentSpacePlayToggle,
-    { once: true }
-  );
-} else {
-  installCurrentSpacePlayToggle();
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 8850: LEFT / RIGHT CONVERSATION NAVIGATION
-// ============================================================================
-
-function installCurrentArrowNavigation() {
-  document.addEventListener(
-    'keydown',
-    function(event) {
-      if (
-        event.repeat ||
-        isCurrentSpaceShortcutBlocked(
-          event.target
-        )
-      ) {
-        return;
-      }
-
-      var buttonId =
-        event.code === 'ArrowLeft'
-          ? 'previousButton'
-          : event.code === 'ArrowRight'
-            ? 'nextButton'
-            : '';
-
-      if (!buttonId) {
-        return;
-      }
-
-      var button =
-        document.getElementById(
-          buttonId
-        );
-
-      if (
-        !button ||
-        button.disabled
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-      button.click();
-    }
-  );
-}
-
-
-if (document.readyState === 'loading') {
-  document.addEventListener(
-    'DOMContentLoaded',
-    installCurrentArrowNavigation,
-    { once: true }
-  );
-} else {
-  installCurrentArrowNavigation();
-}
-
-
-// ============================================================================
-// 🟦 BLOCK 8900: PRACTICE RESET
-// ============================================================================
-
-function resetCurrentPracticeSession() {
-  var targetTurn =
-    getCurrentRoleTargetTurn();
-
-  stopCurrentPsgPlay();
-  stopCurrentRolePlay();
-  stopCurrentMicRecognition();
-
-  resetCurrentRolePlayResults();
-  clearCurrentSpeakingCard();
-
-  selectCurrentRoleTurn(
-    targetTurn
-  );
-
-  renderCurrentPracticeControls();
-}
-
-
-function installCurrentPracticeResetButton() {
-  var button =
-    document.getElementById(
-      'practiceResetButton'
-    );
-
-  if (!button) {
-    return;
-  }
-
-  button.onclick = function() {
-    resetCurrentPracticeSession();
-  };
-}
-
-
-if (document.readyState === 'loading') {
-  document.addEventListener(
-    'DOMContentLoaded',
-    installCurrentPracticeResetButton,
-    { once: true }
-  );
-} else {
-  installCurrentPracticeResetButton();
-}
-
-
-// ============================================================================
-// 8950–9899 RESERVED FOR FUTURE BLOCKS
-// ============================================================================
-
-
-// ============================================================================
-// 🟩 9900 — HELP
-// ============================================================================
-
-
-// ============================================================================
-// 🟦 BLOCK 9900: BUTTON HOVER HELP
-// IMPORTANT: HELP remains ONE block even when longer than 120 lines.
-// ============================================================================
-
-function getCurrentButtonHoverHelp(button) {
-  var helpById = {
-    systemMenuButton:
-      '시스템 메뉴 열기',
-
-    playButton:
-      '현재 선택 문장부터 재생',
-
-    playMenuButton:
-      'PLAY 옵션 열기 또는 닫기',
-
-    stopButton:
-      '재생, 역할 연습, 마이크를 중지',
-
-    settingsButton:
-      '재생 및 언어 설정 열기',
-
-    playModeToggleButton:
-      'COMPUTER와 I FIRST 순서 전환',
-
-    practiceStartStopButton:
-      '선택한 연습 시작 또는 중지',
-
-    practiceModeToggleButton:
-      'ROLE PLAY 연습 모드 전환',
-
-    continueNextButton:
-      '재생 후 반복 또는 다음 대화 진행 설정',
-
-    practiceResetButton:
-      '연습 결과와 선택 상태 초기화',
-
-    playLoopToggle:
-      '현재 대화 반복 재생 설정',
-
-    chunkButton:
-      '선택 문장의 세부 구간 표시',
-
-    previousButton:
-      '이전 대화로 이동',
-
-    nextButton:
-      '다음 대화로 이동'
-  };
-
-  var systemHelpByKey = {
-    conversation:
-      '대화 첫 화면 열기',
-
-    license:
-      '라이선스 안내 열기',
-
-    bible:
-      '성경 관련 화면 열기',
-
-    easyLearning:
-      'Easy Learning 열기'
-  };
-
-  if (helpById[button.id]) {
-    return helpById[button.id];
-  }
-
-  var systemKey =
-    String(
-      button.dataset.systemKey || ''
-    ).trim();
-
-  if (systemHelpByKey[systemKey]) {
-    return systemHelpByKey[systemKey];
-  }
-
-  var ariaLabel =
-    String(
-      button.getAttribute(
-        'aria-label'
-      ) || ''
-    ).trim();
-
-  if (ariaLabel) {
-    return ariaLabel;
-  }
-
-  return String(
-    button.textContent || ''
-  )
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-
-function applyCurrentButtonHoverHelp(root) {
-  var scope =
-    root || document;
-
-  scope
-    .querySelectorAll('button')
-    .forEach(function(button) {
-      if (
-        button.hasAttribute('title') &&
-        button.title.trim()
-      ) {
-        return;
-      }
-
-      var help =
-        getCurrentButtonHoverHelp(
-          button
-        );
-
-      if (help) {
-        button.title = help;
-      }
-    });
-}
-
-
-function bootCurrentButtonHoverHelp() {
-  var install = function() {
-    applyCurrentButtonHoverHelp(
-      document
-    );
-
-    new MutationObserver(
-      function(records) {
-        records.forEach(
-          function(record) {
-            record.addedNodes.forEach(
-              function(node) {
-                if (
-                  !node ||
-                  node.nodeType !== 1
-                ) {
-                  return;
-                }
-
-                if (
-                  node.matches('button')
-                ) {
-                  var help =
-                    getCurrentButtonHoverHelp(
-                      node
-                    );
-
-                  if (help) {
-                    node.title = help;
-                  }
-                }
-
-                applyCurrentButtonHoverHelp(
-                  node
-                );
-              }
-            );
-          }
-        );
-      }
-    ).observe(
-      document.body,
-      {
-        childList: true,
-        subtree: true
-      }
-    );
-  };
-
-  if (
-    document.readyState ===
-    'loading'
-  ) {
-    document.addEventListener(
-      'DOMContentLoaded',
-      install,
-      { once: true }
-    );
-
-    return;
-  }
-
-  install();
-}
-
-
-bootCurrentButtonHoverHelp();
-
-
-// ============================================================================
-// END: BUTTON HOVER HELP
-// ============================================================================
-
-// ============================================================================
-// 🟦 BLOCK 9902: ANDROID CHROME TEMPORARY ON-DEVICE CONSOLE
-// Purpose: Load Eruda only on S26 when ?debug=s26 is in the URL.
-// Remove this BLOCK after S26 diagnosis is complete.
-// ============================================================================
-
-function showCurrentAndroidDebugStatus_2(
-  message,
-  color
-) {
-  var badge =
-    document.getElementById(
-      'conversationAndroidDebugStatus2'
-    );
-
-  if (!badge) {
-    badge = document.createElement('div');
-
-    badge.id =
-      'conversationAndroidDebugStatus2';
-
-    badge.style.position = 'fixed';
-    badge.style.top = '8px';
-    badge.style.right = '8px';
-    badge.style.zIndex = '2147483647';
-    badge.style.padding = '6px 8px';
-    badge.style.borderRadius = '6px';
-    badge.style.fontSize = '12px';
-    badge.style.fontWeight = '700';
-    badge.style.color = '#ffffff';
-
-    document.body.appendChild(badge);
-  }
-
-  badge.style.background =
-    color || '#303030';
-
-  badge.textContent = message;
-}
-
-
-function installCurrentAndroidConsole_2() {
-  var params = new URLSearchParams(
-    window.location.search
-  );
-
-  if (params.get('debug') !== 's26') {
-    return;
-  }
-
-  if (!isCurrentAndroidChrome_2()) {
-    showCurrentAndroidDebugStatus_2(
-      'S26 DEBUG: Android Chrome not detected',
-      '#b42318'
-    );
-
-    return;
-  }
-
-  showCurrentAndroidDebugStatus_2(
-    'S26 DEBUG: loading console…',
-    '#175cd3'
-  );
-
-  function startEruda() {
-    if (!window.eruda) {
-      showCurrentAndroidDebugStatus_2(
-        'S26 DEBUG: Eruda unavailable',
-        '#b42318'
-      );
-
-      return;
-    }
-
-    window.eruda.init({
-      tool: [
-        'console',
-        'network',
-        'info'
-      ]
-    });
-
-    window.eruda.show('console');
-
-    showCurrentAndroidDebugStatus_2(
-      'S26 DEBUG: console ready',
-      '#027a48'
-    );
-  }
-
-  if (window.eruda) {
-    startEruda();
-    return;
-  }
-
-  var script =
-    document.createElement('script');
-
-  script.src =
-    'https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js';
-
-  script.onload = startEruda;
-
-  script.onerror = function() {
-    showCurrentAndroidDebugStatus_2(
-      'S26 DEBUG: Eruda CDN failed',
-      '#b42318'
-    );
-  };
-
-  document.head.appendChild(script);
-}
-
-
-installCurrentAndroidConsole_2();
