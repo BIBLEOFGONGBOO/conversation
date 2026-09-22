@@ -3559,10 +3559,9 @@ function startCurrentPsgPlay(
 
   if (!skipStartSignal) {
     if (isCurrentAndroidChrome_2()) {
-      playCurrentIStartSignal();
-      startCurrentPsgPlay(true);
-      return;
-    }
+  startCurrentPsgPlay(true);
+  return;
+}
 
     var startRunId =
       state.runId;
