@@ -7373,3 +7373,67 @@ bootCurrentButtonHoverHelp();
 // ============================================================================
 // END: BUTTON HOVER HELP
 // ============================================================================
+
+// ============================================================================
+// 🟦 BLOCK 9902: ANDROID CHROME TEMPORARY ON-DEVICE CONSOLE
+// Purpose: Load Eruda only on S26 when ?debug=s26 is in the URL.
+// Remove this BLOCK after S26 diagnosis is complete.
+// ============================================================================
+
+function installCurrentAndroidConsole_2() {
+  if (!isCurrentAndroidChrome_2()) {
+    return;
+  }
+
+  var params = new URLSearchParams(
+    window.location.search
+  );
+
+  if (params.get('debug') !== 's26') {
+    return;
+  }
+
+  function startEruda() {
+    if (!window.eruda) {
+      return;
+    }
+
+    window.eruda.init({
+      tool: [
+        'console',
+        'network',
+        'info'
+      ]
+    });
+
+    window.eruda.show('console');
+
+    console.log(
+      '[S26 DEBUG] On-device console enabled'
+    );
+  }
+
+  if (window.eruda) {
+    startEruda();
+    return;
+  }
+
+  var script =
+    document.createElement('script');
+
+  script.src =
+    'https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js';
+
+  script.onload = startEruda;
+
+  script.onerror = function() {
+    console.error(
+      '[S26 DEBUG] Eruda loading failed'
+    );
+  };
+
+  document.head.appendChild(script);
+}
+
+
+installCurrentAndroidConsole_2();
