@@ -7380,11 +7380,42 @@ bootCurrentButtonHoverHelp();
 // Remove this BLOCK after S26 diagnosis is complete.
 // ============================================================================
 
-function installCurrentAndroidConsole_2() {
-  if (!isCurrentAndroidChrome_2()) {
-    return;
+function showCurrentAndroidDebugStatus_2(
+  message,
+  color
+) {
+  var badge =
+    document.getElementById(
+      'conversationAndroidDebugStatus2'
+    );
+
+  if (!badge) {
+    badge = document.createElement('div');
+
+    badge.id =
+      'conversationAndroidDebugStatus2';
+
+    badge.style.position = 'fixed';
+    badge.style.top = '8px';
+    badge.style.right = '8px';
+    badge.style.zIndex = '2147483647';
+    badge.style.padding = '6px 8px';
+    badge.style.borderRadius = '6px';
+    badge.style.fontSize = '12px';
+    badge.style.fontWeight = '700';
+    badge.style.color = '#ffffff';
+
+    document.body.appendChild(badge);
   }
 
+  badge.style.background =
+    color || '#303030';
+
+  badge.textContent = message;
+}
+
+
+function installCurrentAndroidConsole_2() {
   var params = new URLSearchParams(
     window.location.search
   );
@@ -7393,8 +7424,27 @@ function installCurrentAndroidConsole_2() {
     return;
   }
 
+  if (!isCurrentAndroidChrome_2()) {
+    showCurrentAndroidDebugStatus_2(
+      'S26 DEBUG: Android Chrome not detected',
+      '#b42318'
+    );
+
+    return;
+  }
+
+  showCurrentAndroidDebugStatus_2(
+    'S26 DEBUG: loading console…',
+    '#175cd3'
+  );
+
   function startEruda() {
     if (!window.eruda) {
+      showCurrentAndroidDebugStatus_2(
+        'S26 DEBUG: Eruda unavailable',
+        '#b42318'
+      );
+
       return;
     }
 
@@ -7408,8 +7458,9 @@ function installCurrentAndroidConsole_2() {
 
     window.eruda.show('console');
 
-    console.log(
-      '[S26 DEBUG] On-device console enabled'
+    showCurrentAndroidDebugStatus_2(
+      'S26 DEBUG: console ready',
+      '#027a48'
     );
   }
 
@@ -7427,8 +7478,9 @@ function installCurrentAndroidConsole_2() {
   script.onload = startEruda;
 
   script.onerror = function() {
-    console.error(
-      '[S26 DEBUG] Eruda loading failed'
+    showCurrentAndroidDebugStatus_2(
+      'S26 DEBUG: Eruda CDN failed',
+      '#b42318'
     );
   };
 
