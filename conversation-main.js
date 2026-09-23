@@ -1048,6 +1048,91 @@ function bootConversationDirectoryLoading() {
 bootConversationDirectoryLoading();
 
 
+
+// ============================================================================
+// 🟦 BLOCK 3800: KAKAO IN-APP EXTERNAL BROWSER CONTROLLER
+// Purpose: KakaoTalk in-app browser only.
+// PC Chrome, normal Android Chrome, and APK are excluded.
+// ============================================================================
+
+function isCurrentKakaoInAppBrowser() {
+  return /kakaotalk/i.test(
+    String(navigator.userAgent || '')
+  );
+}
+
+function getCurrentKakaoExternalTargetUrl() {
+  var targetUrl =
+    new URL(window.location.href);
+
+  targetUrl.searchParams.set(
+    'kakaoExternal',
+    '1'
+  );
+
+  return targetUrl.toString();
+}
+
+function openCurrentKakaoInExternalBrowser() {
+  var targetUrl =
+    getCurrentKakaoExternalTargetUrl();
+
+  window.location.href =
+    'kakaotalk://web/openExternal?url=' +
+    encodeURIComponent(targetUrl);
+}
+
+function bootCurrentKakaoExternalBrowserGuide() {
+  if (!isCurrentKakaoInAppBrowser()) {
+    return;
+  }
+
+  var guide =
+    document.getElementById(
+      'kakaoExternalBrowserGuide'
+    );
+
+  var button =
+    document.getElementById(
+      'kakaoExternalBrowserButton'
+    );
+
+  if (!guide || !button) {
+    return;
+  }
+
+  guide.hidden = false;
+
+  button.onclick = function() {
+    openCurrentKakaoInExternalBrowser();
+  };
+
+  var attemptedKey =
+    'gongbooKakaoExternalAttempted';
+
+  try {
+    if (sessionStorage.getItem(attemptedKey)) {
+      return;
+    }
+
+    sessionStorage.setItem(
+      attemptedKey,
+      '1'
+    );
+
+    window.setTimeout(function() {
+      openCurrentKakaoInExternalBrowser();
+    }, 200);
+
+  } catch (error) {
+    // 자동 이동이 막혀도 사용자가 버튼을 눌러 시도할 수 있다.
+  }
+}
+
+bootCurrentKakaoExternalBrowserGuide();
+
+
+
 // ============================================================================
 // 🟩 4000 — MENU / UI STATE + LANGUAGE / LOADING
 // ============================================================================
