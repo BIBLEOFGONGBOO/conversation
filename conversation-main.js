@@ -2512,7 +2512,8 @@ function buildCurrentPsgPlaySequence() {
     text,
     language,
     turnNumber,
-    kind
+    kind,
+    speaker
   ) {
     var speechText =
       getCurrentPsgSpeechText(
@@ -2526,7 +2527,10 @@ function buildCurrentPsgPlaySequence() {
 
     sequence.push({
       turnNumber: turnNumber,
-      speaker: '',
+      speaker: String(speaker || '').trim(),
+      gender: getConversationV2SpeakerGender(
+        speaker
+      ),
       speechText: speechText,
       language: language,
       kind: kind
@@ -2558,12 +2562,25 @@ function buildCurrentPsgPlaySequence() {
         '.conversation-secondary-text'
       );
 
+    var primarySpeaker =
+      card.querySelector(
+        '.conversation-turn-speaker'
+      );
+
+    var secondarySpeaker =
+      card.querySelector(
+        '.conversation-secondary-speaker'
+      );
+
     if (primaryText) {
       addItem(
         primaryText.textContent,
         primaryLanguage,
         turnNumber,
-        'primary'
+        'primary',
+        getConversationV2SpeakerName(
+          primarySpeaker
+        )
       );
     }
 
@@ -2572,7 +2589,10 @@ function buildCurrentPsgPlaySequence() {
         secondaryText.textContent,
         secondaryLanguage,
         turnNumber,
-        'secondary'
+        'secondary',
+        getConversationV2SpeakerName(
+          secondarySpeaker
+        )
       );
     }
   });
@@ -2684,6 +2704,131 @@ function getCurrentPsgPlayLocale(language) {
   };
 
   return locales[language] || 'en-US';
+}
+
+
+// ============================================================================
+// 🟦 BLOCK 5620: SPEAKER GENDER LOOKUP
+// Purpose: DB conversation_name_bible_links의 GENDER(F/M)를 읽는다.
+// ============================================================================
+
+function getConversationV2SpeakerGender(speaker) {
+  var genders =
+    window.CONVERSATION_V2_SPEAKER_GENDERS ||
+    {};
+
+  return genders[
+    getConversationV2BibleLinkKey(speaker)
+  ] || '';
+}
+
+// APK의 기존 호출을 안전하게 유지한다.
+// 실제 성별 음성 선택은 Web BLOCK 5630에서 한다.
+function getCurrentPsgSpeechPitch() {
+  return 1;
+}
+
+
+
+// ============================================================================
+// 🟦 BLOCK 5630: BROWSER GENDER VOICE SELECTOR
+// Purpose: PC Chrome / Android Chrome에서 GENDER별 실제 음성을 선택한다.
+// ============================================================================
+
+function getCurrentPsgBrowserGenderVoice(
+  item,
+  locale
+) {
+  if (
+    !window.speechSynthesis ||
+    !item ||
+    !item.gender
+  ) {
+    return null;
+  }
+
+  var voices =
+    window.speechSynthesis.getVoices();
+
+  if (!voices || !voices.length) {
+    return null;
+  }
+
+  var normalizedLocale =
+    String(locale || '')
+      .replace('_', '-')
+      .toLowerCase();
+
+  var languagePrefix =
+    normalizedLocale.slice(0, 2);
+
+  var languageVoices =
+    voices.filter(function(voice) {
+      var voiceLocale =
+        String(voice.lang || '')
+          .replace('_', '-')
+          .toLowerCase();
+
+      return (
+        voiceLocale === normalizedLocale ||
+        voiceLocale.indexOf(
+          languagePrefix + '-'
+        ) === 0
+      );
+    });
+
+  if (!languageVoices.length) {
+    return null;
+  }
+
+  var femaleNames = [
+    'zira',
+    'aria',
+    'jenny',
+    'samantha',
+    'victoria',
+    'susan',
+    'hazel',
+    'heera',
+    'fiona',
+    'karen',
+    'moira',
+    'tessa',
+    'female'
+  ];
+
+  var maleNames = [
+    'david',
+    'mark',
+    'guy',
+    'george',
+    'james',
+    'daniel',
+    'alex',
+    'fred',
+    'ralph',
+    'male'
+  ];
+
+  var wantedNames =
+    item.gender === 'F'
+      ? femaleNames
+      : item.gender === 'M'
+        ? maleNames
+        : [];
+
+  if (!wantedNames.length) {
+    return null;
+  }
+
+  return languageVoices.find(function(voice) {
+    var voiceName =
+      String(voice.name || '').toLowerCase();
+
+    return wantedNames.some(function(name) {
+      return voiceName.indexOf(name) >= 0;
+    });
+  }) || null;
 }
 
 
@@ -2986,6 +3131,7 @@ installCurrentAndroidTrace_2();
 
 // ============================================================================
 // 🟦 BLOCK 5750: WEB PLAY ADAPTER
+// Purpose: PC Chrome의 실제 남녀 음성 재생.
 // ============================================================================
 
 function createCurrentPsgWebPlayAdapter() {
@@ -3036,6 +3182,16 @@ function createCurrentPsgWebPlayAdapter() {
             item.language
           );
 
+        var genderVoice =
+          getCurrentPsgBrowserGenderVoice(
+            item,
+            utterance.lang
+          );
+
+        if (genderVoice) {
+          utterance.voice = genderVoice;
+        }
+
         utterance.rate =
           getCurrentPsgPlayRate();
 
@@ -3078,7 +3234,6 @@ function createCurrentPsgWebPlayAdapter() {
           window.setTimeout(function() {
             window.speechSynthesis.resume();
           }, 100);
-
         } catch (error) {
           finish(reject, error);
         }
@@ -3097,7 +3252,7 @@ function createCurrentPsgWebPlayAdapter() {
 
 // ============================================================================
 // 🟦 BLOCK 5752: ANDROID CHROME PLAY ADAPTER
-// Purpose: S26 cold-start TTS recovery. PC and APK do not enter here.
+// Purpose: S26 Chrome 재생 + 실제 남녀 음성 선택.
 // ============================================================================
 
 function createCurrentPsgAndroidChromeAdapter_2() {
@@ -3159,6 +3314,16 @@ function createCurrentPsgAndroidChromeAdapter_2() {
             getCurrentPsgPlayLocale(
               item.language
             );
+
+          var genderVoice =
+            getCurrentPsgBrowserGenderVoice(
+              item,
+              utterance.lang
+            );
+
+          if (genderVoice) {
+            utterance.voice = genderVoice;
+          }
 
           utterance.rate =
             getCurrentPsgPlayRate();
@@ -3304,7 +3469,10 @@ function createCurrentPsgNativePlayAdapter() {
         language: getCurrentPsgPlayLocale(
           item.language
         ),
-        rate: getCurrentPsgPlayRate()
+        rate: getCurrentPsgPlayRate(),
+        pitch: getCurrentPsgSpeechPitch(
+          item.gender
+        )
       });
     },
 
@@ -6607,7 +6775,7 @@ async function loadConversationV2BibleLinks() {
         CONVERSATION_V2_BIBLE_LINKS_URL +
           '?select=' +
           encodeURIComponent(
-            'NAME,BIBLE_ORIGIN,BIBLE_PERSON_ID'
+            'NAME,BIBLE_ORIGIN,BIBLE_PERSON_ID,GENDER'
           ),
         {
           headers: {
@@ -6632,6 +6800,7 @@ async function loadConversationV2BibleLinks() {
     }
 
     var links = {};
+    var genders = {};
 
     (
       text
@@ -6648,6 +6817,19 @@ async function loadConversationV2BibleLinks() {
           ''
         ).trim();
 
+      var gender = String(
+        row.GENDER || ''
+      ).trim().toUpperCase();
+
+      if (
+        name &&
+        (gender === 'M' || gender === 'F')
+      ) {
+        genders[
+          getConversationV2BibleLinkKey(name)
+        ] = gender;
+      }
+
       if (!name || !personId) {
         return;
       }
@@ -6660,15 +6842,21 @@ async function loadConversationV2BibleLinks() {
     window.CONVERSATION_V2_BIBLE_LINKS =
       links;
 
+    window.CONVERSATION_V2_SPEAKER_GENDERS =
+      genders;
+
     decorateConversationV2BibleSpeakers();
 
     console.log(
       '[CONVERSATION V2] Bible links:',
       Object.keys(links).length
+      + ', speaker genders: ' +
+      Object.keys(genders).length
     );
 
   } catch (error) {
     window.CONVERSATION_V2_BIBLE_LINKS = {};
+    window.CONVERSATION_V2_SPEAKER_GENDERS = {};
 
     console.error(
       '[CONVERSATION V2] Bible links failed:',
