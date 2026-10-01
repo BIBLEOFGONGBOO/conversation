@@ -1125,3 +1125,75 @@ button:not(:disabled):active {
 /* ==========================================================================
    END: KAKAO EXTERNAL BROWSER GUIDE
    ========================================================================== */  
+
+
+
+
+   conversation-main.js:8489 Uncaught SyntaxError: Unexpected token '.'
+index.html:472 Live reload enabled.
+
+
+
+
+
+/* ==========================================================================
+   BLOCK 8810 : CONVERSATION WORD DICTIONARY UI
+   ========================================================================== */
+
+.conversation-dictionary-popup {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  z-index: 10001;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 14px 38px rgb(15 23 42 / 28%);
+  color: #172033;
+}
+
+.conversation-dictionary-popup[hidden] {
+  display: none;
+}
+
+.conversation-dictionary-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 18px;
+}
+
+.conversation-dictionary-word-title {
+  margin: 0 42px 10px 0;
+  color: #075ea8;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.conversation-dictionary-base,
+.conversation-dictionary-translation,
+.conversation-dictionary-definition,
+.conversation-dictionary-status {
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.conversation-dictionary-translation {
+  color: #b45309;
+  font-weight: 800;
+}
+
+.conversation-dictionary-definition {
+  color: #334155;
+  white-space: pre-line;
+}

@@ -562,6 +562,87 @@ var conversationDirectoryTitleCache = {};
 
 var CONVERSATION_DIRECTORY_PAGE_SIZE = 50;
 
+var conversationDirectoryStaticIndex = null;
+
+var conversationDirectoryStaticLevelCache = {};
+
+var conversationDirectoryStaticState = {
+  level: '',
+  category: ''
+};
+
+
+async function requestConversationStaticDirectory(
+  path
+) {
+  var response = await fetch(path);
+
+  if (!response.ok) {
+    throw new Error(
+      'Static directory request failed: ' +
+      response.status
+    );
+  }
+
+  return response.json();
+}
+
+
+async function loadConversationStaticIndex() {
+  if (conversationDirectoryStaticIndex) {
+    return conversationDirectoryStaticIndex;
+  }
+
+  conversationDirectoryStaticIndex =
+    await requestConversationStaticDirectory(
+      './data/index.json'
+    );
+
+  return conversationDirectoryStaticIndex;
+}
+
+
+async function loadConversationStaticLevel(
+  levelName
+) {
+  var safeLevel = getConversationDirectoryText(
+    levelName
+  );
+
+  if (conversationDirectoryStaticLevelCache[safeLevel]) {
+    return conversationDirectoryStaticLevelCache[
+      safeLevel
+    ];
+  }
+
+  var indexData =
+    await loadConversationStaticIndex();
+
+  var levelItem = (indexData.levels || []).find(
+    function(item) {
+      return getConversationDirectoryText(
+        item.name
+      ) === safeLevel;
+    }
+  );
+
+  if (!levelItem || !levelItem.file) {
+    throw new Error(
+      'Static level not found: ' + safeLevel
+    );
+  }
+
+  var levelData =
+    await requestConversationStaticDirectory(
+      './data/' + levelItem.file
+    );
+
+  conversationDirectoryStaticLevelCache[safeLevel] =
+    levelData;
+
+  return levelData;
+}
+
 
 function getConversationDirectoryCacheKey(
   level,
@@ -901,12 +982,8 @@ function renderConversationDirectory(
 
     category: getConversationDirectoryText(
       requestedState?.category
-    ),
-
-    total: Number(requestedState?.total) || 0
+    )
   };
-
-  var rows = getConversationCatalogRows();
 
   directory.hidden = false;
 
@@ -914,78 +991,229 @@ function renderConversationDirectory(
     'conversation-directory-open'
   );
 
+  conversationDirectoryStaticState = state;
+
   renderConversationDirectoryBreadcrumb(
     state
   );
 
   list.innerHTML = '';
 
+  var loading = document.createElement('p');
+
+  loading.className =
+    'conversation-directory-loading';
+
+  loading.textContent = 'LOADING DIRECTORY…';
+
+  list.appendChild(loading);
+
   if (!state.level) {
-    getConversationDirectoryUniqueValues(
-      rows,
-      'GROUP'
-    ).forEach(function(level) {
-      renderConversationDirectoryItem(
-        list,
-        level,
-        false,
-        function() {
-          renderConversationDirectory({
-            level: level,
-            category: '',
-            total: 0
-          });
-        }
-      );
-    });
+    loadConversationStaticIndex()
+      .then(function(indexData) {
+        list.innerHTML = '';
+
+        (indexData.levels || []).forEach(
+          function(levelItem) {
+            renderConversationDirectoryItem(
+              list,
+              String(levelItem.name),
+              false,
+              function() {
+                renderConversationDirectory({
+                  level: levelItem.name,
+                  category: ''
+                });
+              }
+            );
+          }
+        );
+      })
+      .catch(function(error) {
+        console.error(
+          '[CONVERSATION V2] Static index load failed:',
+          error
+        );
+
+        list.innerHTML = '';
+
+        var failure = document.createElement('p');
+
+        failure.className =
+          'conversation-directory-empty';
+
+        failure.textContent =
+          'Could not load directory.';
+
+        list.appendChild(failure);
+      });
 
     return;
   }
 
-  var levelRows = rows
-    .filter(function(row) {
-      return (
-        getConversationDirectoryText(
-          row.GROUP
-        ) === state.level
+  loadConversationStaticLevel(state.level)
+    .then(function(levelData) {
+      list.innerHTML = '';
+
+      if (!state.category) {
+        (levelData.categories || []).forEach(
+          function(category) {
+            renderConversationDirectoryItem(
+              list,
+              String(category.name),
+              false,
+              function() {
+                renderConversationDirectory({
+                  level: state.level,
+                  category: category.name
+                });
+              }
+            );
+          }
+        );
+
+        return;
+      }
+
+      var category = (levelData.categories || []).find(
+        function(item) {
+          return getConversationDirectoryText(
+            item.name
+          ) === state.category;
+        }
+      );
+
+      if (!category) {
+        throw new Error(
+          'Static category not found: ' +
+          state.category
+        );
+      }
+
+      (category.subcategories || []).forEach(
+        function(subcategory) {
+          renderConversationDirectoryItem(
+            list,
+            String(subcategory.name),
+            true,
+            function() {
+              openConversationStaticSubcategory(
+                state.level,
+                state.category,
+                subcategory
+              );
+            }
+          );
+        }
       );
     })
-    .sort(function(left, right) {
-      return String(left.CATEGORY).localeCompare(
-        String(right.CATEGORY)
+    .catch(function(error) {
+      console.error(
+        '[CONVERSATION V2] Static level load failed:',
+        error
       );
+
+      list.innerHTML = '';
+
+      var failure = document.createElement('p');
+
+      failure.className =
+        'conversation-directory-empty';
+
+      failure.textContent =
+        'Could not load directory.';
+
+      list.appendChild(failure);
+    });
+}
+
+
+// ============================================================================
+// END: DIRECTORY LEVEL / CATEGORY NAVIGATION
+// ============================================================================
+
+
+// ============================================================================
+// 🟦 BLOCK 3625: STATIC SUBCATEGORY SELECTION
+// ============================================================================
+
+async function openConversationStaticSubcategory(
+  level,
+  category,
+  subcategory
+) {
+  var ids = (subcategory.dialogueIds || [])
+    .map(function(id) {
+      return Number(id);
+    })
+    .filter(function(id) {
+      return Number.isInteger(id) && id > 0;
     });
 
-  if (!state.category) {
-    levelRows.forEach(function(row) {
-      var label =
-        row.CATEGORY +
-        ' · ' +
-        String(row.CONVERSATION_COUNT);
-
-      renderConversationDirectoryItem(
-        list,
-        label,
-        false,
-        function() {
-          renderConversationDirectory({
-            level: state.level,
-            category: row.CATEGORY,
-            total: row.CONVERSATION_COUNT
-          });
-        }
-      );
-    });
+  if (!ids.length) {
+    setConversationStatus(
+      'No conversations found'
+    );
 
     return;
   }
 
-  renderConversationDirectoryTitles(
-    state,
-    list,
-    directory,
-    app
-  );
+  try {
+    setConversationStatus(
+      'Loading conversations...'
+    );
+
+    var rows = await requestConversationRows(
+      ids,
+      'EN'
+    );
+
+    if (!rows.length) {
+      throw new Error(
+        'No conversation rows returned'
+      );
+    }
+
+    saveConversationBatch('EN', rows);
+
+    window.CONVERSATION_V2_DIRECTORY_ROWS =
+      rows.slice();
+
+    conversationDirectoryStaticState = {
+      level: level,
+      category: category
+    };
+
+    var directory = document.getElementById(
+      'conversationDirectory'
+    );
+
+    var app = document.getElementById(
+      'conversationApp'
+    );
+
+    if (directory) {
+      directory.hidden = true;
+    }
+
+    if (app) {
+      app.classList.remove(
+        'conversation-directory-open'
+      );
+    }
+
+    await loadConversationById(ids[0]);
+
+  } catch (error) {
+    console.error(
+      '[CONVERSATION V2] Static subcategory load failed:',
+      error
+    );
+
+    setConversationStatus(
+      'Could not load conversations.'
+    );
+  }
 }
 
 
@@ -1131,18 +1359,13 @@ async function startConversationApp() {
       'Loading directory...'
     );
 
-    conversationDirectoryCatalogRows =
-      await loadConversationDirectoryRows();
-
-    window.CONVERSATION_V2_DIRECTORY_ROWS =
-      conversationDirectoryCatalogRows.slice();
+    await loadConversationStaticIndex();
 
     setConversationStatus('');
 
     renderConversationDirectory({
       level: '',
-      category: '',
-      total: 0
+      category: ''
     });
   } catch (error) {
     console.error(
@@ -1977,6 +2200,45 @@ async function loadV2LanguageCodes() {
 }
 
 
+
+
+
+// ============================================================================
+// 🟦 BLOCK 4440: LANGUAGE DISPLAY NAMES
+// ============================================================================
+
+var V2_LANGUAGE_DISPLAY_NAMES = Object.freeze({
+  AR: 'Arabic',
+  EN: 'English',
+  ES: 'Spanish',
+  FR: 'French',
+  HI: 'Hindi',
+  ID: 'Indonesian',
+  JA: 'Japanese',
+  KM: 'Khmer',
+  KO: 'Korean',
+  LO: 'Lao',
+  MS: 'Malay',
+  MY: 'Burmese',
+  NE: 'Nepali',
+  PT: 'Portuguese',
+  RU: 'Russian',
+  TH: 'Thai',
+  TL: 'Tagalog',
+  VI: 'Vietnamese',
+  'ZH-CN': 'Chinese',
+  'ZH-TW': 'Chinese'
+});
+
+// ============================================================================
+// 🟦 BLOCK 4450: LANGUAGE SELECT BUILDER
+// ============================================================================
+
+
+
+
+
+
 // ============================================================================
 // 🟦 BLOCK 4450: LANGUAGE SELECT BUILDER
 // ============================================================================
@@ -2016,7 +2278,9 @@ function fillV2LanguageSelect(
         document.createElement('option');
 
       option.value = languageCode;
-      option.textContent = languageCode;
+      option.textContent =
+        V2_LANGUAGE_DISPLAY_NAMES[languageCode] ||
+        languageCode;
 
       select.appendChild(option);
     }
@@ -7466,8 +7730,12 @@ if (document.readyState === 'loading') {
 }
 
 
+
+
+
 // ============================================================================
-// 🟦 BLOCK 8800: SPACE PLAY / STOP TOGGLE
+// 🟦 BLOCK 8790: SPACE PLAY / STOP TOGGLE
+// Template version restoration
 // ============================================================================
 
 function isCurrentSpaceShortcutBlocked(
@@ -7483,7 +7751,6 @@ function isCurrentSpaceShortcutBlocked(
     )
   );
 }
-
 
 function installCurrentSpacePlayToggle() {
   document.addEventListener(
@@ -7534,7 +7801,6 @@ function installCurrentSpacePlayToggle() {
   );
 }
 
-
 if (document.readyState === 'loading') {
   document.addEventListener(
     'DOMContentLoaded',
@@ -7546,9 +7812,28 @@ if (document.readyState === 'loading') {
 }
 
 
+
+
 // ============================================================================
 // 🟦 BLOCK 8850: LEFT / RIGHT CONVERSATION NAVIGATION
 // ============================================================================
+
+function isCurrentArrowShortcutBlocked(target) {
+  if (!target) {
+    return false;
+  }
+
+  var tagName = String(
+    target.tagName || ''
+  ).toUpperCase();
+
+  return (
+    tagName === 'INPUT' ||
+    tagName === 'TEXTAREA' ||
+    tagName === 'SELECT' ||
+    target.isContentEditable
+  );
+}
 
 function installCurrentArrowNavigation() {
   document.addEventListener(
@@ -7556,7 +7841,7 @@ function installCurrentArrowNavigation() {
     function(event) {
       if (
         event.repeat ||
-        isCurrentSpaceShortcutBlocked(
+        isCurrentArrowShortcutBlocked(
           event.target
         )
       ) {
@@ -7574,15 +7859,11 @@ function installCurrentArrowNavigation() {
         return;
       }
 
-      var button =
-        document.getElementById(
-          buttonId
-        );
+      var button = document.getElementById(
+        buttonId
+      );
 
-      if (
-        !button ||
-        button.disabled
-      ) {
+      if (!button || button.disabled) {
         return;
       }
 
@@ -7591,7 +7872,6 @@ function installCurrentArrowNavigation() {
     }
   );
 }
-
 
 if (document.readyState === 'loading') {
   document.addEventListener(
@@ -7858,3 +8138,457 @@ bootCurrentButtonHoverHelp();
 // ============================================================================
 // END: BUTTON HOVER HELP
 // ============================================================================
+
+
+
+
+
+
+// ============================================================================
+// BLOCK 8800 : CONVERSATION WORD DICTIONARY
+// Double-click a word → Dictionary DB → Azure fallback → Dictionary cache
+// ============================================================================
+
+(function () {
+  'use strict';
+
+  var dictionaryLanguageColumns = {
+    AR: { column: 'Arabic', label: 'Arabic' },
+    ES: { column: 'Spanish', label: 'Spanish' },
+    FR: { column: 'French', label: 'French' },
+    HI: { column: 'Hindi', label: 'Hindi' },
+    ID: { column: 'Indonesian', label: 'Indonesian' },
+    JA: { column: 'Japanese', label: 'Japanese' },
+    KO: { column: 'Korean', label: 'Korean' },
+    MS: { column: 'Malay', label: 'Malay' },
+    PT: { column: 'Portuguese', label: 'Portuguese' },
+    RU: { column: 'Russian', label: 'Russian' },
+    TH: { column: 'Thai', label: 'Thai' },
+    TL: { column: 'Tagalog', label: 'Tagalog' },
+    VI: { column: 'Vietnamese', label: 'Vietnamese' },
+    ZH: { column: 'Chinese', label: 'Chinese' },
+    'ZH-CN': { column: 'Chinese', label: 'Chinese' },
+    'ZH-TW': { column: 'Chinese', label: 'Chinese' }
+  };
+
+  function getConversationDictionaryConfig() {
+    return window.CONVERSATION_CONFIG &&
+      window.CONVERSATION_CONFIG.dictionary
+      ? window.CONVERSATION_CONFIG.dictionary
+      : null;
+  }
+
+  function getConversationDictionaryLanguage() {
+    var select = document.getElementById(
+      'secondaryLanguageSelect'
+    );
+
+    var code = String(select ? select.value : '')
+      .trim()
+      .toUpperCase();
+
+    var label = select && select.selectedOptions[0]
+      ? String(select.selectedOptions[0].textContent || '').trim()
+      : '';
+
+    if (
+      !label ||
+      label.toLowerCase() === 'none' ||
+      label.toLowerCase() === 'english'
+    ) {
+      label = '';
+    }
+
+    return {
+      code: code,
+      label: label,
+      column: dictionaryLanguageColumns[code]
+        ? dictionaryLanguageColumns[code].column
+        : ''
+    };
+  }
+
+  function normalizeConversationDictionaryWord(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/^[^a-z]+|[^a-z'-]+$/g, '');
+  }
+
+  function getConversationDictionaryPopup() {
+    var popup = document.getElementById(
+      'conversationDictionaryPopup'
+    );
+
+    if (popup) {
+      return popup;
+    }
+
+    popup = document.createElement('aside');
+    popup.id = 'conversationDictionaryPopup';
+        popup.className = 'conversation-dictionary-popup';
+
+    popup.style.cssText = [
+      'position:fixed',
+      'right:12px',
+      'bottom:12px',
+      'left:12px',
+      'z-index:10001',
+      'max-width:620px',
+      'margin:0 auto',
+      'padding:16px',
+      'border:1px solid #cbd5e1',
+      'border-radius:16px',
+      'background:#ffffff',
+      'box-shadow:0 14px 38px rgba(15,23,42,.28)',
+      'color:#172033'
+    ].join(';');
+
+    popup.hidden = true;
+
+    popup.innerHTML = [
+      '<button class="conversation-dictionary-close"',
+      ' type="button" aria-label="Close dictionary">×</button>',
+      '<div class="conversation-dictionary-word-title"></div>',
+      '<div class="conversation-dictionary-base"></div>',
+      '<div class="conversation-dictionary-translation"></div>',
+      '<div class="conversation-dictionary-definition"></div>',
+      '<div class="conversation-dictionary-status"></div>'
+    ].join('');
+
+    popup.querySelector(
+      '.conversation-dictionary-close'
+    ).onclick = function () {
+      popup.hidden = true;
+    };
+
+    document.body.appendChild(popup);
+
+    return popup;
+  }
+
+  function showConversationDictionaryPopup(data) {
+    var popup = getConversationDictionaryPopup();
+
+    popup.querySelector(
+      '.conversation-dictionary-word-title'
+    ).textContent = data.word || '';
+
+    popup.querySelector(
+      '.conversation-dictionary-base'
+    ).textContent = data.base
+      ? 'Base: ' + data.base
+      : '';
+
+    popup.querySelector(
+      '.conversation-dictionary-translation'
+    ).textContent = data.translation && data.language
+      ? data.language + ': ' + data.translation
+      : '';
+
+    popup.querySelector(
+      '.conversation-dictionary-definition'
+    ).textContent = String(data.definition || '')
+      .replace(/\s*\|\s*/g, '\n• ');
+
+    popup.querySelector(
+      '.conversation-dictionary-status'
+    ).textContent = data.status || '';
+
+    popup.hidden = false;
+  }
+
+  async function fetchConversationDictionaryEntry(
+    word,
+    language
+  ) {
+    var config = getConversationDictionaryConfig();
+
+    if (!config || !word) {
+      return null;
+    }
+
+    var fields = [
+      'Search_Word',
+      'Base_English',
+      'Word_Forms',
+      'English_Definition'
+    ];
+
+    if (language.column) {
+      fields.push(language.column);
+    }
+
+    var params = new URLSearchParams();
+
+    params.set('select', fields.join(','));
+    params.set(
+      'or',
+      '(Search_Word.ilike.' +
+        word +
+        ',Base_English.ilike.' +
+        word +
+        ')'
+    );
+    params.set('limit', '1');
+
+    var headers = {
+      apikey: config.publishableKey,
+      Authorization: 'Bearer ' + config.publishableKey
+    };
+
+    var response = await fetch(
+      config.url +
+        '/rest/v1/' +
+        config.table +
+        '?' +
+        params.toString(),
+      { headers: headers }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        'Dictionary lookup failed: ' + response.status
+      );
+    }
+
+    var rows = await response.json();
+
+    if (rows.length) {
+      return rows[0];
+    }
+
+    params.delete('or');
+    params.set('Word_Forms', 'ilike.*' + word + '*');
+
+    response = await fetch(
+      config.url +
+        '/rest/v1/' +
+        config.table +
+        '?' +
+        params.toString(),
+      { headers: headers }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    rows = await response.json();
+
+    return rows.length ? rows[0] : null;
+  }
+
+  async function requestConversationAzureTranslation(
+    word,
+    language
+  ) {
+    var config = getConversationDictionaryConfig();
+
+    if (!config || !language.label) {
+      return null;
+    }
+
+    var response = await fetch(
+      config.url +
+        '/functions/v1/' +
+        config.azureFunctionName,
+      {
+        method: 'POST',
+        headers: {
+          apikey: config.publishableKey,
+          Authorization: 'Bearer ' + config.publishableKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          word: word,
+          language: language.label
+        })
+      }
+    );
+
+    var result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.error || 'Azure translation failed.'
+      );
+    }
+
+    return result;
+  }
+
+  async function openConversationDictionary(word) {
+    var language = getConversationDictionaryLanguage();
+
+    showConversationDictionaryPopup({
+      word: word,
+      status: 'Searching Dictionary...'
+    });
+
+    try {
+      var entry = await fetchConversationDictionaryEntry(
+        word,
+        language
+      );
+
+            var translation = entry && language.column
+  ? String(entry[language.column] || '').trim()
+  : '';
+
+if (
+  entry &&
+  (
+    !language.label ||
+    translation
+  )
+) {
+  showConversationDictionaryPopup({
+    word: entry.Search_Word || word,
+    base: entry.Base_English || '',
+    language: language.label,
+    translation: translation,
+    definition: translation
+      ? ''
+      : entry.English_Definition || '',
+    status: 'Dictionary'
+  });
+
+  return;
+}
+
+      if (!language.label) {
+        showConversationDictionaryPopup({
+          word: entry
+            ? entry.Search_Word || word
+            : word,
+          base: entry
+            ? entry.Base_English || ''
+            : '',
+          definition: entry
+            ? entry.English_Definition || ''
+            : '',
+          status: 'Choose a 2nd language for translation.'
+        });
+
+        return;
+      }
+
+      showConversationDictionaryPopup({
+        word: entry
+          ? entry.Search_Word || word
+          : word,
+        base: entry
+          ? entry.Base_English || ''
+          : '',
+        definition: entry
+          ? entry.English_Definition || ''
+          : '',
+        status: 'Checking translation cache...'
+      });
+
+      var azure = await requestConversationAzureTranslation(
+        word,
+        language
+      );
+
+      showConversationDictionaryPopup({
+        word: word,
+        language: language.label,
+        translation: azure.translation || '',
+        status: azure.source === 'cache'
+          ? 'Dictionary cache'
+          : ''
+      });
+    } catch (error) {
+      console.error(
+        '[CONVERSATION] Dictionary lookup failed:',
+        error
+      );
+
+      showConversationDictionaryPopup({
+        word: word,
+        status: 'Translation is temporarily unavailable.'
+      });
+    }
+  }
+
+    function installConversationDictionary() {
+    document.addEventListener(
+      'dblclick',
+      function (event) {
+        var target = event.target.closest(
+          '.conversation-turn-text, .conversation-tts-word'
+        );
+
+        if (!target) {
+          return;
+        }
+
+        var selected = window.getSelection
+          ? window.getSelection().toString()
+          : '';
+
+        var word = normalizeConversationDictionaryWord(
+          selected || event.target.textContent
+        );
+
+        if (!word) {
+          return;
+        }
+
+        event.preventDefault();
+
+        openConversationDictionary(word);
+      }
+    );
+
+    document.addEventListener(
+      'click',
+      function (event) {
+        var popup = document.getElementById(
+          'conversationDictionaryPopup'
+        );
+
+        if (!popup || popup.hidden) {
+          return;
+        }
+
+        if (
+          event.target.closest(
+            '#conversationDictionaryPopup'
+          )
+        ) {
+          return;
+        }
+
+        popup.hidden = true;
+      }
+    );
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      installConversationDictionary,
+      { once: true }
+    );
+  } else {
+    installConversationDictionary();
+  }
+})();
+
+// ============================================================================
+// BLOCK 8800 END
+// ============================================================================
+
+
+
+
+
+
+
+
+
+
+
