@@ -1,0 +1,40 @@
+{
+  "language": "EN",
+  "levels": [
+    {
+      "name": "LEVEL0",
+      "file": "level0.json",
+      "categoryCount": 8,
+      "subcategoryCount": 98,
+      "dialogueCount": 100
+    },
+    {
+      "name": "LEVEL1",
+      "file": "level1.json",
+      "categoryCount": 25,
+      "subcategoryCount": 196,
+      "dialogueCount": 1910
+    },
+    {
+      "name": "LEVEL2",
+      "file": "level2.json",
+      "categoryCount": 40,
+      "subcategoryCount": 363,
+      "dialogueCount": 3544
+    },
+    {
+      "name": "LEVEL3",
+      "file": "level3.json",
+      "categoryCount": 60,
+      "subcategoryCount": 595,
+      "dialogueCount": 5816
+    },
+    {
+      "name": "PRO",
+      "file": "pro.json",
+      "categoryCount": 81,
+      "subcategoryCount": 2098,
+      "dialogueCount": 20302
+    }
+  ]
+}

@@ -1,0 +1,745 @@
+{
+  "level": "LEVEL0",
+  "language": "EN",
+  "categoryCount": 8,
+  "subcategoryCount": 98,
+  "dialogueCount": 100,
+  "categories": [
+    {
+      "name": "Greetings & Introductions",
+      "subcategoryCount": 14,
+      "subcategories": [
+        {
+          "name": "Hello and Introduction",
+          "dialogueCount": 2,
+          "dialogueIds": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "What is your name?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "3"
+          ]
+        },
+        {
+          "name": "Spelling a Name",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "4"
+          ]
+        },
+        {
+          "name": "Where Are You From?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "5"
+          ]
+        },
+        {
+          "name": "Where Do You Live?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "6"
+          ]
+        },
+        {
+          "name": "How Old Are You",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "7"
+          ]
+        },
+        {
+          "name": "What Do You Do?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "8"
+          ]
+        },
+        {
+          "name": "Hello and Student",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "9"
+          ]
+        },
+        {
+          "name": "Meet My Family",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "10"
+          ]
+        },
+        {
+          "name": "My Family",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "11"
+          ]
+        },
+        {
+          "name": "Meet My Pet",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "12"
+          ]
+        },
+        {
+          "name": "My Hobby",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "13"
+          ]
+        },
+        {
+          "name": "What Do You Like?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "14"
+          ]
+        },
+        {
+          "name": "What I Don't Like",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "15"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Basic Manners & Communication",
+      "subcategoryCount": 10,
+      "subcategories": [
+        {
+          "name": "Saying Thank You",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "16"
+          ]
+        },
+        {
+          "name": "Thank You Conversation",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "17"
+          ]
+        },
+        {
+          "name": "Saying Sorry",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "18"
+          ]
+        },
+        {
+          "name": "Apology and Response",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "19"
+          ]
+        },
+        {
+          "name": "Excuse Me",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "20"
+          ]
+        },
+        {
+          "name": "Can I borrow a pen?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "21"
+          ]
+        },
+        {
+          "name": "Asking for Help",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "22"
+          ]
+        },
+        {
+          "name": "Offering Help",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "23"
+          ]
+        },
+        {
+          "name": "Nice Clothes",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "24"
+          ]
+        },
+        {
+          "name": "Thank You",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "25"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Daily Life & Time",
+      "subcategoryCount": 14,
+      "subcategories": [
+        {
+          "name": "Morning Greeting",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "26"
+          ]
+        },
+        {
+          "name": "How Are You Feeling Today?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "27"
+          ]
+        },
+        {
+          "name": "Talking About the Weather",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "28"
+          ]
+        },
+        {
+          "name": "What Day Is Today?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "29"
+          ]
+        },
+        {
+          "name": "What is the date?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "30"
+          ]
+        },
+        {
+          "name": "What Time Is It?",
+          "dialogueCount": 2,
+          "dialogueIds": [
+            "31",
+            "32"
+          ]
+        },
+        {
+          "name": "Daily Routine",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "33"
+          ]
+        },
+        {
+          "name": "Weekend Plans",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "34"
+          ]
+        },
+        {
+          "name": "Choosing a Meeting Time",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "35"
+          ]
+        },
+        {
+          "name": "Sorry for Being Late",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "36"
+          ]
+        },
+        {
+          "name": "Wait a Minute",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "37"
+          ]
+        },
+        {
+          "name": "Saying Goodbye",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "38"
+          ]
+        },
+        {
+          "name": "Good Night",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "39"
+          ]
+        },
+        {
+          "name": "See You Tomorrow",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "40"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Food & Cafe",
+      "subcategoryCount": 12,
+      "subcategories": [
+        {
+          "name": "I Am Hungry",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "41"
+          ]
+        },
+        {
+          "name": "I am thirsty",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "42"
+          ]
+        },
+        {
+          "name": "Choosing Food",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "43"
+          ]
+        },
+        {
+          "name": "Favorite Food",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "44"
+          ]
+        },
+        {
+          "name": "I Don't Like This Food",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "45"
+          ]
+        },
+        {
+          "name": "Ordering at a Cafe",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "46"
+          ]
+        },
+        {
+          "name": "Ordering Coffee",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "47"
+          ]
+        },
+        {
+          "name": "Choosing a Drink Size",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "48"
+          ]
+        },
+        {
+          "name": "Asking for a Table",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "49"
+          ]
+        },
+        {
+          "name": "Asking for a Menu",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "50"
+          ]
+        },
+        {
+          "name": "Ordering Food",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "51"
+          ]
+        },
+        {
+          "name": "Asking for the Bill",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "52"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shopping",
+      "subcategoryCount": 11,
+      "subcategories": [
+        {
+          "name": "Looking at Clothes",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "53"
+          ]
+        },
+        {
+          "name": "Asking for a Size",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "54"
+          ]
+        },
+        {
+          "name": "Looking at a shirt",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "55"
+          ]
+        },
+        {
+          "name": "Try on Clothes",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "56"
+          ]
+        },
+        {
+          "name": "Asking the Price",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "57"
+          ]
+        },
+        {
+          "name": "Too expensive",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "58"
+          ]
+        },
+        {
+          "name": "Asking for a Lower Price",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "59"
+          ]
+        },
+        {
+          "name": "Paying with a card",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "60"
+          ]
+        },
+        {
+          "name": "Paying with Cash",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "61"
+          ]
+        },
+        {
+          "name": "Asking for a refund",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "62"
+          ]
+        },
+        {
+          "name": "Exchange at the Store",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "63"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Directions & Transportation",
+      "subcategoryCount": 12,
+      "subcategories": [
+        {
+          "name": "Asking for Directions",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "64"
+          ]
+        },
+        {
+          "name": "Turn Left",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "65"
+          ]
+        },
+        {
+          "name": "Turn Right",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "66"
+          ]
+        },
+        {
+          "name": "Go Straight",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "67"
+          ]
+        },
+        {
+          "name": "Is it near or far?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "68"
+          ]
+        },
+        {
+          "name": "Where is the bus stop?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "69"
+          ]
+        },
+        {
+          "name": "Subway Line Question",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "70"
+          ]
+        },
+        {
+          "name": "Buying a Ticket",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "71"
+          ]
+        },
+        {
+          "name": "Taking a Taxi",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "72"
+          ]
+        },
+        {
+          "name": "Where to go",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "73"
+          ]
+        },
+        {
+          "name": "Ask Driver to Stop",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "74"
+          ]
+        },
+        {
+          "name": "Lost and Asking for Help",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "75"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Places & Situations",
+      "subcategoryCount": 13,
+      "subcategories": [
+        {
+          "name": "Checking in at the airport",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "76"
+          ]
+        },
+        {
+          "name": "Checking in at a hotel",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "77"
+          ]
+        },
+        {
+          "name": "Checking a Room Reservation",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "78"
+          ]
+        },
+        {
+          "name": "Wi-Fi Password Request",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "79"
+          ]
+        },
+        {
+          "name": "Where is the bathroom?",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "80"
+          ]
+        },
+        {
+          "name": "Buying a Movie Ticket",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "81"
+          ]
+        },
+        {
+          "name": "Take a photo",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "82"
+          ]
+        },
+        {
+          "name": "Take a Photo",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "83"
+          ]
+        },
+        {
+          "name": "Checking in at a hospital",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "84"
+          ]
+        },
+        {
+          "name": "I Am Sick",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "85"
+          ]
+        },
+        {
+          "name": "Headache at the Clinic",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "86"
+          ]
+        },
+        {
+          "name": "At the Bank",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "87"
+          ]
+        },
+        {
+          "name": "At the Phone Store",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "88"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relationships & Feelings",
+      "subcategoryCount": 12,
+      "subcategories": [
+        {
+          "name": "Making Plans",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "89"
+          ]
+        },
+        {
+          "name": "Phone Call",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "90"
+          ]
+        },
+        {
+          "name": "Phone Call Conversation",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "91"
+          ]
+        },
+        {
+          "name": "Sending a Text",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "92"
+          ]
+        },
+        {
+          "name": "Invitation to a Party",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "93"
+          ]
+        },
+        {
+          "name": "Accepting an Invitation",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "94"
+          ]
+        },
+        {
+          "name": "Saying No Politely",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "95"
+          ]
+        },
+        {
+          "name": "I'm Sorry",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "96"
+          ]
+        },
+        {
+          "name": "I Am Tired",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "97"
+          ]
+        },
+        {
+          "name": "I Am Happy",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "98"
+          ]
+        },
+        {
+          "name": "I Am Sad",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "99"
+          ]
+        },
+        {
+          "name": "I am worried",
+          "dialogueCount": 1,
+          "dialogueIds": [
+            "100"
+          ]
+        }
+      ]
+    }
+  ]
+}
