@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "title": "LICENSE PRACTICE",
+  "packs": [
+    {
+      "id": "cna",
+      "title": "CNA Practice",
+      "sections": [
+        {
+          "id": "core",
+          "title": "Core CNA Practice",
+          "topics": [
+            { "level": "PRO", "category": "Healthcare", "subcategory": "Certified Nursing Assistant", "dialogueCount": 10, "dialogueIds": [405871,405872,405873,405874,405875,405876,405877,405878,405879,405880] },
+            { "level": "PRO", "category": "Healthcare", "subcategory": "Patient Care Technician", "dialogueCount": 10, "dialogueIds": [405881,405882,405883,405884,405885,405886,405887,405888,405889,405890] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Home Health Aide", "dialogueCount": 10, "dialogueIds": [418904,418905,418906,418907,418908,418909,418910,418911,418912,418913] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Nursing Assistant", "dialogueCount": 10, "dialogueIds": [418914,418915,418916,418917,418918,418919,418920,418921,418922,418923] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Personal Care Assistant", "dialogueCount": 10, "dialogueIds": [418924,418925,418926,418927,418928,418929,418930,418931,418932,418933] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Caregiver", "dialogueCount": 10, "dialogueIds": [419004,419005,419006,419007,419008,419009,419010,419011,419012,419013] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Elder Care Specialist", "dialogueCount": 10, "dialogueIds": [418994,418995,418996,418997,418998,418999,419000,419001,419002,419003] },
+            { "level": "PRO", "category": "Healthcare", "subcategory": "Geriatric Nurse", "dialogueCount": 10, "dialogueIds": [406091,406092,406093,406094,406095,406096,406097,406098,406099,406100] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Home Care Nurse", "dialogueCount": 10, "dialogueIds": [419014,419015,419016,419017,419018,419019,419020,419021,419022,419023] },
+            { "level": "PRO", "category": "Healthcare", "subcategory": "Nurse", "dialogueCount": 10, "dialogueIds": [405172,405173,405174,405175,405176,405177,405178,405179,405180,405181] }
+          ]
+        },
+        {
+          "id": "extended",
+          "title": "Extended Care Practice",
+          "topics": [
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Care Coordinator", "dialogueCount": 10, "dialogueIds": [418934,418935,418936,418937,418938,418939,418940,418941,418942,418943] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Respite Care Provider", "dialogueCount": 10, "dialogueIds": [418944,418945,418946,418947,418948,418949,418950,418951,418952,418953] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Adult Day Care Specialist", "dialogueCount": 10, "dialogueIds": [418954,418955,418956,418957,418958,418959,418960,418961,418962,418963] },
+            { "level": "PRO", "category": "Home & Community Care", "subcategory": "Community Health Worker", "dialogueCount": 10, "dialogueIds": [419104,419105,419106,419107,419108,419109,419110,419111,419112,419113] },
+            { "level": "PRO", "category": "Healthcare", "subcategory": "Registered Nurse", "dialogueCount": 10, "dialogueIds": [405182,405183,405184,405185,405186,405187,405188,405189,405190,405191] }
+          ]
+        }
+      ]
+    }
+  ]
+}
