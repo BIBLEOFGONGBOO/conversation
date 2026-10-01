@@ -553,77 +553,210 @@ function getConversationDirectoryRows() {
 
 
 // ============================================================================
-// 🟦 BLOCK 3500: DIRECTORY DATA LOADING
+// 🟦 BLOCK 3500: SQL DIRECTORY DATA AND LOCAL TITLE CACHE
 // ============================================================================
 
+var conversationDirectoryCatalogRows = [];
+
+var conversationDirectoryTitleCache = {};
+
+var CONVERSATION_DIRECTORY_PAGE_SIZE = 50;
+
+
+function getConversationDirectoryCacheKey(
+  level,
+  category
+) {
+  return (
+    String(level || '').trim() +
+    '||' +
+    String(category || '').trim()
+  );
+}
+
+
+async function requestConversationDirectoryRpc(
+  functionName,
+  body
+) {
+  var response = await fetch(
+    SUPABASE_CONFIG.url +
+      '/rest/v1/rpc/' +
+      functionName,
+    {
+      method: 'POST',
+
+      headers: {
+        apikey:
+          SUPABASE_CONFIG.publishableKey,
+
+        Authorization:
+          'Bearer ' +
+          SUPABASE_CONFIG.publishableKey,
+
+        'Content-Type':
+          'application/json'
+      },
+
+      body: JSON.stringify(body || {})
+    }
+  );
+
+  var responseText = await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      'Conversation directory request failed: ' +
+      response.status
+    );
+  }
+
+  return responseText
+    ? JSON.parse(responseText)
+    : [];
+}
+
+
 async function loadConversationDirectoryRows() {
-  var allRows = [];
-  var from = 0;
-  var pageSize = 1000;
+  var rows =
+    await requestConversationDirectoryRpc(
+      'get_conversation_catalog',
+      {}
+    );
 
-  while (true) {
-    var to = from + pageSize - 1;
+  return rows
+    .map(function(row) {
+      return {
+        GROUP: getConversationDirectoryText(
+          row.group_name
+        ),
 
-    var response = await fetch(
-      SUPABASE_CONFIG.restUrl +
-        '?select=' +
-        encodeURIComponent(
-          'ID,GROUP,CATEGORY,DIALOGUE_TITLE'
-        ) +
-        '&LNG=eq.EN' +
-        '&order=GROUP.asc,CATEGORY.asc,ID.asc',
+        CATEGORY: getConversationDirectoryText(
+          row.category_name
+        ),
+
+        CONVERSATION_COUNT: Number(
+          row.conversation_count
+        ) || 0
+      };
+    })
+    .filter(function(row) {
+      return (
+        row.GROUP &&
+        row.CATEGORY &&
+        row.CONVERSATION_COUNT > 0
+      );
+    });
+}
+
+
+function getConversationCatalogRows() {
+  return conversationDirectoryCatalogRows;
+}
+
+
+async function loadConversationTitlePage(
+  level,
+  category,
+  offset
+) {
+  var safeOffset = Math.max(
+    0,
+    Number(offset) || 0
+  );
+
+  var cacheKey =
+    getConversationDirectoryCacheKey(
+      level,
+      category
+    );
+
+  var cached =
+    conversationDirectoryTitleCache[cacheKey];
+
+  if (!cached) {
+    cached = {
+      rows: [],
+      complete: false
+    };
+
+    conversationDirectoryTitleCache[cacheKey] =
+      cached;
+  }
+
+  if (
+    cached.rows.length >=
+    safeOffset +
+      CONVERSATION_DIRECTORY_PAGE_SIZE
+  ) {
+    return cached.rows.slice(
+      safeOffset,
+      safeOffset +
+        CONVERSATION_DIRECTORY_PAGE_SIZE
+    );
+  }
+
+  if (cached.complete) {
+    return cached.rows.slice(
+      safeOffset,
+      safeOffset +
+        CONVERSATION_DIRECTORY_PAGE_SIZE
+    );
+  }
+
+  var rows =
+    await requestConversationDirectoryRpc(
+      'get_conversation_titles',
       {
-        headers: {
-          apikey:
-            SUPABASE_CONFIG.publishableKey,
-
-          Authorization:
-            'Bearer ' +
-            SUPABASE_CONFIG.publishableKey,
-
-          Range: from + '-' + to,
-
-          'Range-Unit': 'items'
-        }
+        p_group: level,
+        p_category: category,
+        p_limit:
+          CONVERSATION_DIRECTORY_PAGE_SIZE,
+        p_offset: safeOffset
       }
     );
 
-    var text = await response.text();
+  var titleRows = rows
+    .map(function(row) {
+      return {
+        ID: Number(row.id),
 
-    if (!response.ok) {
-      throw new Error(
-        'Conversation directory load failed: ' +
-        response.status
+        GROUP: level,
+
+        CATEGORY: category,
+
+        DIALOGUE_TITLE:
+          getConversationDirectoryText(
+            row.dialogue_title
+          )
+      };
+    })
+    .filter(function(row) {
+      return (
+        Number.isInteger(row.ID) &&
+        row.DIALOGUE_TITLE
       );
-    }
+    });
 
-    var rows = text
-      ? JSON.parse(text)
-      : [];
-
-    allRows = allRows.concat(rows);
-
-    if (rows.length < pageSize) {
-      break;
-    }
-
-    from += pageSize;
+  if (safeOffset === 0) {
+    cached.rows = titleRows;
+  } else {
+    cached.rows = cached.rows.concat(
+      titleRows
+    );
   }
 
-  return allRows.filter(function(row) {
-    return (
-      Number.isInteger(Number(row.ID)) &&
-      getConversationDirectoryText(
-        row.GROUP
-      ) &&
-      getConversationDirectoryText(
-        row.CATEGORY
-      ) &&
-      getConversationDirectoryText(
-        row.DIALOGUE_TITLE
-      )
-    );
-  });
+  if (
+    titleRows.length <
+    CONVERSATION_DIRECTORY_PAGE_SIZE
+  ) {
+    cached.complete = true;
+  }
+
+  window.CONVERSATION_V2_DIRECTORY_ROWS =
+    cached.rows.slice();
+
+  return titleRows;
 }
 
 
@@ -645,8 +778,9 @@ function renderConversationDirectoryBreadcrumb(
   breadcrumb.innerHTML = '';
 
   function appendSeparator() {
-    var separator =
-      document.createElement('span');
+    var separator = document.createElement(
+      'span'
+    );
 
     separator.textContent = '›';
 
@@ -654,11 +788,14 @@ function renderConversationDirectoryBreadcrumb(
   }
 
   function appendStep(label, action) {
-    var button =
-      document.createElement('button');
+    var button = document.createElement(
+      'button'
+    );
 
     button.type = 'button';
+
     button.textContent = label;
+
     button.onclick = action;
 
     breadcrumb.appendChild(button);
@@ -669,7 +806,8 @@ function renderConversationDirectoryBreadcrumb(
     function() {
       renderConversationDirectory({
         level: '',
-        category: ''
+        category: '',
+        total: 0
       });
     }
   );
@@ -682,7 +820,8 @@ function renderConversationDirectoryBreadcrumb(
       function() {
         renderConversationDirectory({
           level: state.level,
-          category: ''
+          category: '',
+          total: 0
         });
       }
     );
@@ -691,8 +830,9 @@ function renderConversationDirectoryBreadcrumb(
   if (state.category) {
     appendSeparator();
 
-    var category =
-      document.createElement('strong');
+    var category = document.createElement(
+      'strong'
+    );
 
     category.textContent = state.category;
 
@@ -707,8 +847,9 @@ function renderConversationDirectoryItem(
   isTitle,
   onClick
 ) {
-  var button =
-    document.createElement('button');
+  var button = document.createElement(
+    'button'
+  );
 
   button.type = 'button';
 
@@ -721,6 +862,7 @@ function renderConversationDirectoryItem(
     );
 
   button.textContent = label;
+
   button.onclick = onClick;
 
   container.appendChild(button);
@@ -756,13 +898,15 @@ function renderConversationDirectory(
     level: getConversationDirectoryText(
       requestedState?.level
     ),
+
     category: getConversationDirectoryText(
       requestedState?.category
-    )
+    ),
+
+    total: Number(requestedState?.total) || 0
   };
 
-  var rows =
-    getConversationDirectoryRows();
+  var rows = getConversationCatalogRows();
 
   directory.hidden = false;
 
@@ -788,7 +932,8 @@ function renderConversationDirectory(
         function() {
           renderConversationDirectory({
             level: level,
-            category: ''
+            category: '',
+            total: 0
           });
         }
       );
@@ -797,27 +942,36 @@ function renderConversationDirectory(
     return;
   }
 
-  var levelRows = rows.filter(function(row) {
-    return (
-      getConversationDirectoryText(
-        row.GROUP
-      ) === state.level
-    );
-  });
+  var levelRows = rows
+    .filter(function(row) {
+      return (
+        getConversationDirectoryText(
+          row.GROUP
+        ) === state.level
+      );
+    })
+    .sort(function(left, right) {
+      return String(left.CATEGORY).localeCompare(
+        String(right.CATEGORY)
+      );
+    });
 
   if (!state.category) {
-    getConversationDirectoryUniqueValues(
-      levelRows,
-      'CATEGORY'
-    ).forEach(function(category) {
+    levelRows.forEach(function(row) {
+      var label =
+        row.CATEGORY +
+        ' · ' +
+        String(row.CONVERSATION_COUNT);
+
       renderConversationDirectoryItem(
         list,
-        category,
+        label,
         false,
         function() {
           renderConversationDirectory({
             level: state.level,
-            category: category
+            category: row.CATEGORY,
+            total: row.CONVERSATION_COUNT
           });
         }
       );
@@ -827,7 +981,6 @@ function renderConversationDirectory(
   }
 
   renderConversationDirectoryTitles(
-    levelRows,
     state,
     list,
     directory,
@@ -837,62 +990,128 @@ function renderConversationDirectory(
 
 
 // ============================================================================
-// 🟦 BLOCK 3650: DIRECTORY TITLE SELECTION
+// 🟦 BLOCK 3650: DIRECTORY TITLE PAGE SELECTION
 // ============================================================================
 
-function renderConversationDirectoryTitles(
-  levelRows,
+async function renderConversationDirectoryTitles(
   state,
   list,
   directory,
   app
 ) {
-  var titleRows = levelRows
-    .filter(function(row) {
-      return (
-        getConversationDirectoryText(
-          row.CATEGORY
-        ) === state.category
-      );
-    })
-    .sort(function(left, right) {
-      return Number(left.ID) - Number(right.ID);
-    });
+  var offset = 0;
 
-  titleRows.forEach(function(row) {
-    renderConversationDirectoryItem(
-      list,
-      getConversationDirectoryText(
-        row.DIALOGUE_TITLE
-      ),
-      true,
-      async function() {
-        directory.hidden = true;
+  var loading = false;
 
-        app.classList.remove(
-          'conversation-directory-open'
-        );
+  var moreButton = null;
 
-        await loadConversationById(
-          Number(row.ID)
-        );
-      }
-    );
-  });
 
-  if (titleRows.length) {
-    return;
+  function removeMoreButton() {
+    if (moreButton) {
+      moreButton.remove();
+
+      moreButton = null;
+    }
   }
 
-  var empty = document.createElement('p');
 
-  empty.className =
-    'conversation-directory-empty';
+  async function appendNextPage() {
+    if (loading) {
+      return;
+    }
 
-  empty.textContent =
-    'No conversations found.';
+    loading = true;
 
-  list.appendChild(empty);
+    removeMoreButton();
+
+    try {
+      var titleRows =
+        await loadConversationTitlePage(
+          state.level,
+          state.category,
+          offset
+        );
+
+      titleRows.forEach(function(row) {
+        renderConversationDirectoryItem(
+          list,
+          row.DIALOGUE_TITLE,
+          true,
+          async function() {
+            directory.hidden = true;
+
+            app.classList.remove(
+              'conversation-directory-open'
+            );
+
+            await loadConversationById(
+              Number(row.ID)
+            );
+          }
+        );
+      });
+
+      offset += titleRows.length;
+
+      if (
+        titleRows.length &&
+        offset < state.total
+      ) {
+        moreButton = document.createElement(
+          'button'
+        );
+
+        moreButton.type = 'button';
+
+        moreButton.className =
+          'conversation-directory-item';
+
+        moreButton.textContent =
+          'MORE · NEXT ' +
+          String(
+            Math.min(
+              CONVERSATION_DIRECTORY_PAGE_SIZE,
+              state.total - offset
+            )
+          );
+
+        moreButton.onclick = appendNextPage;
+
+        list.appendChild(moreButton);
+      }
+
+      if (!offset) {
+        var empty = document.createElement('p');
+
+        empty.className =
+          'conversation-directory-empty';
+
+        empty.textContent =
+          'No conversations found.';
+
+        list.appendChild(empty);
+      }
+    } catch (error) {
+      console.error(
+        '[CONVERSATION V2] Title load failed:',
+        error
+      );
+
+      var failure = document.createElement('p');
+
+      failure.className =
+        'conversation-directory-empty';
+
+      failure.textContent =
+        'Could not load conversations.';
+
+      list.appendChild(failure);
+    } finally {
+      loading = false;
+    }
+  }
+
+  await appendNextPage();
 }
 
 
@@ -912,65 +1131,42 @@ async function startConversationApp() {
       'Loading directory...'
     );
 
-    window.CONVERSATION_V2_DIRECTORY_ROWS =
+    conversationDirectoryCatalogRows =
       await loadConversationDirectoryRows();
 
-    if (
-      !window.CONVERSATION_V2_DIRECTORY_ROWS.length
-    ) {
-      throw new Error(
-        'Conversation directory is empty'
-      );
-    }
+    window.CONVERSATION_V2_DIRECTORY_ROWS =
+      conversationDirectoryCatalogRows.slice();
+
+    setConversationStatus('');
 
     renderConversationDirectory({
       level: '',
-      category: ''
+      category: '',
+      total: 0
     });
-
-    setConversationStatus(
-      'Directory loaded'
-    );
-
-    console.log(
-      '[CONVERSATION V2] Directory rows:',
-      window.CONVERSATION_V2_DIRECTORY_ROWS.length
-    );
-
   } catch (error) {
-    window.__conversationV2Started = false;
-
     console.error(
-      '[CONVERSATION V2] Directory start failed:',
+      '[CONVERSATION V2] Directory startup failed:',
       error
     );
 
     setConversationStatus(
-      'Conversation directory failed'
+      'Could not load directory.'
     );
+
+    window.__conversationV2Started = false;
   }
 }
 
-
-function bootConversationApp() {
-  if (
-    document.readyState ===
-    'loading'
-  ) {
-    document.addEventListener(
-      'DOMContentLoaded',
-      startConversationApp,
-      { once: true }
-    );
-
-    return;
-  }
-
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    startConversationApp,
+    { once: true }
+  );
+} else {
   startConversationApp();
 }
-
-
-bootConversationApp();
 
 
 // ============================================================================
@@ -4125,14 +4321,15 @@ function renderCurrentPsgPlayButton() {
     return;
   }
 
-  button.textContent =
-    state.running
-      ? 'STOP'
-      : 'PLAY';
+  // 왼쪽 버튼은 항상 PLAY로 표시한다.
+  // 재생 중 중지는 오른쪽 stopButton만 사용한다.
+  button.textContent = 'PLAY';
+
+  button.disabled = state.running;
 
   button.setAttribute(
     'aria-pressed',
-    String(state.running)
+    'false'
   );
 }
 
@@ -6816,12 +7013,12 @@ if (document.readyState === 'loading') {
 
 
 // ============================================================================
-// 🟦 BLOCK 8500: BIBLE PERSON LINK CONFIGURATION / LOOKUP
+// 🟦 BLOCK 8500: CONVERSATION MEMBER CONFIGURATION / LOOKUP
 // ============================================================================
 
-const CONVERSATION_V2_BIBLE_LINKS_URL =
+const CONVERSATION_V2_MEMBER_LINKS_URL =
   'https://yxudhflyxuztvzaiunva.supabase.co/rest/v1/' +
-  'conversation_name_bible_links';
+  'conversation-member';
 
 const CONVERSATION_V2_BIBLE_BASE_URL =
   'https://bibleofgongboo.github.io/biblenew/';
@@ -6850,17 +7047,18 @@ function getConversationV2SpeakerName(
 
 
 // ============================================================================
-// 🟦 BLOCK 8550: BIBLE PERSON LINK LOADER
+// 🟦 BLOCK 8550: CONVERSATION MEMBER LOADER
+// Purpose: modern_name → gender + bible_source_code.
 // ============================================================================
 
 async function loadConversationV2BibleLinks() {
   try {
     var response =
       await fetch(
-        CONVERSATION_V2_BIBLE_LINKS_URL +
+        CONVERSATION_V2_MEMBER_LINKS_URL +
           '?select=' +
           encodeURIComponent(
-            'NAME,BIBLE_ORIGIN,BIBLE_PERSON_ID,GENDER'
+            'modern_name,gender,bible_reference,bible_source_code'
           ),
         {
           headers: {
@@ -6879,7 +7077,7 @@ async function loadConversationV2BibleLinks() {
 
     if (!response.ok) {
       throw new Error(
-        'Bible links load failed: ' +
+        'Conversation member load failed: ' +
         response.status
       );
     }
@@ -6893,35 +7091,47 @@ async function loadConversationV2BibleLinks() {
         : []
     ).forEach(function(row) {
       var name =
-        String(row.NAME || '').trim();
-
-      var personId =
         String(
-          row.BIBLE_PERSON_ID ||
-          row.BIBLE_ORIGIN ||
-          ''
+          row.modern_name || ''
         ).trim();
 
-      var gender = String(
-        row.GENDER || ''
-      ).trim().toUpperCase();
+      var gender =
+        String(
+          row.gender || ''
+        ).trim().toUpperCase();
 
-      if (
-        name &&
-        (gender === 'M' || gender === 'F')
-      ) {
-        genders[
-          getConversationV2BibleLinkKey(name)
-        ] = gender;
-      }
+      var sourceCode =
+        String(
+          row.bible_source_code || ''
+        ).trim();
 
-      if (!name || !personId) {
+      var reference =
+        String(
+          row.bible_reference || ''
+        ).trim();
+
+      if (!name) {
         return;
       }
 
-      links[
-        getConversationV2BibleLinkKey(name)
-      ] = personId;
+      var key =
+        getConversationV2BibleLinkKey(
+          name
+        );
+
+      if (
+        gender === 'M' ||
+        gender === 'F'
+      ) {
+        genders[key] = gender;
+      }
+
+      if (sourceCode) {
+        links[key] = {
+          sourceCode: sourceCode,
+          reference: reference
+        };
+      }
     });
 
     window.CONVERSATION_V2_BIBLE_LINKS =
@@ -6933,7 +7143,7 @@ async function loadConversationV2BibleLinks() {
     decorateConversationV2BibleSpeakers();
 
     console.log(
-      '[CONVERSATION V2] Bible links:',
+      '[CONVERSATION V2] Members:',
       Object.keys(links).length
       + ', speaker genders: ' +
       Object.keys(genders).length
@@ -6944,7 +7154,7 @@ async function loadConversationV2BibleLinks() {
     window.CONVERSATION_V2_SPEAKER_GENDERS = {};
 
     console.error(
-      '[CONVERSATION V2] Bible links failed:',
+      '[CONVERSATION V2] Member load failed:',
       error
     );
   }
@@ -6970,21 +7180,27 @@ function decorateConversationV2BibleSpeakers() {
           speakerElement
         );
 
-      var personId =
+      var link =
         links[
           getConversationV2BibleLinkKey(
             speaker
           )
         ];
 
+      var sourceCode =
+        link && link.sourceCode;
+
       speakerElement.classList.toggle(
         'is-bible-person-link',
-        Boolean(personId)
+        Boolean(sourceCode)
       );
 
-      if (personId) {
-        speakerElement.dataset.biblePersonId =
-          personId;
+      if (sourceCode) {
+        speakerElement.dataset.bibleSourceCode =
+          sourceCode;
+
+        speakerElement.dataset.bibleReference =
+          link.reference || '';
 
         speakerElement.setAttribute(
           'role',
@@ -6998,12 +7214,18 @@ function decorateConversationV2BibleSpeakers() {
 
         speakerElement.setAttribute(
           'aria-label',
-          'Open Bible information for ' +
+          'Open Bible reference ' +
+          (
+            link.reference ||
+            sourceCode
+          ) +
+          ' for ' +
           speaker
         );
 
       } else {
-        delete speakerElement.dataset.biblePersonId;
+        delete speakerElement.dataset.bibleSourceCode;
+        delete speakerElement.dataset.bibleReference;
 
         speakerElement.removeAttribute(
           'role'
@@ -7022,20 +7244,20 @@ function decorateConversationV2BibleSpeakers() {
 
 
 // ============================================================================
-// 🟦 BLOCK 8650: BIBLE PERSON OPEN / EVENT CONNECTION
+// 🟦 BLOCK 8650: BIBLE REFERENCE OPEN / EVENT CONNECTION
 // ============================================================================
 
-function openConversationV2BiblePerson(
-  personId
+function openConversationV2BibleReference(
+  sourceCode
 ) {
-  if (!personId) {
+  if (!sourceCode) {
     return;
   }
 
   var targetUrl =
     CONVERSATION_V2_BIBLE_BASE_URL +
-    '?personId=' +
-    encodeURIComponent(personId);
+    '?sourceCode=' +
+    encodeURIComponent(sourceCode);
 
   window.open(
     targetUrl,
@@ -7074,8 +7296,8 @@ function installConversationV2BibleSpeakerLinks() {
       event.preventDefault();
       event.stopPropagation();
 
-      openConversationV2BiblePerson(
-        speakerElement.dataset.biblePersonId
+      openConversationV2BibleReference(
+        speakerElement.dataset.bibleSourceCode
       );
     },
     true
@@ -7104,8 +7326,8 @@ function installConversationV2BibleSpeakerLinks() {
       event.preventDefault();
       event.stopPropagation();
 
-      openConversationV2BiblePerson(
-        speakerElement.dataset.biblePersonId
+      openConversationV2BibleReference(
+        speakerElement.dataset.bibleSourceCode
       );
     }
   );
