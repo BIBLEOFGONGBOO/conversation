@@ -3863,9 +3863,44 @@ installCurrentAndroidTrace_2();
 
 
 // ============================================================================
-// 🟦 BLOCK 5750: WEB PLAY ADAPTER
-// Purpose: PC Chrome의 실제 남녀 음성 재생.
+// 🟦 BLOCK 5750: WEB SPEECH - PUNCTUATION SEGMENTS
 // ============================================================================
+
+function splitCurrentPsgSpeechSegments(text) {
+  var source = String(text || '');
+  var segments = [];
+
+  var pattern = /[^,.;!?…]+(?:[,.;!?…]+|$)/g;
+  var match = null;
+
+  while ((match = pattern.exec(source))) {
+    var raw = match[0];
+    var speechText = raw.trim();
+
+    if (!speechText) {
+      continue;
+    }
+
+    var firstVisibleOffset = raw.search(/\S/);
+
+    segments.push({
+      speechText: speechText,
+      charIndex:
+        match.index +
+        Math.max(0, firstVisibleOffset)
+    });
+  }
+
+  if (!segments.length && source.trim()) {
+    segments.push({
+      speechText: source.trim(),
+      charIndex: 0
+    });
+  }
+
+  return segments;
+}
+
 
 function createCurrentPsgWebPlayAdapter() {
   if (
@@ -3882,18 +3917,13 @@ function createCurrentPsgWebPlayAdapter() {
     speak: function(item) {
       return new Promise(function(resolve, reject) {
         var settled = false;
-        var fallbackTimer = null;
-        var boundaryReceived = false;
 
-        function clearFallback() {
-          if (fallbackTimer !== null) {
-            window.clearInterval(
-              fallbackTimer
-            );
+        var segments =
+          splitCurrentPsgSpeechSegments(
+            item.speechText
+          );
 
-            fallbackTimer = null;
-          }
-        }
+        var segmentIndex = 0;
 
         function finish(callback, value) {
           if (settled) {
@@ -3901,83 +3931,79 @@ function createCurrentPsgWebPlayAdapter() {
           }
 
           settled = true;
-          clearFallback();
           callback(value);
         }
 
-        var utterance =
-          new SpeechSynthesisUtterance(
-            item.speechText
-          );
-
-        utterance.lang =
-          getCurrentPsgPlayLocale(
-            item.language
-          );
-
-      
-
-        utterance.rate =
-          getCurrentPsgPlayRate();
-
-        utterance.pitch =
-          getCurrentPsgSpeechPitch(
-            item.gender
-          );          
-
-        utterance.onstart = function() {
-          if (!boundaryReceived) {
-            fallbackTimer =
-              startCurrentPsgWebWordFallback();
-          }
-        };
-
-        utterance.onboundary = function(event) {
-          var charIndex =
-            Number(event.charIndex);
-
-          if (!Number.isInteger(charIndex)) {
+        function speakNextSegment() {
+          if (settled) {
             return;
           }
 
-          boundaryReceived = true;
-          clearFallback();
+          if (segmentIndex >= segments.length) {
+            finish(resolve);
+            return;
+          }
 
-          highlightCurrentTtsWordAt(
-            charIndex
-          );
-        };
+          var segment =
+            segments[segmentIndex];
 
-        utterance.onend = function() {
-          finish(resolve);
-        };
+          segmentIndex += 1;
 
-        utterance.onerror = function(error) {
-          finish(reject, error);
-        };
+          var utterance =
+            new SpeechSynthesisUtterance(
+              segment.speechText
+            );
 
-        try {
-          window.speechSynthesis.speak(
-            utterance
-          );
+          utterance.lang =
+            getCurrentPsgPlayLocale(
+              item.language
+            );
 
-          window.setTimeout(function() {
-            window.speechSynthesis.resume();
-          }, 100);
-        } catch (error) {
-          finish(reject, error);
+          utterance.rate =
+            getCurrentPsgPlayRate();
+
+          utterance.pitch =
+            getCurrentPsgSpeechPitch(
+              item.gender
+            );
+
+          utterance.onstart = function() {
+            highlightCurrentTtsWordAt(
+              segment.charIndex
+            );
+          };
+
+          utterance.onend = function() {
+            speakNextSegment();
+          };
+
+          utterance.onerror = function(error) {
+            finish(reject, error);
+          };
+
+          try {
+            window.speechSynthesis.speak(
+              utterance
+            );
+
+            window.setTimeout(function() {
+              window.speechSynthesis.resume();
+            }, 100);
+
+          } catch (error) {
+            finish(reject, error);
+          }
         }
+
+        speakNextSegment();
       });
     },
 
     stop: function() {
       window.speechSynthesis.cancel();
-
-      return Promise.resolve();
     }
   };
 }
-
 
 
 // ============================================================================
