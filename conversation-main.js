@@ -3449,24 +3449,15 @@ function getCurrentPsgPlayLocale(language) {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 5620: SPEAKER GENDER LOOKUP
-// Purpose: DB conversation_name_bible_links의 GENDER(F/M)를 읽는다.
-// ============================================================================
+function getCurrentPsgSpeechPitch(gender) {
+  if (gender === 'F') {
+    return 1.25;
+  }
 
-function getConversationV2SpeakerGender(speaker) {
-  var genders =
-    window.CONVERSATION_V2_SPEAKER_GENDERS ||
-    {};
+  if (gender === 'M') {
+    return 0.85;
+  }
 
-  return genders[
-    getConversationV2BibleLinkKey(speaker)
-  ] || '';
-}
-
-// APK의 기존 호출을 안전하게 유지한다.
-// 실제 성별 음성 선택은 Web BLOCK 5630에서 한다.
-function getCurrentPsgSpeechPitch() {
   return 1;
 }
 
@@ -3924,14 +3915,27 @@ function createCurrentPsgWebPlayAdapter() {
             item.language
           );
 
-        var genderVoice =
-          getCurrentPsgBrowserGenderVoice(
-            item,
-            utterance.lang
-          );
+                if (isCurrentAndroidChrome_2()) {
+          utterance.pitch =
+            getCurrentPsgSpeechPitch(
+              item.gender
+            );
+        } else {
+                  if (isCurrentAndroidChrome_2()) {
+          utterance.pitch =
+            getCurrentPsgSpeechPitch(
+              item.gender
+            );
+        } else {
+          var genderVoice =
+            getCurrentPsgBrowserGenderVoice(
+              item,
+              utterance.lang
+            );
 
-        if (genderVoice) {
-          utterance.voice = genderVoice;
+          if (genderVoice) {
+            utterance.voice = genderVoice;
+          }
         }
 
         utterance.rate =
@@ -3994,7 +3998,7 @@ function createCurrentPsgWebPlayAdapter() {
 
 // ============================================================================
 // 🟦 BLOCK 5752: ANDROID CHROME PLAY ADAPTER
-// Purpose: S26 Chrome 재생 + 실제 남녀 음성 선택.
+// Purpose: Android Chrome TTS visual state and word highlight recovery.
 // ============================================================================
 
 function createCurrentPsgAndroidChromeAdapter_2() {
@@ -4017,6 +4021,7 @@ function createCurrentPsgAndroidChromeAdapter_2() {
         var attemptId = 0;
         var fallbackTimer = null;
         var startTimer = null;
+        var finishTimer = null;
 
         function clearTimers() {
           if (fallbackTimer !== null) {
@@ -4028,6 +4033,11 @@ function createCurrentPsgAndroidChromeAdapter_2() {
             window.clearTimeout(startTimer);
             startTimer = null;
           }
+
+          if (finishTimer !== null) {
+            window.clearTimeout(finishTimer);
+            finishTimer = null;
+          }
         }
 
         function finish(callback, value) {
@@ -4037,13 +4047,37 @@ function createCurrentPsgAndroidChromeAdapter_2() {
 
           settled = true;
           attemptId += 1;
+
           clearTimers();
+
           callback(value);
+        }
+
+        function getVisualDurationMs() {
+          var wordCount = String(
+            item.speechText || ''
+          )
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .length;
+
+          return Math.max(
+            450,
+            Math.round(
+              wordCount *
+              340 /
+              getCurrentPsgPlayRate()
+            )
+          );
         }
 
         function speakAttempt(retry) {
           var myAttempt = attemptId + 1;
           var started = false;
+
+          var visualFinishAt =
+            Date.now() + getVisualDurationMs();
 
           attemptId = myAttempt;
 
@@ -4085,8 +4119,10 @@ function createCurrentPsgAndroidChromeAdapter_2() {
               startTimer = null;
             }
 
-            fallbackTimer =
-              startCurrentPsgWebWordFallback();
+            if (fallbackTimer === null) {
+              fallbackTimer =
+                startCurrentPsgWebWordFallback();
+            }
           };
 
           utterance.onboundary = function(event) {
@@ -4114,11 +4150,33 @@ function createCurrentPsgAndroidChromeAdapter_2() {
 
           utterance.onend = function() {
             if (
-              !settled &&
-              myAttempt === attemptId
+              settled ||
+              myAttempt !== attemptId
             ) {
-              finish(resolve);
+              return;
             }
+
+            var waitMs = Math.max(
+              0,
+              visualFinishAt - Date.now()
+            );
+
+            if (waitMs === 0) {
+              finish(resolve);
+              return;
+            }
+
+            finishTimer = window.setTimeout(
+              function() {
+                if (
+                  !settled &&
+                  myAttempt === attemptId
+                ) {
+                  finish(resolve);
+                }
+              },
+              waitMs
+            );
           };
 
           utterance.onerror = function(error) {
@@ -4141,6 +4199,11 @@ function createCurrentPsgAndroidChromeAdapter_2() {
             synthesis.cancel();
             synthesis.resume();
             synthesis.speak(utterance);
+
+            if (fallbackTimer === null) {
+              fallbackTimer =
+                startCurrentPsgWebWordFallback();
+            }
 
             window.setTimeout(function() {
               if (
