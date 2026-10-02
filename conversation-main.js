@@ -8857,6 +8857,46 @@ bootCurrentButtonHoverHelp();
   }
 
 
+  function getConversationDictionaryWordAtPoint(
+    event
+  ) {
+    var target = event.target;
+
+    var element =
+      target && target.closest
+        ? target.closest('.conversation-tts-word')
+        : null;
+
+    if (element) {
+      return element;
+    }
+
+    var range = null;
+
+    if (document.caretRangeFromPoint) {
+      range = document.caretRangeFromPoint(
+        event.clientX,
+        event.clientY
+      );
+    }
+
+    if (!range) {
+      return null;
+    }
+
+    var node = range.startContainer;
+
+    if (node && node.nodeType === Node.TEXT_NODE) {
+      node = node.parentElement;
+    }
+
+    return node && node.closest
+      ? node.closest('.conversation-tts-word')
+      : null;
+  }
+
+
+
   // ==========================================================================
   // BLOCK 8808 : EVENT INSTALLATION
   // ==========================================================================
@@ -8887,13 +8927,10 @@ bootCurrentButtonHoverHelp();
           return;
         }
 
-        var element =
-          event.target &&
-          event.target.closest
-            ? event.target.closest(
-                '.conversation-tts-word'
-              )
-            : null;
+                var element =
+          getConversationDictionaryWordAtPoint(
+            event
+          );
 
         if (!element) {
           return;
@@ -8939,7 +8976,7 @@ bootCurrentButtonHoverHelp();
             openConversationDictionary(word);
 
             clearConversationDictionaryLongPress();
-          }, 600);
+          }, 450);
       }
     );
 
