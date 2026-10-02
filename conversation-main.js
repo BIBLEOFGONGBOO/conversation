@@ -3915,13 +3915,7 @@ function createCurrentPsgWebPlayAdapter() {
             item.language
           );
 
-                if (isCurrentAndroidChrome_2()) {
-          utterance.pitch =
-            getCurrentPsgSpeechPitch(
-              item.gender
-            );
-        } else {
-                  if (isCurrentAndroidChrome_2()) {
+                        if (isCurrentAndroidChrome_2()) {
           utterance.pitch =
             getCurrentPsgSpeechPitch(
               item.gender
