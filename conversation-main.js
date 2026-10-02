@@ -3449,24 +3449,15 @@ function getCurrentPsgPlayLocale(language) {
 }
 
 
-// ============================================================================
-// 🟦 BLOCK 5620: SPEAKER GENDER LOOKUP
-// Purpose: DB conversation_name_bible_links의 GENDER(F/M)를 읽는다.
-// ============================================================================
+function getCurrentPsgSpeechPitch(gender) {
+  if (gender === 'F') {
+    return 1.25;
+  }
 
-function getConversationV2SpeakerGender(speaker) {
-  var genders =
-    window.CONVERSATION_V2_SPEAKER_GENDERS ||
-    {};
+  if (gender === 'M') {
+    return 0.85;
+  }
 
-  return genders[
-    getConversationV2BibleLinkKey(speaker)
-  ] || '';
-}
-
-// APK의 기존 호출을 안전하게 유지한다.
-// 실제 성별 음성 선택은 Web BLOCK 5630에서 한다.
-function getCurrentPsgSpeechPitch() {
   return 1;
 }
 
@@ -3924,18 +3915,15 @@ function createCurrentPsgWebPlayAdapter() {
             item.language
           );
 
-        var genderVoice =
-          getCurrentPsgBrowserGenderVoice(
-            item,
-            utterance.lang
-          );
-
-        if (genderVoice) {
-          utterance.voice = genderVoice;
-        }
+      
 
         utterance.rate =
           getCurrentPsgPlayRate();
+
+        utterance.pitch =
+          getCurrentPsgSpeechPitch(
+            item.gender
+          );          
 
         utterance.onstart = function() {
           if (!boundaryReceived) {
