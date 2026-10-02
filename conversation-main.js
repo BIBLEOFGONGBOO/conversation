@@ -7612,6 +7612,23 @@ function getConversationV2BibleLinkKey(
 }
 
 
+
+function getConversationV2SpeakerGender(
+  speaker
+) {
+  var genders =
+    window.CONVERSATION_V2_SPEAKER_GENDERS ||
+    {};
+
+  return genders[
+    getConversationV2BibleLinkKey(speaker)
+  ] || '';
+}
+
+
+
+
+
 function getConversationV2SpeakerName(
   speakerElement
 ) {
