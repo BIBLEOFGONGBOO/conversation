@@ -571,6 +571,10 @@ var conversationDirectoryStaticState = {
   category: ''
 };
 
+var conversationLicensePracticeData = null;
+
+var conversationLicensePracticeState = null;
+
 
 async function requestConversationStaticDirectory(
   path
@@ -599,6 +603,20 @@ async function loadConversationStaticIndex() {
     );
 
   return conversationDirectoryStaticIndex;
+}
+
+
+async function loadConversationLicensePractice() {
+  if (conversationLicensePracticeData) {
+    return conversationLicensePracticeData;
+  }
+
+  conversationLicensePracticeData =
+    await requestConversationStaticDirectory(
+      './data/license-practice.json'
+    );
+
+  return conversationLicensePracticeData;
 }
 
 
@@ -950,6 +968,159 @@ function renderConversationDirectoryItem(
 }
 
 
+function renderConversationLicensePracticeDirectory(
+  requestedState
+) {
+  var directory = document.getElementById('conversationDirectory');
+  var breadcrumb = document.getElementById('conversationDirectoryBreadcrumb');
+  var list = document.getElementById('conversationDirectoryList');
+  var app = document.getElementById('conversationApp');
+
+  if (!directory || !breadcrumb || !list || !app) {
+    throw new Error('Conversation directory elements missing');
+  }
+
+  var state = {
+    packId: getConversationDirectoryText(requestedState?.packId),
+    sectionId: getConversationDirectoryText(requestedState?.sectionId)
+  };
+
+  directory.hidden = false;
+  app.classList.add('conversation-directory-open');
+  conversationLicensePracticeState = state;
+  breadcrumb.innerHTML = '';
+
+  function appendStep(label, action) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.onclick = action;
+    breadcrumb.appendChild(button);
+  }
+
+  appendStep('LEVEL', function() {
+    conversationLicensePracticeState = null;
+    renderConversationDirectory({ level: '', category: '' });
+  });
+
+  var separator = document.createElement('span');
+  separator.textContent = '›';
+  breadcrumb.appendChild(separator);
+
+  appendStep('LICENSE PRACTICE', function() {
+    renderConversationLicensePracticeDirectory({});
+  });
+
+  list.innerHTML = '';
+
+  var loading = document.createElement('p');
+  loading.className = 'conversation-directory-loading';
+  loading.textContent = 'LOADING LICENSE PRACTICE…';
+  list.appendChild(loading);
+
+  loadConversationLicensePractice()
+    .then(function(data) {
+      list.innerHTML = '';
+
+      var packs = data.packs || [];
+
+      if (!state.packId) {
+        packs.forEach(function(pack) {
+          renderConversationDirectoryItem(
+            list,
+            String(pack.title),
+            false,
+            function() {
+              renderConversationLicensePracticeDirectory({
+                packId: pack.id,
+                sectionId: ''
+              });
+            }
+          );
+        });
+        return;
+      }
+
+      var pack = packs.find(function(item) {
+        return getConversationDirectoryText(item.id) === state.packId;
+      });
+
+      if (!pack) {
+        throw new Error('License practice pack not found');
+      }
+
+      var packSeparator = document.createElement('span');
+      packSeparator.textContent = '›';
+      breadcrumb.appendChild(packSeparator);
+
+      appendStep(String(pack.title), function() {
+        renderConversationLicensePracticeDirectory({
+          packId: pack.id,
+          sectionId: ''
+        });
+      });
+
+      if (!state.sectionId) {
+        (pack.sections || []).forEach(function(section) {
+          renderConversationDirectoryItem(
+            list,
+            String(section.title),
+            false,
+            function() {
+              renderConversationLicensePracticeDirectory({
+                packId: pack.id,
+                sectionId: section.id
+              });
+            }
+          );
+        });
+        return;
+      }
+
+      var section = (pack.sections || []).find(function(item) {
+        return getConversationDirectoryText(item.id) === state.sectionId;
+      });
+
+      if (!section) {
+        throw new Error('License practice section not found');
+      }
+
+      var sectionSeparator = document.createElement('span');
+      sectionSeparator.textContent = '›';
+      breadcrumb.appendChild(sectionSeparator);
+
+      var sectionTitle = document.createElement('strong');
+      sectionTitle.textContent = String(section.title);
+      breadcrumb.appendChild(sectionTitle);
+
+      (section.topics || []).forEach(function(topic) {
+        renderConversationDirectoryItem(
+          list,
+          String(topic.subcategory),
+          true,
+          function() {
+            openConversationStaticSubcategory(
+              topic.level,
+              topic.category,
+              topic,
+              { packId: pack.id, sectionId: section.id }
+            );
+          }
+        );
+      });
+    })
+    .catch(function(error) {
+      console.error('[CONVERSATION V2] License practice load failed:', error);
+      list.innerHTML = '';
+
+      var failure = document.createElement('p');
+      failure.className = 'conversation-directory-empty';
+      failure.textContent = 'Could not load License Practice.';
+      list.appendChild(failure);
+    });
+}
+
+
 // ============================================================================
 // 🟦 BLOCK 3600: DIRECTORY LEVEL / CATEGORY NAVIGATION
 // ============================================================================
@@ -1028,6 +1199,17 @@ function renderConversationDirectory(
             );
           }
         );
+
+        renderConversationDirectoryItem(
+          list,
+          'LICENSE PRACTICE',
+          false,
+          function() {
+            renderConversationLicensePracticeDirectory(
+              {}
+            );
+          }
+        );
       })
       .catch(function(error) {
         console.error(
@@ -1075,13 +1257,13 @@ function renderConversationDirectory(
         return;
       }
 
-      var category = (levelData.categories || []).find(
-        function(item) {
-          return getConversationDirectoryText(
-            item.name
-          ) === state.category;
-        }
-      );
+      var category = (
+        levelData.categories || []
+      ).find(function(item) {
+        return getConversationDirectoryText(
+          item.name
+        ) === state.category;
+      });
 
       if (!category) {
         throw new Error(
@@ -1127,11 +1309,9 @@ function renderConversationDirectory(
     });
 }
 
-
 // ============================================================================
 // END: DIRECTORY LEVEL / CATEGORY NAVIGATION
 // ============================================================================
-
 
 // ============================================================================
 // 🟦 BLOCK 3625: STATIC SUBCATEGORY SELECTION
@@ -1140,7 +1320,8 @@ function renderConversationDirectory(
 async function openConversationStaticSubcategory(
   level,
   category,
-  subcategory
+  subcategory,
+  licensePracticeReturnState
 ) {
   var ids = (subcategory.dialogueIds || [])
     .map(function(id) {
@@ -1183,6 +1364,9 @@ async function openConversationStaticSubcategory(
       level: level,
       category: category
     };
+
+    conversationLicensePracticeState =
+      licensePracticeReturnState || null;
 
     var directory = document.getElementById(
       'conversationDirectory'
@@ -2614,6 +2798,19 @@ function openCurrentCategoryDirectory() {
 
   stopCurrentPsgPlay();
   stopCurrentRolePlay();
+
+  if (conversationLicensePracticeState) {
+    renderConversationLicensePracticeDirectory(
+      conversationLicensePracticeState
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+
+    return;
+  }
 
   renderConversationDirectory({
     level: String(
@@ -8151,7 +8348,6 @@ bootCurrentButtonHoverHelp();
 
 (function () {
   'use strict';
-
   var dictionaryLanguageColumns = {
     AR: { column: 'Arabic', label: 'Arabic' },
     ES: { column: 'Spanish', label: 'Spanish' },
@@ -8513,24 +8709,118 @@ if (
     }
   }
 
-    function installConversationDictionary() {
-    document.addEventListener(
-      'dblclick',
-      function (event) {
-        var target = event.target.closest(
-          '.conversation-turn-text, .conversation-tts-word'
-        );
+    var conversationDictionarySelectedWord = '';
 
-        if (!target) {
+  function clearConversationDictionarySelection() {
+    document
+      .querySelectorAll(
+        '.conversation-tts-word.is-dictionary-selected'
+      )
+      .forEach(function (element) {
+        element.classList.remove(
+          'is-dictionary-selected'
+        );
+      });
+  }
+
+  function tokenizeConversationDictionaryLine(line) {
+    if (
+      !line ||
+      line.querySelector('.conversation-tts-word')
+    ) {
+      return;
+    }
+
+    var text = String(line.textContent || '');
+
+    if (!/[a-z]/i.test(text)) {
+      return;
+    }
+
+    var fragment = document.createDocumentFragment();
+
+    text.split(/(\s+|[^a-zA-Z'-]+)/).forEach(
+      function (part) {
+        if (!part) {
           return;
         }
 
-        var selected = window.getSelection
-          ? window.getSelection().toString()
-          : '';
+        if (/[a-z]/i.test(part)) {
+          var word = document.createElement('span');
+
+          word.className = 'conversation-tts-word';
+          word.textContent = part;
+
+          fragment.appendChild(word);
+          return;
+        }
+
+        fragment.appendChild(
+          document.createTextNode(part)
+        );
+      }
+    );
+
+    line.replaceChildren(fragment);
+  }
+
+  function tokenizeConversationDictionaryWords() {
+    document
+      .querySelectorAll(
+        '#conversationTurns .conversation-turn-text'
+      )
+      .forEach(function (line) {
+        if (
+          line.closest(
+            '.conversation-turn-card.is-speaking'
+          )
+        ) {
+          return;
+        }
+
+        tokenizeConversationDictionaryLine(line);
+      });
+  }
+
+  function installConversationDictionary() {
+    tokenizeConversationDictionaryWords();
+
+    var turns = document.getElementById(
+      'conversationTurns'
+    );
+
+    if (turns) {
+      new MutationObserver(function () {
+        window.setTimeout(
+          tokenizeConversationDictionaryWords,
+          0
+        );
+      }).observe(turns, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    document.addEventListener(
+      'click',
+      function (event) {
+        if (
+          !event.target ||
+          !event.target.closest
+        ) {
+          return;
+        }
+
+        var element = event.target.closest(
+          '.conversation-tts-word'
+        );
+
+        if (!element) {
+          return;
+        }
 
         var word = normalizeConversationDictionaryWord(
-          selected || event.target.textContent
+          element.textContent
         );
 
         if (!word) {
@@ -8539,7 +8829,20 @@ if (
 
         event.preventDefault();
 
-        openConversationDictionary(word);
+        if (
+          conversationDictionarySelectedWord === word
+        ) {
+          openConversationDictionary(word);
+          return;
+        }
+
+        clearConversationDictionarySelection();
+
+        element.classList.add(
+          'is-dictionary-selected'
+        );
+
+        conversationDictionarySelectedWord = word;
       }
     );
 
