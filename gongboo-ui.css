@@ -1129,8 +1129,6 @@ button:not(:disabled):active {
 
 
 
-   conversation-main.js:8489 Uncaught SyntaxError: Unexpected token '.'
-index.html:472 Live reload enabled.
 
 
 
@@ -1196,4 +1194,11 @@ index.html:472 Live reload enabled.
 .conversation-dictionary-definition {
   color: #334155;
   white-space: pre-line;
+}
+
+
+.conversation-tts-word {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }

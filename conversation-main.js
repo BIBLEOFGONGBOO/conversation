@@ -8343,11 +8343,15 @@ bootCurrentButtonHoverHelp();
 
 // ============================================================================
 // BLOCK 8800 : CONVERSATION WORD DICTIONARY
-// Double-click a word → Dictionary DB → Azure fallback → Dictionary cache
 // ============================================================================
 
 (function () {
   'use strict';
+
+
+  // ==========================================================================
+  // BLOCK 8801 : DICTIONARY LANGUAGE AND CONFIG
+  // ==========================================================================
 
   var dictionaryLanguageColumns = {
     AR: { column: 'Arabic', label: 'Arabic' },
@@ -8380,12 +8384,16 @@ bootCurrentButtonHoverHelp();
       'secondaryLanguageSelect'
     );
 
-    var code = String(select ? select.value : '')
+    var code = String(
+      select ? select.value : ''
+    )
       .trim()
       .toUpperCase();
 
     var label = select && select.selectedOptions[0]
-      ? String(select.selectedOptions[0].textContent || '').trim()
+      ? String(
+          select.selectedOptions[0].textContent || ''
+        ).trim()
       : '';
 
     if (
@@ -8412,6 +8420,11 @@ bootCurrentButtonHoverHelp();
       .replace(/^[^a-z]+|[^a-z'-]+$/g, '');
   }
 
+
+  // ==========================================================================
+  // BLOCK 8802 : DICTIONARY POPUP
+  // ==========================================================================
+
   function getConversationDictionaryPopup() {
     var popup = document.getElementById(
       'conversationDictionaryPopup'
@@ -8422,8 +8435,9 @@ bootCurrentButtonHoverHelp();
     }
 
     popup = document.createElement('aside');
+
     popup.id = 'conversationDictionaryPopup';
-        popup.className = 'conversation-dictionary-popup';
+    popup.className = 'conversation-dictionary-popup';
 
     popup.style.cssText = [
       'position:fixed',
@@ -8495,6 +8509,11 @@ bootCurrentButtonHoverHelp();
     popup.hidden = false;
   }
 
+
+  // ==========================================================================
+  // BLOCK 8803 : DICTIONARY DATABASE LOOKUP
+  // ==========================================================================
+
   async function fetchConversationDictionaryEntry(
     word,
     language
@@ -8519,6 +8538,7 @@ bootCurrentButtonHoverHelp();
     var params = new URLSearchParams();
 
     params.set('select', fields.join(','));
+
     params.set(
       'or',
       '(Search_Word.ilike.' +
@@ -8527,6 +8547,7 @@ bootCurrentButtonHoverHelp();
         word +
         ')'
     );
+
     params.set('limit', '1');
 
     var headers = {
@@ -8556,7 +8577,11 @@ bootCurrentButtonHoverHelp();
     }
 
     params.delete('or');
-    params.set('Word_Forms', 'ilike.*' + word + '*');
+
+    params.set(
+      'Word_Forms',
+      'ilike.*' + word + '*'
+    );
 
     response = await fetch(
       config.url +
@@ -8576,6 +8601,11 @@ bootCurrentButtonHoverHelp();
     return rows.length ? rows[0] : null;
   }
 
+
+  // ==========================================================================
+  // BLOCK 8804 : AZURE FALLBACK
+  // ==========================================================================
+
   async function requestConversationAzureTranslation(
     word,
     language
@@ -8592,11 +8622,16 @@ bootCurrentButtonHoverHelp();
         config.azureFunctionName,
       {
         method: 'POST',
+
         headers: {
           apikey: config.publishableKey,
-          Authorization: 'Bearer ' + config.publishableKey,
+
+          Authorization:
+            'Bearer ' + config.publishableKey,
+
           'Content-Type': 'application/json'
         },
+
         body: JSON.stringify({
           word: word,
           language: language.label
@@ -8615,6 +8650,11 @@ bootCurrentButtonHoverHelp();
     return result;
   }
 
+
+  // ==========================================================================
+  // BLOCK 8805 : DICTIONARY OPEN FLOW
+  // ==========================================================================
+
   async function openConversationDictionary(word) {
     var language = getConversationDictionaryLanguage();
 
@@ -8629,43 +8669,47 @@ bootCurrentButtonHoverHelp();
         language
       );
 
-            var translation = entry && language.column
-  ? String(entry[language.column] || '').trim()
-  : '';
+      var translation = entry && language.column
+        ? String(entry[language.column] || '').trim()
+        : '';
 
-if (
-  entry &&
-  (
-    !language.label ||
-    translation
-  )
-) {
-  showConversationDictionaryPopup({
-    word: entry.Search_Word || word,
-    base: entry.Base_English || '',
-    language: language.label,
-    translation: translation,
-    definition: translation
-      ? ''
-      : entry.English_Definition || '',
-    status: 'Dictionary'
-  });
+      if (
+        entry &&
+        (
+          !language.label ||
+          translation
+        )
+      ) {
+        showConversationDictionaryPopup({
+          word: entry.Search_Word || word,
+          base: entry.Base_English || '',
+          language: language.label,
+          translation: translation,
+          definition: translation
+            ? ''
+            : entry.English_Definition || '',
+          status: 'Dictionary'
+        });
 
-  return;
-}
+        return;
+      }
 
       if (!language.label) {
         showConversationDictionaryPopup({
           word: entry
             ? entry.Search_Word || word
             : word,
+
           base: entry
             ? entry.Base_English || ''
             : '',
+
           definition: entry
             ? entry.English_Definition || ''
             : '',
-          status: 'Choose a 2nd language for translation.'
+
+          status:
+            'Choose a 2nd language for translation.'
         });
 
         return;
@@ -8675,12 +8719,15 @@ if (
         word: entry
           ? entry.Search_Word || word
           : word,
+
         base: entry
           ? entry.Base_English || ''
           : '',
+
         definition: entry
           ? entry.English_Definition || ''
           : '',
+
         status: 'Checking translation cache...'
       });
 
@@ -8695,7 +8742,7 @@ if (
         translation: azure.translation || '',
         status: azure.source === 'cache'
           ? 'Dictionary cache'
-          : ''
+          : 'Azure saved to Dictionary cache'
       });
     } catch (error) {
       console.error(
@@ -8705,29 +8752,259 @@ if (
 
       showConversationDictionaryPopup({
         word: word,
-        status: 'Translation is temporarily unavailable.'
+        status:
+          'Translation is temporarily unavailable.'
       });
     }
   }
 
-    function installConversationDictionary() {
-    document.addEventListener(
-      'dblclick',
-      function (event) {
-        var target = event.target.closest(
-          '.conversation-turn-text, .conversation-tts-word'
-        );
 
-        if (!target) {
+  // ==========================================================================
+  // BLOCK 8806 : WORD TOKENIZATION
+  // ==========================================================================
+
+  var conversationDictionarySelectedWord = '';
+
+  function clearConversationDictionarySelection() {
+    document
+      .querySelectorAll(
+        '.conversation-tts-word.is-dictionary-selected'
+      )
+      .forEach(function (element) {
+        element.classList.remove(
+          'is-dictionary-selected'
+        );
+      });
+  }
+
+  function tokenizeConversationDictionaryLine(line) {
+    if (
+      !line ||
+      line.querySelector('.conversation-tts-word')
+    ) {
+      return;
+    }
+
+    var text = String(line.textContent || '');
+
+    if (!/[a-z]/i.test(text)) {
+      return;
+    }
+
+    var fragment = document.createDocumentFragment();
+
+    text.split(/(\s+|[^a-zA-Z'-]+)/).forEach(
+      function (part) {
+        if (!part) {
           return;
         }
 
-        var selected = window.getSelection
-          ? window.getSelection().toString()
-          : '';
+        if (/[a-z]/i.test(part)) {
+          var word = document.createElement('span');
+
+          word.className = 'conversation-tts-word';
+          word.textContent = part;
+
+          fragment.appendChild(word);
+          return;
+        }
+
+        fragment.appendChild(
+          document.createTextNode(part)
+        );
+      }
+    );
+
+    line.replaceChildren(fragment);
+  }
+
+  function tokenizeConversationDictionaryWords() {
+    document
+      .querySelectorAll(
+        '#conversationTurns .conversation-turn-text'
+      )
+      .forEach(function (line) {
+        if (
+          line.closest(
+            '.conversation-turn-card.is-speaking'
+          )
+        ) {
+          return;
+        }
+
+        tokenizeConversationDictionaryLine(line);
+      });
+  }
+
+
+  // ==========================================================================
+  // BLOCK 8807 : TAP AND LONG-PRESS STATE
+  // ==========================================================================
+
+  var conversationDictionaryLongPressTimer = null;
+  var conversationDictionaryLongPressWord = '';
+  var conversationDictionaryLongPressStartX = 0;
+  var conversationDictionaryLongPressStartY = 0;
+  var conversationDictionarySuppressClickUntil = 0;
+
+  function clearConversationDictionaryLongPress() {
+    window.clearTimeout(
+      conversationDictionaryLongPressTimer
+    );
+
+    conversationDictionaryLongPressTimer = null;
+    conversationDictionaryLongPressWord = '';
+  }
+
+
+  // ==========================================================================
+  // BLOCK 8808 : EVENT INSTALLATION
+  // ==========================================================================
+
+  function installConversationDictionary() {
+    tokenizeConversationDictionaryWords();
+
+    var turns = document.getElementById(
+      'conversationTurns'
+    );
+
+    if (turns) {
+      new MutationObserver(function () {
+        window.setTimeout(
+          tokenizeConversationDictionaryWords,
+          0
+        );
+      }).observe(turns, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    document.addEventListener(
+      'pointerdown',
+      function (event) {
+        if (event.pointerType !== 'touch') {
+          return;
+        }
+
+        var element =
+          event.target &&
+          event.target.closest
+            ? event.target.closest(
+                '.conversation-tts-word'
+              )
+            : null;
+
+        if (!element) {
+          return;
+        }
 
         var word = normalizeConversationDictionaryWord(
-          selected || event.target.textContent
+          element.textContent
+        );
+
+        if (!word) {
+          return;
+        }
+
+        clearConversationDictionaryLongPress();
+
+        conversationDictionaryLongPressWord = word;
+
+        conversationDictionaryLongPressStartX =
+          event.clientX;
+
+        conversationDictionaryLongPressStartY =
+          event.clientY;
+
+        conversationDictionaryLongPressTimer =
+          window.setTimeout(function () {
+            if (
+              conversationDictionaryLongPressWord !== word
+            ) {
+              return;
+            }
+
+            conversationDictionarySuppressClickUntil =
+              Date.now() + 800;
+
+            clearConversationDictionarySelection();
+
+            element.classList.add(
+              'is-dictionary-selected'
+            );
+
+            conversationDictionarySelectedWord = word;
+
+            openConversationDictionary(word);
+
+            clearConversationDictionaryLongPress();
+          }, 600);
+      }
+    );
+
+    document.addEventListener(
+      'pointermove',
+      function (event) {
+        if (
+          !conversationDictionaryLongPressTimer
+        ) {
+          return;
+        }
+
+        var movedX = Math.abs(
+          event.clientX -
+            conversationDictionaryLongPressStartX
+        );
+
+        var movedY = Math.abs(
+          event.clientY -
+            conversationDictionaryLongPressStartY
+        );
+
+        if (movedX > 12 || movedY > 12) {
+          clearConversationDictionaryLongPress();
+        }
+      }
+    );
+
+    ['pointerup', 'pointercancel'].forEach(
+      function (eventName) {
+        document.addEventListener(
+          eventName,
+          clearConversationDictionaryLongPress
+        );
+      }
+    );
+
+    document.addEventListener(
+      'click',
+      function (event) {
+        if (
+          !event.target ||
+          !event.target.closest
+        ) {
+          return;
+        }
+
+        var element = event.target.closest(
+          '.conversation-tts-word'
+        );
+
+        if (!element) {
+          return;
+        }
+
+        if (
+          Date.now() <
+          conversationDictionarySuppressClickUntil
+        ) {
+          event.preventDefault();
+          return;
+        }
+
+        var word = normalizeConversationDictionaryWord(
+          element.textContent
         );
 
         if (!word) {
@@ -8736,7 +9013,20 @@ if (
 
         event.preventDefault();
 
-        openConversationDictionary(word);
+        if (
+          conversationDictionarySelectedWord === word
+        ) {
+          openConversationDictionary(word);
+          return;
+        }
+
+        clearConversationDictionarySelection();
+
+        element.classList.add(
+          'is-dictionary-selected'
+        );
+
+        conversationDictionarySelectedWord = word;
       }
     );
 
@@ -8752,6 +9042,8 @@ if (
         }
 
         if (
+          event.target &&
+          event.target.closest &&
           event.target.closest(
             '#conversationDictionaryPopup'
           )
@@ -8763,6 +9055,11 @@ if (
       }
     );
   }
+
+
+  // ==========================================================================
+  // BLOCK 8809 : START
+  // ==========================================================================
 
   if (document.readyState === 'loading') {
     document.addEventListener(
@@ -8776,9 +9073,8 @@ if (
 })();
 
 // ============================================================================
-// BLOCK 8800 END
+// BLOCK 8809 END
 // ============================================================================
-
 
 
 
