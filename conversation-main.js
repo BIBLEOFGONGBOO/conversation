@@ -5863,6 +5863,14 @@ function installCurrentRoleTurnSelection() {
   document.addEventListener(
     'click',
     function(event) {
+      if (
+        event.target &&
+        event.target.closest &&
+        event.target.closest('.conversation-tts-word')
+      ) {
+        return;
+      }
+
       var card =
         event.target &&
         event.target.closest
