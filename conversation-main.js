@@ -3660,8 +3660,6 @@ function startCurrentPsgWebWordFallback() {
     return null;
   }
 
-  var index = 0;
-
   var delay = Math.max(
     160,
     Math.round(
@@ -3669,23 +3667,73 @@ function startCurrentPsgWebWordFallback() {
     )
   );
 
+  var state = {
+    words: data.words,
+    index: 0,
+    timer: null
+  };
+
+  window.CONVERSATION_V2_TTS_FALLBACK_STATE =
+    state;
+
   highlightCurrentTtsWordAt(
-    Number(data.words[0].start)
+    Number(state.words[0].start)
   );
 
-  return window.setInterval(function() {
-    index += 1;
+  state.timer = window.setInterval(function() {
+    state.index += 1;
 
-    if (index >= data.words.length) {
+    if (state.index >= state.words.length) {
       return;
     }
 
     highlightCurrentTtsWordAt(
-      Number(data.words[index].start)
+      Number(state.words[state.index].start)
     );
   }, delay);
+
+  return state.timer;
 }
 
+function correctCurrentTtsWordFallbackAt(
+  charIndex
+) {
+  var state =
+    window.CONVERSATION_V2_TTS_FALLBACK_STATE;
+
+  if (
+    !state ||
+    !state.words ||
+    !state.words.length
+  ) {
+    return false;
+  }
+
+  var targetIndex = -1;
+
+  state.words.forEach(function(word, index) {
+    if (
+      charIndex >= word.start &&
+      charIndex < word.end
+    ) {
+      targetIndex = index;
+    }
+  });
+
+  if (targetIndex === -1) {
+    return false;
+  }
+
+  if (targetIndex < state.index) {
+    return true;
+  }
+
+  state.index = targetIndex;
+
+  highlightCurrentTtsWordAt(charIndex);
+
+  return true;
+}
 
 
 // ============================================================================
@@ -3901,7 +3949,7 @@ function createCurrentPsgWebPlayAdapter() {
           }
 
           settled = true;
-          clearFallback();
+          
           callback(value);
         }
 
@@ -3942,7 +3990,7 @@ function createCurrentPsgWebPlayAdapter() {
           }
         };
 
-        utterance.onboundary = function(event) {
+                utterance.onboundary = function(event) {
           var charIndex =
             Number(event.charIndex);
 
@@ -3951,11 +3999,16 @@ function createCurrentPsgWebPlayAdapter() {
           }
 
           boundaryReceived = true;
-          clearFallback();
 
-          highlightCurrentTtsWordAt(
-            charIndex
-          );
+          if (
+            correctCurrentTtsWordFallbackAt(
+              charIndex
+            )
+          ) {
+            return;
+          }
+
+          highlightCurrentTtsWordAt(charIndex);
         };
 
         utterance.onend = function() {
