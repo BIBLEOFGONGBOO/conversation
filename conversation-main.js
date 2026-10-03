@@ -3710,6 +3710,47 @@ function getCurrentPsgBrowserGenderVoice(
 }
 
 
+
+
+// ============================================================================
+// 🟦 BLOCK 5640: BROWSER VOICE PRELOAD
+// 페이지 시작 시 음성 목록을 백그라운드에서 미리 준비한다.
+// ============================================================================
+
+function preloadCurrentPsgVoices() {
+  var synthesis = window.speechSynthesis;
+
+  if (!synthesis) {
+    return;
+  }
+
+  function loadVoices() {
+    synthesis.getVoices();
+  }
+
+  loadVoices();
+
+  synthesis.addEventListener(
+    'voiceschanged',
+    loadVoices,
+    { once: true }
+  );
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    preloadCurrentPsgVoices,
+    { once: true }
+  );
+} else {
+  preloadCurrentPsgVoices();
+}
+
+
+
+
+
 // ============================================================================
 // 🟦 BLOCK 5650: NATIVE SPEECH LOOKUP
 // ============================================================================
@@ -4103,6 +4144,16 @@ function createCurrentPsgWebPlayAdapter() {
             getCurrentPsgPlayLocale(
               item.language
             );
+
+          var genderVoice =
+            getCurrentPsgBrowserGenderVoice(
+              item,
+              utterance.lang
+            );
+
+          if (genderVoice) {
+            utterance.voice = genderVoice;
+          }
 
           utterance.rate =
             getCurrentPsgPlayRate();
