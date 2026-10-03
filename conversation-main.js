@@ -968,6 +968,147 @@ function renderConversationDirectoryItem(
 }
 
 
+// ============================================================================
+// 🟦 BLOCK 3575: CONVERSATION RESUME STORAGE / DIRECTORY ITEM
+// ============================================================================
+
+const CONVERSATION_V2_RESUME_STORAGE_KEY =
+  'gongboo-conversation-v2-resume';
+
+
+function getConversationResumeSnapshot() {
+  try {
+    const raw = localStorage.getItem(
+      CONVERSATION_V2_RESUME_STORAGE_KEY
+    );
+
+    if (!raw) {
+      return null;
+    }
+
+    const snapshot = JSON.parse(raw);
+
+    return snapshot?.version === 1
+      ? snapshot
+      : null;
+  } catch (error) {
+    console.warn(
+      '[CONVERSATION V2] Resume read failed:',
+      error
+    );
+
+    return null;
+  }
+}
+
+
+function saveConversationResume() {
+  const row = window.CONVERSATION_V2_ROW;
+
+  const conversationId = Number(row?.ID);
+
+  if (!Number.isInteger(conversationId) || conversationId < 1) {
+    return;
+  }
+
+  const snapshot = {
+    version: 1,
+    savedAt: Date.now(),
+    lesson: {
+      conversationId: conversationId,
+      title: String(row.DIALOGUE_TITLE || '').trim(),
+      level: String(row.GROUP || '').trim(),
+      category: String(row.CATEGORY || '').trim()
+    }
+  };
+
+  try {
+    localStorage.setItem(
+      CONVERSATION_V2_RESUME_STORAGE_KEY,
+      JSON.stringify(snapshot)
+    );
+  } catch (error) {
+    console.warn(
+      '[CONVERSATION V2] Resume save failed:',
+      error
+    );
+  }
+}
+
+
+async function resumeStoredConversationLesson() {
+  const lesson = getConversationResumeSnapshot()?.lesson;
+
+  const conversationId = Number(
+    lesson?.conversationId
+  );
+
+  if (!Number.isInteger(conversationId) || conversationId < 1) {
+    return;
+  }
+
+  const directory = document.getElementById(
+    'conversationDirectory'
+  );
+
+  const app = document.getElementById(
+    'conversationApp'
+  );
+
+  if (directory) {
+    directory.hidden = true;
+  }
+
+  if (app) {
+    app.classList.remove(
+      'conversation-directory-open'
+    );
+  }
+
+  await loadConversationById(
+    conversationId,
+    { resume: false }
+  );
+}
+
+
+function renderConversationResumeDirectoryItem(
+  container
+) {
+  const lesson = getConversationResumeSnapshot()?.lesson;
+
+  const conversationId = Number(
+    lesson?.conversationId
+  );
+
+  if (!Number.isInteger(conversationId) || conversationId < 1) {
+    return;
+  }
+
+  const resumeButton = document.createElement(
+    'button'
+  );
+
+  resumeButton.type = 'button';
+
+  resumeButton.className =
+    'conversation-directory-item is-directory-title';
+
+  resumeButton.textContent =
+    'RESUME · ' +
+    (lesson.title || 'Conversation ' + conversationId);
+
+  resumeButton.style.background = '#172033';
+  resumeButton.style.color = '#ffffff';
+  resumeButton.style.fontWeight = '700';
+
+  resumeButton.onclick =
+    resumeStoredConversationLesson;
+
+  container.appendChild(resumeButton);
+}
+
+
 function renderConversationLicensePracticeDirectory(
   requestedState
 ) {
@@ -1183,6 +1324,8 @@ function renderConversationDirectory(
     loadConversationStaticIndex()
       .then(function(indexData) {
         list.innerHTML = '';
+
+        renderConversationResumeDirectoryItem(list);
 
         (indexData.levels || []).forEach(
           function(levelItem) {
@@ -2643,6 +2786,8 @@ async function reloadV2SelectedLanguages() {
 
   window.CONVERSATION_V2_SECONDARY_ROW =
     secondaryRow;
+
+  saveConversationResume();
 
   renderFirstConversationRow(
     primaryRow
@@ -8369,7 +8514,7 @@ bootCurrentButtonHoverHelp();
 
 
 // ============================================================================
-// BLOCK 8800 : CONVERSATION WORD DICTIONARY
+// BLOCK 10000 : CONVERSATION WORD DICTIONARY
 // ============================================================================
 
 (function () {
@@ -8377,7 +8522,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8801 : DICTIONARY LANGUAGE AND CONFIG
+  // BLOCK 10001 : DICTIONARY LANGUAGE AND CONFIG
   // ==========================================================================
 
   var dictionaryLanguageColumns = {
@@ -8449,7 +8594,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8802 : DICTIONARY POPUP
+  // BLOCK 10002 : DICTIONARY POPUP
   // ==========================================================================
 
   function getConversationDictionaryPopup() {
@@ -8538,7 +8683,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8803 : DICTIONARY DATABASE LOOKUP
+  // BLOCK 10003 : DICTIONARY DATABASE LOOKUP
   // ==========================================================================
 
   async function fetchConversationDictionaryEntry(
@@ -8630,7 +8775,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8804 : AZURE FALLBACK
+  // BLOCK 10004 : AZURE FALLBACK
   // ==========================================================================
 
   async function requestConversationAzureTranslation(
@@ -8679,7 +8824,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8805 : DICTIONARY OPEN FLOW
+  // BLOCK 10005 : DICTIONARY OPEN FLOW
   // ==========================================================================
 
   async function openConversationDictionary(word) {
@@ -8787,7 +8932,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8806 : WORD TOKENIZATION
+  // BLOCK 10006 : WORD TOKENIZATION
   // ==========================================================================
 
   var conversationDictionarySelectedWord = '';
@@ -8865,7 +9010,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8807 : TAP AND LONG-PRESS STATE
+  // BLOCK 10007 : TAP AND LONG-PRESS STATE
   // ==========================================================================
 
   var conversationDictionaryLongPressTimer = null;
@@ -8925,7 +9070,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8808 : EVENT INSTALLATION
+  // BLOCK 10008 : EVENT INSTALLATION
   // ==========================================================================
 
   function installConversationDictionary() {
@@ -9122,7 +9267,7 @@ bootCurrentButtonHoverHelp();
 
 
   // ==========================================================================
-  // BLOCK 8809 : START
+  // BLOCK 10009 : START
   // ==========================================================================
 
   if (document.readyState === 'loading') {
@@ -9137,7 +9282,7 @@ bootCurrentButtonHoverHelp();
 })();
 
 // ============================================================================
-// BLOCK 8809 END
+// BLOCK 10000 END
 // ============================================================================
 
 
